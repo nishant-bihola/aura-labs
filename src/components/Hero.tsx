@@ -41,13 +41,41 @@ export default function Hero() {
            className="relative"
         >
           <h1 className="text-[28vw] md:text-[22vw] leading-[0.75] font-black uppercase font-display tracking-tight text-white flex items-center justify-center">
-            AURA LABS
-            <span className="inline-flex items-center justify-center ml-[1vw] relative">
-               <div className="w-[8vw] h-[8vw] md:w-[10vw] md:h-[10vw] border-[0.6vw] md:border-[0.8vw] border-white rounded-full flex items-center justify-center">
-                  <div className="w-[5vw] h-[5vw] md:w-[6vw] md:h-[6vw] border-[0.3vw] md:border-[0.4vw] border-white rounded-full flex items-center justify-center">
-                     <span className="text-[2.5vw] md:text-[3vw] leading-none mb-[0.2vw] md:mb-[0.5vw]">C</span>
+            {"AURA LABS".split("").map((char, i) => (
+              char === " " ? (
+                <span key={i} className="w-[4vw]">&nbsp;</span>
+              ) : (
+                <motion.span
+                  key={i}
+                  className="inline-block origin-bottom"
+                  whileHover={{ 
+                    scaleY: 1.4, 
+                    scaleX: 0.8,
+                    y: -10,
+                    skewX: -15,
+                    color: "rgba(255,255,255,0.8)"
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                >
+                  {char}
+                </motion.span>
+              )
+            ))}
+            <span className="inline-flex items-center justify-center ml-[1vw] relative group">
+               <motion.div 
+                 whileHover={{ rotate: 180, scale: 1.1 }}
+                 transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
+                 className="w-[8vw] h-[8vw] md:w-[10vw] md:h-[10vw] border-[0.6vw] md:border-[0.8vw] border-white rounded-full flex items-center justify-center relative cursor-pointer overflow-hidden backdrop-blur-sm bg-white/5"
+               >
+                  <div className="w-[5vw] h-[5vw] md:w-[6vw] md:h-[6vw] border-[0.3vw] md:border-[0.4vw] border-white rounded-full flex items-center justify-center select-none">
+                     <motion.span 
+                        className="text-[2.5vw] md:text-[3vw] leading-none mb-[0.2vw] md:mb-[0.5vw]"
+                        whileHover={{ scale: 1.5, rotate: 90 }}
+                     >
+                       C
+                     </motion.span>
                   </div>
-               </div>
+               </motion.div>
             </span>
           </h1>
         </motion.div>

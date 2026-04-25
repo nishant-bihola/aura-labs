@@ -52,15 +52,16 @@ export default function ServicesSection() {
           </a>
         </div>
 
-        <div className="space-y-0">
-          {SERVICE_DETAILS.map((service) => (
+        <div className="relative pb-32">
+          {SERVICE_DETAILS.map((service, index) => (
             <motion.div 
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6, ease: "easeOut" }}
               key={service.id} 
-              className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-0 items-start py-12 md:py-16 border-t border-white/10 group"
+              className="sticky top-[5vh] lg:top-[10vh] bg-brand-bg grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-0 items-start py-12 md:py-16 border-t border-white/10 group z-10"
+              style={{ zIndex: index + 10 }}
             >
               <div className="lg:col-span-1 hidden lg:flex">
                  <div className="bg-white text-black text-[11px] font-bold px-2 py-1 rounded-full w-9 h-9 flex items-center justify-center">
