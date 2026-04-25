@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Libre Baskerville", serif;
+  --font-display: "Coolvetica", sans-serif;
+  
+  --color-brand-bg: #0A0A0A;
+  --color-brand-text: #F5F5F4;
+  --color-brand-gray: rgba(245, 245, 244, 0.4);
+  --color-border-soft: rgba(245, 245, 244, 0.15);
+  --color-accent-green: #44cd2b;
+}
+
+@layer base {
+  @font-face {
+    font-family: 'Coolvetica';
+    src: url('https://cdn.prod.website-files.com/697344b93b0e03014bb98903/697344b93b0e03014bb98b6f_Coolvetica%20Hv%20Comp.otf') format('opentype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  body {
+    @apply bg-brand-bg text-brand-text font-sans selection:bg-brand-text selection:text-brand-bg antialiased;
+  }
+}
+
+@layer utilities {
+  .serif {
+    font-family: var(--font-serif);
+  }
+  .vertical-text {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+  .kerning-wide {
+    letter-spacing: 0.15em;
+  }
+  .text-outline {
+    -webkit-text-stroke: 1px currentColor;
+    color: transparent;
+  }
+  .bg-noise {
+    background-image: url("https://cdn.prod.website-files.com/697344b93b0e03014bb98903/697344b93b0e03014bb98a92_dots.gif");
+    background-repeat: repeat;
+  }
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
