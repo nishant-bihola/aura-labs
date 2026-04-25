@@ -15,6 +15,7 @@ import WorkSection from "./components/WorkSection";
 import ServicesSection from "./components/ServicesSection";
 import SuccessSection from "./components/SuccessSection";
 import VideoShowreel from "./components/VideoShowreel";
+import TestimonialSection from "./components/TestimonialSection";
 import LogoTicker from "./components/LogoTicker";
 import ContactFooter from "./components/ContactFooter";
 import CustomCursor from "./components/CustomCursor";
@@ -121,6 +122,7 @@ export default function App() {
           <ServicesSection />
           <SuccessSection />
           <VideoShowreel />
+          <TestimonialSection />
           <LogoTicker />
           <ContactFooter />
           

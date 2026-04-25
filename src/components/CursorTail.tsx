@@ -24,8 +24,10 @@ export default function CursorTail() {
     };
 
     // Initialize points
-    for (let i = 0; i < segmentCount; i++) {
-      points.current.push({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    if (points.current.length === 0) {
+      for (let i = 0; i < segmentCount; i++) {
+        points.current.push({ x: 0, y: 0 });
+      }
     }
 
     const animate = () => {
@@ -48,6 +50,8 @@ export default function CursorTail() {
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       
+      ctx.globalCompositeOperation = "screen";
+
       for (let i = 0; i < segmentCount - 1; i++) {
         const p1 = points.current[i];
         const p2 = points.current[i + 1];
