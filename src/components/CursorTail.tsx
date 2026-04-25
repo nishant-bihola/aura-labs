@@ -25,9 +25,9 @@ export default function CursorTail() {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Smooth follow with a bit of damping
-      pos.current.x += (mouse.current.x - pos.current.x) * 0.15;
-      pos.current.y += (mouse.current.y - pos.current.y) * 0.15;
+      // Fast follow with less damping
+      pos.current.x += (mouse.current.x - pos.current.x) * 0.25;
+      pos.current.y += (mouse.current.y - pos.current.y) * 0.25;
 
       const px = pos.current.x;
       const py = pos.current.y;
@@ -35,15 +35,12 @@ export default function CursorTail() {
       // Large blurry radius
       const radius = window.innerWidth > 768 ? 400 : 250;
 
-      // Slowly oscillating hues
-      const time = Date.now() / 20;
-      const hue1 = time % 360;
-      const hue2 = (time + 60) % 360;
-
+      // Pinkish/magenta/red glow matching the video
       const gradient = ctx.createRadialGradient(px, py, 0, px, py, radius);
-      gradient.addColorStop(0, `hsla(${hue1}, 100%, 75%, 0.9)`);
-      gradient.addColorStop(0.2, `hsla(${hue2}, 100%, 60%, 0.4)`);
-      gradient.addColorStop(1, `hsla(${hue1}, 100%, 50%, 0)`);
+      gradient.addColorStop(0, `hsla(330, 100%, 65%, 0.9)`); // Hot pink
+      gradient.addColorStop(0.15, `hsla(340, 100%, 55%, 0.6)`); // Deeper pink
+      gradient.addColorStop(0.35, `hsla(350, 100%, 45%, 0.2)`); // Reddish
+      gradient.addColorStop(1, `hsla(350, 100%, 45%, 0)`);
 
       ctx.globalCompositeOperation = "screen";
       ctx.fillStyle = gradient;
@@ -68,7 +65,7 @@ export default function CursorTail() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-[80] mix-blend-screen opacity-80"
+      className="fixed inset-0 pointer-events-none z-[80] mix-blend-screen opacity-100"
     />
   );
 }

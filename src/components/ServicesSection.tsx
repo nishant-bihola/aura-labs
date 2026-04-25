@@ -1,12 +1,5 @@
 import { motion } from "motion/react";
 
-const SERVICES = [
-  "SOCIAL MEDIA",
-  "MARKETING",
-  "DEVELOPMENT",
-  "ART DIRECTION"
-];
-
 const SERVICE_DETAILS = [
   {
     id: "001",
@@ -47,65 +40,53 @@ const SERVICE_DETAILS = [
 
 export default function ServicesSection() {
   return (
-    <section className="bg-brand-bg px-4 md:px-0 border-x border-border-soft mx-4 md:mx-6 relative overflow-hidden">
-      {/* Infinite Horizontal Scroller */}
-      <div className="flex whitespace-nowrap border-y border-border-soft py-12 md:py-20 overflow-hidden">
-        <motion.div 
-          animate={{ x: [0, -2000] }}
-          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-          className="flex items-center gap-12 md:gap-24 px-6 md:px-12"
-        >
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex items-center gap-12 md:gap-24">
-              {SERVICES.map((s) => (
-                <div key={s} className="flex items-center gap-12 md:gap-24">
-                  <span className="text-6xl md:text-[8vw] lg:text-[10vw] font-black uppercase tracking-tighter font-display leading-[0.8] opacity-100 text-white">
-                    {s}
-                  </span>
-                  <div className="w-4 h-4 md:w-6 md:h-6 rounded-full bg-white opacity-100" />
-                </div>
-              ))}
-            </div>
-          ))}
-        </motion.div>
-      </div>
-
+    <section className="bg-brand-bg px-4 md:px-0 relative overflow-hidden">
       <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-20 md:py-32">
-        <div className="grid lg:grid-cols-2 gap-16 md:gap-24 items-start border-b border-border-soft pb-20 md:pb-32 mb-20 md:mb-32">
-          <div className="space-y-8 md:space-y-12">
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.1] md:leading-[1] tracking-tighter font-display text-white">
-              Timeless design powered by <br /> modern growth strategy.
-            </h2>
-            <div className="pt-4">
-              <a href="#work" className="bg-white text-black px-6 py-3 rounded-full text-xs uppercase kerning-wide font-bold hover:scale-105 transition-transform inline-block">
-                VIEW ALL WORKS
-              </a>
-            </div>
-          </div>
+        
+        <div className="flex flex-col items-center text-center pb-20 md:pb-32 mb-10">
+          <h2 className="text-3xl md:text-[2.75rem] font-bold leading-[1.2] tracking-tight text-white mb-8">
+            Timeless design powered by<br />modern growth strategy.
+          </h2>
+          <a href="#work" className="bg-white text-black px-6 py-3 rounded-full text-[10px] uppercase tracking-widest font-bold hover:scale-105 transition-transform inline-block">
+            VIEW ALL WORKS
+          </a>
         </div>
 
         <div className="space-y-0">
           {SERVICE_DETAILS.map((service) => (
-            <div key={service.id} className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-center group py-12 md:py-16 border-t border-white/5">
-              <div className="hidden md:block col-span-1 text-sm font-medium opacity-20 serif italic">{service.id}</div>
-              <div className="col-span-1 md:col-span-4 aspect-[16/9] md:aspect-[4/3] rounded-2xl overflow-hidden bg-[#111]">
-                 <img src={service.image} alt={service.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              key={service.id} 
+              className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-0 items-start py-12 md:py-16 border-t border-white/10 group"
+            >
+              <div className="lg:col-span-1 hidden lg:flex">
+                 <div className="bg-white text-black text-[11px] font-bold px-2 py-1 rounded-full w-9 h-9 flex items-center justify-center">
+                    {service.id}
+                 </div>
               </div>
-              <div className="col-span-1 md:col-span-7 flex flex-col md:flex-row justify-between items-start gap-8 md:gap-12 pl-0 md:pl-8">
-                <div className="space-y-4 max-w-sm">
-                  <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white">{service.title}</h3>
-                  <p className="font-medium opacity-60 leading-relaxed text-sm md:text-base">{service.desc}</p>
-                </div>
-                <div className="space-y-3">
+              <div className="lg:col-span-4 rounded-[1.25rem] overflow-hidden bg-[#111] relative aspect-[16/9]">
+                 <motion.img 
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    src={service.image} alt={service.title} className="w-full h-full object-cover" 
+                 />
+              </div>
+              <div className="lg:col-span-4 lg:col-start-6 flex flex-col space-y-3 pt-2">
+                  <h3 className="text-3xl md:text-3xl font-bold tracking-tight text-white">{service.title}</h3>
+                  <p className="font-medium opacity-60 leading-relaxed text-sm md:text-base max-w-xs">{service.desc}</p>
+              </div>
+              <div className="lg:col-span-3 lg:col-start-10 space-y-3 pt-2">
                   <span className="text-[10px] uppercase kerning-wide font-bold opacity-100 tracking-widest block mb-4">Categories</span>
-                  <div className="flex flex-wrap gap-2 md:max-w-[200px]">
+                  <div className="flex flex-wrap gap-2">
                     {service.categories.map(c => (
-                      <span key={c} className="text-[11px] md:text-[12px] bg-white/10 text-white border border-white/5 px-3 py-1.5 rounded uppercase tracking-wide font-semibold">{c}</span>
+                      <span key={c} className="text-[11px] bg-transparent text-white border border-white/20 px-3 py-1.5 rounded uppercase font-semibold">{c}</span>
                     ))}
                   </div>
-                </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
