@@ -2,9 +2,8 @@ import React, { useEffect, useRef } from "react";
 
 export default function CursorTail() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouse = useRef({ x: 0, y: 0 });
-  const points = useRef<{ x: number; y: number }[]>([]);
-  const segmentCount = 20; // Number of segments in the tail
+  const mouse = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+  const pos = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -23,49 +22,34 @@ export default function CursorTail() {
       mouse.current.y = e.clientY;
     };
 
-    // Initialize points
-    for (let i = 0; i < segmentCount; i++) {
-      points.current.push({ x: 0, y: 0 });
-    }
-
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      let head = points.current[0];
-      head.x += (mouse.current.x - head.x) * 0.4;
-      head.y += (mouse.current.y - head.y) * 0.4;
+      // Smooth follow with a bit of damping
+      pos.current.x += (mouse.current.x - pos.current.x) * 0.15;
+      pos.current.y += (mouse.current.y - pos.current.y) * 0.15;
 
-      for (let i = 1; i < segmentCount; i++) {
-        const p = points.current[i];
-        const next = points.current[i - 1];
-        
-        // Smooth follow logic with elastic feel
-        p.x += (next.x - p.x) * 0.35;
-        p.y += (next.y - p.y) * 0.35;
-      }
-
-      // Draw the snake-like path
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+      const px = pos.current.x;
+      const py = pos.current.y;
       
-      for (let i = 0; i < segmentCount - 1; i++) {
-        const p1 = points.current[i];
-        const p2 = points.current[i + 1];
-        
-        const hue = (Date.now() / 8 + i * 12) % 360;
-        const width = (segmentCount - i) * 1.8;
-        const opacity = (segmentCount - i) / segmentCount;
+      // Large blurry radius
+      const radius = window.innerWidth > 768 ? 400 : 250;
 
-        ctx.beginPath();
-        ctx.moveTo(p1.x, p1.y);
-        ctx.lineTo(p2.x, p2.y);
-        ctx.strokeStyle = `hsla(${hue}, 100%, 60%, ${opacity * 0.6})`;
-        ctx.lineWidth = width;
-        
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = `hsla(${hue}, 100%, 65%, ${opacity * 0.5})`;
-        ctx.stroke();
-      }
+      // Slowly oscillating hues
+      const time = Date.now() / 20;
+      const hue1 = time % 360;
+      const hue2 = (time + 60) % 360;
+
+      const gradient = ctx.createRadialGradient(px, py, 0, px, py, radius);
+      gradient.addColorStop(0, `hsla(${hue1}, 100%, 75%, 0.9)`);
+      gradient.addColorStop(0.2, `hsla(${hue2}, 100%, 60%, 0.4)`);
+      gradient.addColorStop(1, `hsla(${hue1}, 100%, 50%, 0)`);
+
+      ctx.globalCompositeOperation = "screen";
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(px, py, radius, 0, Math.PI * 2);
+      ctx.fill();
 
       requestAnimationFrame(animate);
     };
@@ -84,7 +68,7 @@ export default function CursorTail() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-[80] mix-blend-screen"
+      className="fixed inset-0 pointer-events-none z-[80] mix-blend-screen opacity-80"
     />
   );
 }

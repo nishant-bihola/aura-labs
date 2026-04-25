@@ -6,28 +6,11 @@ export default function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOp
 
   return (
     <>
-      <header className="absolute top-0 left-0 w-full z-[100] px-12 py-8 flex justify-between items-center mix-blend-difference">
-        <div className="flex gap-8 items-center cursor-pointer">
-          <button 
-            onClick={() => setIsOpen(!isOpen)}
-            className="text-[10px] uppercase kerning-wide font-medium opacity-60 hover:opacity-100 transition-opacity flex items-center gap-3 group"
-          >
-            <div className="flex flex-col gap-1 w-5">
-               <motion.div animate={{ rotate: isOpen ? 45 : 0, y: isOpen ? 5 : 0 }} className="w-full h-[1px] bg-white transition-transform" />
-               <motion.div animate={{ opacity: isOpen ? 0 : 1 }} className="w-full h-[1px] bg-white transition-opacity" />
-               <motion.div animate={{ rotate: isOpen ? -45 : 0, y: isOpen ? -5 : 0 }} className="w-full h-[1px] bg-white transition-transform" />
-            </div>
-            {isOpen ? "Close" : "Menu"}
-          </button>
-          <a href="#work" className="text-[10px] uppercase kerning-wide font-medium opacity-60 hover:opacity-100 transition-opacity hidden lg:block">
-            Projects
-          </a>
-        </div>
-
+      <header className="absolute top-0 left-0 w-full z-[100] px-12 py-8 flex items-center mix-blend-difference">
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-lg font-bold tracking-tighter absolute left-12"
+          className="text-lg font-bold tracking-tighter absolute left-12 md:left-12"
         >
           <a href="/" className="no-underline text-white uppercase flex items-center gap-1">
             Aura Labs <span className="font-light text-sm">©</span>

@@ -80,23 +80,23 @@ export default function App() {
             </div>
           </button>
 
-          <nav className="flex flex-col gap-1 items-start text-left mt-8">
+          <nav className="flex flex-col gap-2 md:gap-4 items-start text-left mt-8 w-full">
             {navLinks.map((link, i) => (
               <a
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="text-5xl md:text-6xl lg:text-[4vw] font-display text-white uppercase tracking-tighter leading-[0.9] transition-all duration-300 transform border-b border-white/20 pb-2 mb-2 w-max pr-8 hover:text-white/80"
+                className="text-5xl md:text-6xl lg:text-[5vw] font-display text-white uppercase tracking-tighter leading-[0.9] transition-all duration-300 transform w-full hover:translate-x-4 hover:text-white/80"
               >
                 {link.name}
               </a>
             ))}
           </nav>
           
-          <div className="flex gap-6 mt-4">
-            <a href="#" className="opacity-60 hover:opacity-100 transition-all text-white"><Instagram size={24} /></a>
-            <a href="#" className="opacity-60 hover:opacity-100 transition-all text-white"><Twitter size={24} /></a>
-            <a href="#" className="opacity-60 hover:opacity-100 transition-all text-white"><ArrowUpRight size={24} /></a>
+          <div className="flex gap-4 mt-8 pt-8 border-t border-white/20 w-[60%]">
+            <a href="#" className="opacity-80 hover:opacity-100 transition-all text-white"><Instagram size={20} /></a>
+            <a href="#" className="opacity-80 hover:opacity-100 transition-all text-white"><Twitter size={20} /></a>
+            <a href="#" className="opacity-80 hover:opacity-100 transition-all text-white"><ArrowUpRight size={20} /></a>
           </div>
         </div>
       </div>

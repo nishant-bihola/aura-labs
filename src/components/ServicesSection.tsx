@@ -1,13 +1,10 @@
 import { motion } from "motion/react";
 
 const SERVICES = [
-  "Web Design",
-  "Social Media",
-  "Marketing",
-  "Development",
-  "Branding",
-  "UI/UX Animation",
-  "Motion Graphics",
+  "SOCIAL MEDIA",
+  "MARKETING",
+  "DEVELOPMENT",
+  "ART DIRECTION"
 ];
 
 const SERVICE_DETAILS = [
@@ -54,18 +51,18 @@ export default function ServicesSection() {
       {/* Infinite Horizontal Scroller */}
       <div className="flex whitespace-nowrap border-y border-border-soft py-12 md:py-20 overflow-hidden">
         <motion.div 
-          animate={{ x: [0, -1000] }}
-          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+          animate={{ x: [0, -2000] }}
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
           className="flex items-center gap-12 md:gap-24 px-6 md:px-12"
         >
-          {[...Array(4)].map((_, i) => (
+          {[...Array(6)].map((_, i) => (
             <div key={i} className="flex items-center gap-12 md:gap-24">
               {SERVICES.map((s) => (
                 <div key={s} className="flex items-center gap-12 md:gap-24">
-                  <span className="text-6xl md:text-9xl font-normal uppercase tracking-tighter serif italic opacity-30">
+                  <span className="text-6xl md:text-[8vw] lg:text-[10vw] font-black uppercase tracking-tighter font-display leading-[0.8] opacity-100 text-white">
                     {s}
                   </span>
-                  <div className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-brand-text opacity-20" />
+                  <div className="w-4 h-4 md:w-6 md:h-6 rounded-full bg-white opacity-100" />
                 </div>
               ))}
             </div>
@@ -76,43 +73,34 @@ export default function ServicesSection() {
       <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-20 md:py-32">
         <div className="grid lg:grid-cols-2 gap-16 md:gap-24 items-start border-b border-border-soft pb-20 md:pb-32 mb-20 md:mb-32">
           <div className="space-y-8 md:space-y-12">
-            <h2 className="text-4xl md:text-7xl font-normal leading-[1.1] md:leading-[0.9] serif italic tracking-tighter">
-              Timeless design powered by modern growth strategy.
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.1] md:leading-[1] tracking-tighter font-display text-white">
+              Timeless design powered by <br /> modern growth strategy.
             </h2>
-            <p className="text-base md:text-lg text-brand-gray font-light max-w-sm">
-              From early-stage teams establishing their online presence to established businesses ready to elevate.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-y-12 md:gap-y-20 gap-x-12 lg:pl-12 lg:border-l border-border-soft">
-            {[
-              { label: "Location", value: "Berlin, DE" },
-              { label: "Duration", value: "18 Months" },
-              { label: "Category", value: "Agency" },
-              { label: "Focus", value: "Design & Tech" },
-            ].map((stat, i) => (
-              <div key={i} className="flex flex-col gap-2 md:gap-3">
-                <span className="text-[9px] md:text-[10px] uppercase kerning-wide opacity-40 font-bold">{stat.label}</span>
-                <span className="text-lg md:text-xl font-medium tracking-tight">{stat.value}</span>
-              </div>
-            ))}
+            <div className="pt-4">
+              <a href="#work" className="bg-white text-black px-6 py-3 rounded-full text-xs uppercase kerning-wide font-bold hover:scale-105 transition-transform inline-block">
+                VIEW ALL WORKS
+              </a>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-24 md:space-y-32">
+        <div className="space-y-0">
           {SERVICE_DETAILS.map((service) => (
-            <div key={service.id} className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-start group">
+            <div key={service.id} className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-center group py-12 md:py-16 border-t border-white/5">
               <div className="hidden md:block col-span-1 text-sm font-medium opacity-20 serif italic">{service.id}</div>
-              <div className="col-span-1 md:col-span-6 aspect-[4/3] rounded-sm overflow-hidden bg-[#111]">
+              <div className="col-span-1 md:col-span-4 aspect-[16/9] md:aspect-[4/3] rounded-2xl overflow-hidden bg-[#111]">
                  <img src={service.image} alt={service.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
               </div>
-              <div className="col-span-1 md:col-span-5 flex flex-col justify-center h-full">
-                <div className="space-y-6">
-                  <h3 className="text-4xl md:text-5xl serif italic font-normal tracking-tight">{service.title}</h3>
-                  <p className="font-light opacity-60 leading-relaxed text-base md:text-lg">{service.desc}</p>
-                  <div className="pt-4 flex flex-wrap gap-2">
+              <div className="col-span-1 md:col-span-7 flex flex-col md:flex-row justify-between items-start gap-8 md:gap-12 pl-0 md:pl-8">
+                <div className="space-y-4 max-w-sm">
+                  <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white">{service.title}</h3>
+                  <p className="font-medium opacity-60 leading-relaxed text-sm md:text-base">{service.desc}</p>
+                </div>
+                <div className="space-y-3">
+                  <span className="text-[10px] uppercase kerning-wide font-bold opacity-100 tracking-widest block mb-4">Categories</span>
+                  <div className="flex flex-wrap gap-2 md:max-w-[200px]">
                     {service.categories.map(c => (
-                      <span key={c} className="text-[10px] md:text-[11px] bg-white/5 border border-white/10 px-3 py-1.5 rounded-full uppercase tracking-wide">{c}</span>
+                      <span key={c} className="text-[11px] md:text-[12px] bg-white/10 text-white border border-white/5 px-3 py-1.5 rounded uppercase tracking-wide font-semibold">{c}</span>
                     ))}
                   </div>
                 </div>
