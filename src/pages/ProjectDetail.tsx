@@ -91,29 +91,58 @@ export default function ProjectDetail() {
             </div>
             <div className="flex justify-between items-center group cursor-default border-t border-white/5 pt-8">
               <span className="text-[10px] uppercase tracking-widest font-bold opacity-30">Service</span>
-              <span className="text-sm font-medium group-hover:opacity-100 opacity-80 transition-opacity">{project.category}</span>
+              <span className="text-sm font-medium group-hover:opacity-100 opacity-80 transition-opacity">{project.services?.join(", ") || project.category}</span>
             </div>
-          </div>
-        </div>
-
-        {/* Right Media Column */}
-        <div className="md:col-span-6 md:col-start-7 space-y-12">
-          <div className="parallax-img rounded-[32px] overflow-hidden aspect-[4/5] bg-neutral-900 group">
-            <img src={project.mainImage} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000 scale-110 group-hover:scale-100" alt="Hero" />
-          </div>
-          <div className="parallax-img rounded-[32px] overflow-hidden aspect-video bg-neutral-900 group">
-            <img src={project.galleryImages[0]} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000 scale-110 group-hover:scale-100" alt="Gallery 1" />
           </div>
         </div>
       </section>
 
-      {/* 3. RECENT WORK SECTION (Dynamic & Responsive) */}
-      <section className="py-20 md:py-32 px-4 md:px-12 bg-white text-black rounded-t-[32px] md:rounded-t-[64px]">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16 md:mb-24">
-           <h2 className="text-5xl md:text-8xl font-bold uppercase tracking-tighter leading-none fluid-h1">Recent Work</h2>
+      {/* Hero Image */}
+      <section className="px-4 md:px-12 py-12">
+         <motion.div 
+           initial={{ opacity: 0, scale: 0.95 }}
+           animate={{ opacity: 1, scale: 1 }}
+           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+           className="aspect-[16/9] w-full rounded-[40px] md:rounded-[80px] overflow-hidden shadow-2xl shadow-black/50"
+         >
+            <img src={project.mainImage} className="w-full h-full object-cover" alt={project.title} />
+         </motion.div>
+      </section>
+
+      {/* Overview & Gallery */}
+      <section className="py-24 md:py-48 px-6 md:px-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 md:gap-32">
+             <div className="lg:col-span-5">
+                <h2 className="text-[10px] md:text-[12px] uppercase font-bold tracking-[0.4em] opacity-40 mb-8">Overview</h2>
+                <p className="text-2xl md:text-4xl font-serif italic leading-snug opacity-80">{project.description}</p>
+             </div>
+             <div className="lg:col-span-7 space-y-16">
+                <div className="space-y-6">
+                   <h3 className="text-[10px] uppercase font-bold tracking-[0.3em] opacity-30">Highlights</h3>
+                   <p className="text-lg md:text-xl text-white/50 leading-relaxed font-light">{project.results}</p>
+                </div>
+                <div className="aspect-[4/3] w-full rounded-[30px] md:rounded-[50px] overflow-hidden bg-white/5">
+                   <img src={project.galleryImages[0]} className="w-full h-full object-cover" alt="Gallery 1" />
+                </div>
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Recent Work - High Fidelity Grid */}
+      <section className="py-24 md:py-40 px-6 md:px-12 border-t border-white/5">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 md:mb-24 gap-8">
+           <div>
+              <h2 className="text-[10px] md:text-[12px] uppercase font-bold tracking-[0.4em] opacity-40 mb-4">Recent Work</h2>
+              <h3 className="text-3xl md:text-5xl font-serif italic">More from the Lab</h3>
+           </div>
            <button 
-             onClick={() => navigate('/#work')} 
-             className="w-full md:w-auto px-8 py-5 border border-black rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white transition-all duration-500 active:scale-95"
+             onClick={() => {
+               window.scrollTo({ top: 0, behavior: 'instant' });
+               navigate('/#work');
+             }} 
+             className="w-full md:w-auto px-8 py-5 border border-white/20 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-500 active:scale-95"
            >
               View All Works
            </button>
@@ -124,7 +153,10 @@ export default function ProjectDetail() {
              <div 
                key={relatedProject.id}
                className="aspect-[4/3] md:aspect-square bg-neutral-100 rounded-[30px] md:rounded-[40px] overflow-hidden relative group cursor-pointer shadow-xl" 
-               onClick={() => navigate(`/work/${relatedProject.slug}`)}
+               onClick={() => {
+                 window.scrollTo({ top: 0, behavior: 'instant' });
+                 navigate(`/work/${relatedProject.slug}`);
+               }}
              >
                 <img src={relatedProject.mainImage} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt={relatedProject.title} />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-700" />
@@ -139,6 +171,23 @@ export default function ProjectDetail() {
                 </div>
              </div>
            ))}
+        </div>
+      </section>
+
+      {/* Project CTA Section */}
+      <section className="py-24 md:py-40 px-6 md:px-12 border-y border-white/5 bg-white text-black">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
+          <div className="space-y-6 text-center md:text-left">
+            <h2 className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-40">Ready to build?</h2>
+            <h3 className="text-4xl md:text-6xl font-serif italic tracking-tighter">Start a project like this.</h3>
+            <p className="text-lg opacity-60 max-w-md">Our team is ready to scale your vision using the same architectural precision applied to {project.title}.</p>
+          </div>
+          <button 
+            onClick={() => navigate(`/contact?plan=Project&name=${project.title}`)}
+            className="w-full md:w-auto px-12 py-6 bg-black text-white rounded-full text-xs font-bold uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-2xl"
+          >
+            Inquire Now
+          </button>
         </div>
       </section>
 

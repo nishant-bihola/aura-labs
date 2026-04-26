@@ -27,7 +27,7 @@ export const PROJECTS: Project[] = [
     results: "A cohesive brand ecosystem that increased collector engagement by 45% and established Zoro Arts as a leader in the digital art space.",
     client: "Zoro Arts Collective",
     services: ["Branding", "Web Design", "Digital Strategy"],
-    mainImage: "/projects/zoro_arts_hero.png",
+    mainImage: "/projects/zoro_arts_hero_1777230725130.png",
     galleryImages: [
       "/projects/zoro_arts_gallery_1777230740658.png",
       "/projects/forma_digital_images_1_1777230411890.png"
@@ -45,7 +45,7 @@ export const PROJECTS: Project[] = [
     results: "A revolutionary UI that reduced data processing friction for researchers by 30% and won the 'Digital Innovation' award for 2026.",
     client: "Nero Research Group",
     services: ["UI/UX Design", "Motion Systems", "WebGPU"],
-    mainImage: "/projects/nero_vision_hero.png",
+    mainImage: "/projects/nero_vision_valtero_1777233007709.png",
     galleryImages: [
       "/projects/forma_digital_images_2_1777230416451.png",
       "/projects/forma_digital_challenges_results_1777230365161.png"
@@ -63,7 +63,7 @@ export const PROJECTS: Project[] = [
     results: "An immersive portfolio that secured three multi-million dollar contracts within the first month of launch by targeting high-net-worth investors.",
     client: "Vantablack Architecture",
     services: ["Creative Direction", "3D Web Design", "Branding"],
-    mainImage: "/projects/vantablack_hero.png",
+    mainImage: "/projects/vantablack_architecture_1777230771625.png",
     galleryImages: [
       "/projects/forma_digital_overview_detail_1777230407453.png",
       "/projects/forma_digital_overview_challenges_1777230358286.png"
@@ -81,7 +81,7 @@ export const PROJECTS: Project[] = [
     results: "A 55% increase in direct-to-consumer sales and a brand presence that redefined minimalist e-commerce design for 2025.",
     client: "Kanso Lifestyle Inc.",
     services: ["E-Commerce", "Art Direction", "Content Strategy"],
-    mainImage: "/projects/kanso_labs_hero.png",
+    mainImage: "/projects/kanso_labs_valtero_1777233041279.png",
     galleryImages: [
       "/projects/kanso_design_hero_1777230786125.png",
       "/projects/forma_digital_footer_1777230388513.png"
@@ -99,7 +99,7 @@ export const PROJECTS: Project[] = [
     results: "Onboarded 12 global shipping partners within 90 days and reduced user onboarding time by 40% through intuitive UI.",
     client: "Apex Logistics Group",
     services: ["SaaS Product Design", "3D Visualization", "Development"],
-    mainImage: "/projects/apex_flow_hero.png",
+    mainImage: "/projects/apex_flow_valtero_1777233025583.png",
     galleryImages: [
       "/projects/apex_digital_hero_1777230758408.png",
       "/projects/forma_digital_hero_1777230347053.png"

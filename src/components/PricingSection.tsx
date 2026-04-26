@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Check, ArrowUpRight } from "lucide-react";
@@ -38,6 +38,22 @@ const PLANS = [
       "Performance tuning & optimization"
     ],
     highlight: true
+  },
+  {
+    name: "Inner Circle",
+    tagline: "The Digital Journal",
+    description: "Join our exclusive network of designers and entrepreneurs.",
+    price: "Free",
+    period: "/forever",
+    features: [
+      "Bi-weekly digital insights",
+      "Early access to new projects",
+      "Exclusive UI asset packs",
+      "Behind-the-scenes content",
+      "Invitation to private events"
+    ],
+    highlight: false,
+    isNewsletter: true
   }
 ];
 
@@ -52,12 +68,12 @@ export default function AuraPricing() {
       // Title Reveal Animation
       gsap.fromTo(
         ".pricing-title-reveal",
-        { y: 100, opacity: 0 },
+        { y: 80, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          duration: 1.2,
-          ease: "power4.out",
+          duration: 1,
+          ease: "expo.out",
           scrollTrigger: {
             trigger: sectionRef.current,
             start: "top 80%",
@@ -68,11 +84,11 @@ export default function AuraPricing() {
       // Cards Staggered Entrance
       gsap.fromTo(
         ".pricing-card",
-        { y: 60, opacity: 0 },
+        { y: 50, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          stagger: 0.2,
+          stagger: 0.1,
           duration: 1,
           ease: "expo.out",
           scrollTrigger: {
@@ -85,6 +101,11 @@ export default function AuraPricing() {
 
     return () => ctx.revert();
   }, []);
+
+  const handleGetStarted = (planName: string) => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    navigate(`/contact?plan=${encodeURIComponent(planName)}`);
+  };
 
   return (
     <section 
@@ -123,13 +144,13 @@ export default function AuraPricing() {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div ref={cardsRef} className="grid md:grid-cols-2 fluid-gap">
-          {PLANS.map((plan, i) => (
+        <div ref={cardsRef} className="grid md:grid-cols-2 lg:grid-cols-3 fluid-gap">
+          {PLANS.map((plan) => (
             <div 
               key={plan.name}
-              className={`pricing-card group relative p-8 md:p-16 rounded-[40px] border transition-all duration-700 ${
+              className={`pricing-card group relative p-8 md:p-12 rounded-[40px] border transition-all duration-700 flex flex-col justify-between ${
                 plan.highlight 
-                ? "bg-white/5 border-white/20" 
+                ? "bg-white/5 border-white/20 shadow-2xl shadow-white/[0.02]" 
                 : "bg-transparent border-white/10 hover:border-white/30"
               }`}
             >
@@ -139,7 +160,7 @@ export default function AuraPricing() {
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-12">
                   <div>
-                    <h3 className="text-4xl font-valtero-serif mb-2">{plan.name}</h3>
+                    <h3 className="text-4xl font-valtero-serif mb-2 group-hover:italic transition-all">{plan.name}</h3>
                     <p className="text-[10px] tracking-[0.2em] uppercase text-white/40 font-valtero-sans">{plan.tagline}</p>
                   </div>
                   <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
@@ -149,7 +170,7 @@ export default function AuraPricing() {
 
                 <div className="mb-12">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-6xl md:text-7xl font-valtero-serif tracking-tighter">{plan.price}</span>
+                    <span className="text-5xl md:text-6xl font-valtero-serif tracking-tighter">{plan.price}</span>
                     <span className="text-white/30 text-sm font-valtero-sans">{plan.period}</span>
                   </div>
                 </div>
@@ -159,24 +180,30 @@ export default function AuraPricing() {
                 <ul className="space-y-6 mb-16">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-center gap-4 text-white/70 group-hover:text-white transition-colors duration-300">
-                      <div className="w-5 h-5 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                        <Check size={10} className="text-white/50" />
+                      <div className="w-4 h-4 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                        <Check size={8} className="text-white/50" />
                       </div>
-                      <span className="text-sm md:text-base font-valtero-sans">{feature}</span>
+                      <span className="text-sm font-valtero-sans">{feature}</span>
                     </li>
                   ))}
                 </ul>
+              </div>
 
-                <button 
-                  onClick={() => navigate('/contact')}
-                  className="relative w-full py-6 rounded-full overflow-hidden group/btn transition-all duration-500"
-                >
-                  <div className="absolute inset-0 bg-white translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-500 ease-expo" />
-                  <div className={`absolute inset-0 border border-white/20 rounded-full ${plan.highlight ? 'bg-white/10' : 'bg-white/5'}`} />
-                  <span className="relative z-10 text-[11px] tracking-[0.3em] uppercase font-bold group-hover/btn:text-black transition-colors duration-500">
-                    Get Started
-                  </span>
-                </button>
+              <div className="relative z-10">
+                {(plan as any).isNewsletter ? (
+                  <PricingNewsletterForm />
+                ) : (
+                  <button 
+                    onClick={() => handleGetStarted(plan.name)}
+                    className="relative w-full py-5 rounded-full overflow-hidden group/btn transition-all duration-500"
+                  >
+                    <div className="absolute inset-0 bg-white translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-500 ease-expo" />
+                    <div className={`absolute inset-0 border border-white/20 rounded-full ${plan.highlight ? 'bg-white/10' : 'bg-white/5'}`} />
+                    <span className="relative z-10 text-[10px] tracking-[0.3em] uppercase font-bold group-hover/btn:text-black transition-colors duration-500">
+                      Get Started
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -197,4 +224,50 @@ export default function AuraPricing() {
       </div>
     </section>
   );
-};
+}
+
+function PricingNewsletterForm() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const subscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, type: "Newsletter", name: "Inner Circle Member", message: "Joined from Pricing" }),
+      });
+      if (res.ok) {
+        setStatus("success");
+        setEmail("");
+      } else {
+        setStatus("error");
+      }
+    } catch (err) {
+      setStatus("error");
+    }
+  };
+
+  return (
+    <form onSubmit={subscribe} className="relative w-full">
+      <input 
+        type="email" 
+        required
+        placeholder="Enter email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full bg-white/5 border border-white/10 rounded-full px-6 py-4 text-xs focus:outline-none focus:border-white/30 transition-all placeholder:opacity-30"
+      />
+      <button 
+        type="submit" 
+        disabled={status === "loading"}
+        className="absolute right-1 top-1 bottom-1 px-6 bg-white text-black rounded-full text-[9px] font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors disabled:opacity-50"
+      >
+        {status === "loading" ? "..." : (status === "success" ? "✓" : "Join")}
+      </button>
+      {status === "error" && <p className="text-[9px] text-red-500 mt-2 text-center absolute -bottom-5 w-full">Try again.</p>}
+    </form>
+  );
+}

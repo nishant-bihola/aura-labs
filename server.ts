@@ -2,7 +2,7 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import { Client as NotionClient } from "@notionhq/client";
 import * as dotenv from "dotenv";
@@ -21,32 +21,42 @@ const notion = new NotionClient({
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend_email = new Resend(process.env.RESEND_API_KEY);
 
-const generateClientConfirmationHTML = (name: string, type: string) => `
-  <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; color: #111; padding: 40px; border-radius: 20px; border: 1px solid #eee; line-height: 1.6;">
-    <h1 style="color: #000; font-size: 28px; margin-bottom: 20px;">We've received your request</h1>
-    <p>Hello ${name},</p>
-    <p>Thank you for reaching out to <strong>Aura Labs</strong>. We have received your inquiry for <strong>${type}</strong>.</p>
-    <p>Our team is currently reviewing your details and we will get back to you within 24 hours to schedule a discovery call.</p>
-    <div style="margin: 30px 0; padding: 20px; background: #f9f9f9; border-radius: 12px; border-left: 4px solid #00F0FF;">
-      <p style="margin: 0; font-size: 14px; color: #555;">Next Steps:</p>
-      <p style="margin: 5px 0 0; font-weight: bold;">Keep an eye on your inbox for a calendar invite.</p>
+const generateClientConfirmationHTML = (name: string, inquiryType: string) => `
+  <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #000000; color: #ffffff; padding: 50px; border-radius: 30px; border: 1px solid #1a1a1a; line-height: 1.6;">
+    <div style="margin-bottom: 30px; border-left: 2px solid #00F0FF; padding-left: 20px;">
+      <h1 style="color: #ffffff; font-size: 32px; margin: 0; font-style: italic; font-weight: 300;">Aura Labs</h1>
+      <p style="color: #00F0FF; font-size: 10px; text-transform: uppercase; letter-spacing: 4px; margin: 5px 0 0;">Cinematic Digital Solutions</p>
     </div>
-    <p>Best regards,<br><strong>Aura Labs Team</strong></p>
-    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #aaa; font-size: 12px;">
-      aura-labs.com • Premium Digital Solutions
+    
+    <h2 style="font-size: 24px; font-weight: 300; margin-bottom: 25px;">Hello ${name},</h2>
+    
+    <p style="color: #888; font-size: 16px; margin-bottom: 25px;">
+      Thank you for reaching out. We have successfully received your inquiry for <strong>${inquiryType}</strong>.
+    </p>
+    
+    <p style="color: #888; font-size: 16px; margin-bottom: 25px;">
+      Our team of architects and designers is currently reviewing your project brief. You can expect a response from us within <span style="color: #ffffff;">24 hours</span> to discuss the next steps in bringing your vision to life.
+    </p>
+    
+    <div style="background: #0a0a0a; border: 1px solid #1a1a1a; padding: 25px; border-radius: 15px; margin-bottom: 30px;">
+      <p style="margin: 0; font-size: 12px; color: #444; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">Immediate Next Step</p>
+      <p style="margin: 0; color: #ffffff; font-size: 14px;">Keep an eye on your inbox for a direct invitation to a discovery call.</p>
+    </div>
+    
+    <p style="color: #444; font-size: 14px; margin-bottom: 0;">Warm regards,</p>
+    <p style="color: #ffffff; font-size: 16px; font-weight: bold; margin-top: 5px;">The Aura Labs Team</p>
+    
+    <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #1a1a1a; text-align: center;">
+      <p style="color: #333; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin: 0;">
+        auralabs.io • London • NYC • Global
+      </p>
     </div>
   </div>
 `;
 
-const generateEmailHTML = (name: string, email: string, message: string, type: "Contact" | "Pricing Lead", plan?: string) => `
+const generateEmailHTML = (name: string, email: string, message: string, type: "Contact" | "Pricing Lead" | "Newsletter" | "Project Inquiry", plan?: string) => `
   <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #050505; color: #ffffff; padding: 40px; border-radius: 20px; border: 1px solid #333;">
     <h2 style="color: #00F0FF; font-size: 24px; margin-bottom: 20px;">New ${type} received</h2>
     <div style="background: #111; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
@@ -64,6 +74,24 @@ const generateEmailHTML = (name: string, email: string, message: string, type: "
   </div>
 `;
 
+const generateNewsletterWelcomeHTML = (email: string) => `
+  <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #000000; color: #ffffff; padding: 50px; border-radius: 30px; border: 1px solid #1a1a1a; line-height: 1.6;">
+    <div style="margin-bottom: 30px; border-left: 2px solid #BD00FF; padding-left: 20px;">
+      <h1 style="color: #ffffff; font-size: 32px; margin: 0; font-style: italic; font-weight: 300;">Aura Labs</h1>
+      <p style="color: #BD00FF; font-size: 10px; text-transform: uppercase; letter-spacing: 4px; margin: 5px 0 0;">The Digital Journal</p>
+    </div>
+    <h2 style="font-size: 24px; font-weight: 300; margin-bottom: 25px;">You're in.</h2>
+    <p style="color: #888; font-size: 16px; margin-bottom: 25px;">
+      Thank you for subscribing to the Aura Labs newsletter. You'll now receive exclusive insights into our latest architectural designs, digital innovations, and behind-the-scenes content from our global studios.
+    </p>
+    <div style="background: #0a0a0a; border: 1px solid #1a1a1a; padding: 25px; border-radius: 15px; margin-bottom: 30px;">
+      <p style="margin: 0; font-size: 12px; color: #444; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">Coming Soon</p>
+      <p style="margin: 0; color: #ffffff; font-size: 14px;">"The Future of Spatial UI" — A deep dive into our work with Nero Vision.</p>
+    </div>
+    <p style="color: #ffffff; font-size: 16px; font-weight: bold; margin-top: 5px;">Aura Labs Editorial</p>
+  </div>
+`;
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -72,14 +100,16 @@ async function startServer() {
 
   // API Route for Contact Form
   app.post("/api/contact", async (req, res) => {
-    const { name, email, message } = req.body;
-    console.log("Contact request received:", { name, email, message });
+    const { name, email, message, type, plan } = req.body;
+    const inquiryType = type || "Contact";
+    console.log(`${inquiryType} request received:`, { name, email, message, plan });
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: process.env.ADMIN_EMAIL,
-      subject: `New Contact Form Submission from ${name}`,
-      html: generateEmailHTML(name, email, message, "Contact"),
+    const adminEmailOptions = {
+      from: `Aura Labs <onboarding@resend.dev>`,
+      to: process.env.ADMIN_EMAIL || "",
+      reply_to: process.env.EMAIL_USER,
+      subject: `New ${inquiryType} Submission from ${name}`,
+      html: generateEmailHTML(name, email, message, inquiryType as any, plan),
     };
 
     try {
@@ -93,7 +123,8 @@ async function startServer() {
           last_name: name.split(' ').slice(1).join(' '), 
           email, 
           message, 
-          type: "Contact" 
+          type: inquiryType,
+          plan: plan
         }]);
 
       if (supabaseError) {
@@ -111,7 +142,8 @@ async function startServer() {
               Name: { title: [{ text: { content: name } }] },
               Email: { email: email },
               Message: { rich_text: [{ text: { content: message } }] },
-              Type: { select: { name: "Contact" } },
+              Type: { select: { name: inquiryType } },
+              ...(plan && { Plan: { select: { name: plan } } }),
               Date: { date: { start: new Date().toISOString() } }
             }
           });
@@ -122,95 +154,42 @@ async function startServer() {
       }
 
       // 3. Send Admin Notification
-      await transporter.sendMail(mailOptions);
+      if (inquiryType !== "Newsletter") {
+        await resend_email.emails.send(adminEmailOptions);
+      } else {
+        await resend_email.emails.send({
+          from: `Aura Labs <onboarding@resend.dev>`,
+          to: process.env.ADMIN_EMAIL || "",
+          subject: `New Newsletter Subscriber: ${email}`,
+          html: `<h1>New Subscriber</h1><p>${email} has joined the newsletter.</p>`,
+        });
+      }
       results.ownerEmail = true;
 
       // 4. Send Client Confirmation
-      await transporter.sendMail({
-        from: `"Aura Labs" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: "We received your inquiry!",
-        html: generateClientConfirmationHTML(name.split(' ')[0], "Digital Solution Inquiry"),
-      });
+      if (inquiryType === "Newsletter") {
+        await resend_email.emails.send({
+          from: `Aura Labs <onboarding@resend.dev>`,
+          to: email,
+          reply_to: process.env.EMAIL_USER,
+          subject: "Welcome to Aura Labs Journal",
+          html: generateNewsletterWelcomeHTML(email),
+        });
+      } else {
+        await resend_email.emails.send({
+          from: `Aura Labs <onboarding@resend.dev>`,
+          to: email,
+          reply_to: process.env.EMAIL_USER,
+          subject: "We received your inquiry!",
+          html: generateClientConfirmationHTML(name.split(' ')[0], plan ? `${plan} Inquiry` : "Digital Solution Inquiry"),
+        });
+      }
       results.clientEmail = true;
 
       res.status(200).json({ success: true, results });
     } catch (error) {
       console.error("Submission Error:", error);
       res.status(500).json({ success: false, error: "Submission failed" });
-    }
-  });
-
-  // API Route for Pricing Leads
-  app.post("/api/pricing-lead", async (req, res) => {
-    const { plan, email, name } = req.body;
-    console.log("Pricing lead received:", { plan, email, name });
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: process.env.ADMIN_EMAIL,
-      subject: `New Pricing Lead: ${plan} plan`,
-      html: generateEmailHTML(name, email, `Interested in the ${plan} plan.`, "Pricing Lead", plan),
-    };
-
-    try {
-      const results = { supabase: false, notion: false, ownerEmail: false, clientEmail: false };
-
-      // 1. Store in Supabase
-      const { error: supabaseError } = await supabase
-        .from("contact_submissions")
-        .insert([{ 
-          first_name: name.split(' ')[0], 
-          last_name: name.split(' ').slice(1).join(' '), 
-          email, 
-          message: `Interested in the ${plan} plan.`, 
-          type: "Pricing Lead",
-          plan 
-        }]);
-
-      if (supabaseError) {
-        console.error("Supabase Error:", supabaseError);
-      } else {
-        results.supabase = true;
-      }
-
-      // 2. Sync to Notion
-      if (process.env.NOTION_DATABASE_ID) {
-        try {
-          await notion.pages.create({
-            parent: { database_id: process.env.NOTION_DATABASE_ID },
-            properties: {
-              Name: { title: [{ text: { content: name } }] },
-              Email: { email: email },
-              Message: { rich_text: [{ text: { content: `Interested in ${plan} plan.` } }] },
-              Type: { select: { name: "Pricing Lead" } },
-              Plan: { select: { name: plan } },
-              Date: { date: { start: new Date().toISOString() } }
-            }
-          });
-          results.notion = true;
-        } catch (err) {
-          console.error("Notion Error:", err);
-        }
-      }
-
-      // 3. Send Admin Notification
-      await transporter.sendMail(mailOptions);
-      results.ownerEmail = true;
-
-      // 4. Send Client Confirmation
-      await transporter.sendMail({
-        from: `"Aura Labs" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: `Your ${plan} Plan Inquiry`,
-        html: generateClientConfirmationHTML(name.split(' ')[0], `${plan} Plan Inquiry`),
-      });
-      results.clientEmail = true;
-
-      res.status(200).json({ success: true, results });
-    } catch (error) {
-      console.error("Pricing Lead Error:", error);
-      res.status(500).json({ success: false, error: "Failed to process lead" });
     }
   });
 

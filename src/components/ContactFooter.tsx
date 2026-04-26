@@ -24,7 +24,6 @@ export default function ContactFooter() {
         minute: "2-digit",
         hour12: false,
       };
-      // Edmonton is MST (UTC-7) or MDT (UTC-6)
       const formatter = new Intl.DateTimeFormat("en-GB", options);
       setTime(formatter.format(now));
     };
@@ -79,9 +78,10 @@ export default function ContactFooter() {
             ))}
           </div>
 
-          <div className="md:text-right space-y-2">
-            <p className="text-[10px] uppercase kerning-wide opacity-40 font-bold">Local Time</p>
-            <p className="text-sm font-medium tracking-tight">YEG {time} (UTC-6)</p>
+          <div className="md:text-right space-y-4">
+            <p className="text-[10px] uppercase kerning-wide opacity-40 font-bold">The Journal</p>
+            <NewsletterForm />
+            <p className="text-[10px] uppercase kerning-wide opacity-20 font-bold mt-4">Local Time: YEG {time}</p>
           </div>
         </div>
 
@@ -95,4 +95,50 @@ export default function ContactFooter() {
       </div>
     </footer>
   );
-};
+}
+
+function NewsletterForm() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const subscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, type: "Newsletter", name: "Newsletter Subscriber", message: "Subscribed to journal" }),
+      });
+      if (res.ok) {
+        setStatus("success");
+        setEmail("");
+      } else {
+        setStatus("error");
+      }
+    } catch (err) {
+      setStatus("error");
+    }
+  };
+
+  return (
+    <form onSubmit={subscribe} className="relative max-w-[240px] md:ml-auto">
+      <input 
+        type="email" 
+        required
+        placeholder="Email Address"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full bg-white/5 border border-white/10 rounded-full px-5 py-2.5 text-[11px] focus:outline-none focus:border-white/30 transition-all placeholder:opacity-20"
+      />
+      <button 
+        type="submit" 
+        disabled={status === "loading"}
+        className="absolute right-1 top-1 bottom-1 px-4 bg-white text-black rounded-full text-[9px] font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors disabled:opacity-50"
+      >
+        {status === "loading" ? "..." : (status === "success" ? "✓" : "Join")}
+      </button>
+      {status === "error" && <p className="text-[9px] text-red-500 mt-2 text-left absolute -bottom-4">Error.</p>}
+    </form>
+  );
+}

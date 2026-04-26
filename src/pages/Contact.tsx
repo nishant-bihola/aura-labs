@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, Calendar, Mail, Check, Video } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function ContactPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -12,10 +15,33 @@ export default function ContactPage() {
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const selectedPlan = searchParams.get("plan");
+  const projectName = searchParams.get("name");
+
+  // Auto-fill message if project context exists
+  useState(() => {
+    if (projectName) {
+      setFormData(prev => ({
+        ...prev,
+        message: `I'm interested in a project similar to ${projectName}. I'd love to discuss how we can achieve similar results for my brand.`
+      }));
+    } else if (selectedPlan) {
+       setFormData(prev => ({
+        ...prev,
+        message: `I'm interested in the ${selectedPlan} plan. Please send over more details on how we can get started.`
+      }));
+    }
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
+
+    let inquiryType: "Contact" | "Pricing Lead" | "Project Inquiry" = "Contact";
+    if (selectedPlan === "Project") inquiryType = "Project Inquiry";
+    else if (selectedPlan) inquiryType = "Pricing Lead";
 
     try {
       const response = await fetch("/api/contact", {
@@ -25,6 +51,8 @@ export default function ContactPage() {
           name: `${formData.firstName} ${formData.lastName}`,
           email: formData.email,
           message: formData.message,
+          plan: selectedPlan || "Custom",
+          type: inquiryType,
         }),
       });
 
