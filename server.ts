@@ -193,6 +193,32 @@ async function startServer() {
     }
   });
 
+  // ADMIN: Get all submissions from Supabase
+  app.get("/api/admin/submissions", async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from("contact_submissions")
+        .select("*")
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch submissions" });
+    }
+  });
+
+  // ADMIN: Get sent email logs from Resend
+  app.get("/api/admin/emails", async (req, res) => {
+    try {
+      const { data, error } = await resend_email.emails.list();
+      if (error) throw error;
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch email logs" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
