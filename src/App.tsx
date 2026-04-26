@@ -1,135 +1,246 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
+ * Aura Labs - Master Configuration
+ * Cinematic 3D Perspective + Vibrant Aura Sidebar + Routing
  */
 
 import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import Lenis from "lenis";
-import { motion, AnimatePresence } from "motion/react";
-import { Instagram, Twitter, ArrowUpRight } from "lucide-react";
-import CursorTail from "./components/CursorTail";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
+
+// Layout Components
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
-import GiantTicker from "./components/GiantTicker";
 import WorkSection from "./components/WorkSection";
 import ServicesSection from "./components/ServicesSection";
 import SuccessSection from "./components/SuccessSection";
-import VideoShowreel from "./components/VideoShowreel";
+import PricingSection from "./components/PricingSection";
 import TestimonialSection from "./components/TestimonialSection";
-import LogoTicker from "./components/LogoTicker";
 import ContactFooter from "./components/ContactFooter";
 import CustomCursor from "./components/CustomCursor";
+import CursorTail from "./components/CursorTail";
+
+// Pages
+import ProjectDetail from "./pages/ProjectDetail";
+import ContactPage from "./pages/Contact";
+
+/**
+ * UTILITY: SCROLL RESET & ANCHOR HANDLING
+ * Ensures navigating to /#work or /work/:slug works perfectly.
+ */
+function ScrollHandler() {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    // If there's a hash, scroll to the element
+    if (hash) {
+      const id = hash.replace("#", "");
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+    }
+    
+    // Otherwise, always reset to top on pathname change
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "instant" // Use instant to avoid conflict with Lenis smooth scroll
+    });
+    
+    // Force a secondary reset for extra reliability (common fix for Lenis/Router conflicts)
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 10);
+  }, [pathname, hash]);
+
+  return null;
+}
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
+    // Initialize Smooth Scroll (Lenis)
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: "vertical",
-      gestureOrientation: "vertical",
       smoothWheel: true,
     });
 
     function raf(time: number) {
-      if (!isMenuOpen) {
-        lenis.raf(time);
-      }
+      if (!isMenuOpen) lenis.raf(time);
       requestAnimationFrame(raf);
     }
-
     requestAnimationFrame(raf);
 
-    if (isMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    // Prevent scrolling when the 3D menu is active
+    document.body.style.overflow = isMenuOpen ? "hidden" : "";
 
-    return () => {
-      lenis.destroy();
-    };
+    return () => lenis.destroy();
   }, [isMenuOpen]);
 
   const navLinks = [
-    { name: "Home", href: "#" },
-    { name: "Studio", href: "#studio" },
-    { name: "Work", href: "#work" },
-    { name: "Contact", href: "#contact" },
+    { name: "Home", href: "/" },
+    { name: "Studio", href: "/#studio" },
+    { name: "Work", href: "/#work" },
+    { name: "Pricing", href: "/#pricing" },
+    { name: "Contact", href: "/contact" },
   ];
 
   return (
-    <div className="relative w-full min-h-screen bg-[#38536f] overflow-hidden">
-      {/* Background Image Behind Everything */}
-      <div 
-        className="absolute inset-0 z-0 opacity-60 bg-cover bg-center pointer-events-none"
-        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop")' }}
-      />
+    <Router>
+      <ScrollHandler />
+      
+      {/* 1. PERSPECTIVE CONTAINER */}
+      <div className="relative w-full min-h-screen bg-[#050505] overflow-hidden perspective-1000">
+        
+        {/* 2. VIBRANT SIDEBAR AURA (Background Layer) */}
+        <div className={`fixed inset-0 z-0 transition-opacity duration-1000 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`}>
+          <motion.div 
+            animate={{ scale: [1, 1.2, 1], x: [0, 30, 0], y: [0, -20, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-[-10%] right-[-10%] w-full h-full bg-[#00F0FF]/10 rounded-full blur-[120px]" 
+          />
+          <motion.div 
+            animate={{ scale: [1, 1.3, 1], x: [0, -30, 0], y: [0, 40, 0] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-[-10%] left-[-10%] w-full h-full bg-[#BD00FF]/10 rounded-full blur-[120px]" 
+          />
+        </div>
 
-      {/* Menu Overlay Container (Revealed when main is scaled down) */}
-      <div className={`absolute top-0 right-0 bottom-0 w-[80%] md:w-[40%] flex flex-col justify-center pl-8 md:pl-24 transition-opacity duration-700 z-0 ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-        <div className="flex flex-col gap-2 relative">
-          {/* Close button sticking onto the main container edge */}
-          <button 
-            onClick={() => setIsMenuOpen(false)}
-            className="absolute top-1/2 -left-10 md:-left-20 -translate-y-1/2 w-12 md:w-16 h-12 md:h-16 bg-white rounded-full flex items-center justify-center text-black hover:scale-110 transition-transform z-50 cursor-pointer"
-          >
-            <div className="relative flex flex-col items-center justify-center">
-              <div className="w-4 md:w-6 h-[2px] bg-black rotate-45 absolute" />
-              <div className="w-4 md:w-6 h-[2px] bg-black -rotate-45 absolute" />
-            </div>
-          </button>
-
-          <nav className="flex flex-col gap-2 md:gap-4 items-start text-left mt-8 w-full">
-            {navLinks.map((link, i) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={() => setIsMenuOpen(false)}
-                className="text-5xl md:text-6xl lg:text-[5vw] font-display text-white uppercase tracking-tighter leading-[0.9] transition-all duration-300 transform w-full hover:translate-x-4 hover:text-white/80"
-              >
-                {link.name}
-              </a>
-            ))}
-          </nav>
-          
-          <div className="flex gap-4 mt-8 pt-8 border-t border-white/20 w-[60%]">
-            <a href="#" className="opacity-80 hover:opacity-100 transition-all text-white"><Instagram size={20} /></a>
-            <a href="#" className="opacity-80 hover:opacity-100 transition-all text-white"><Twitter size={20} /></a>
-            <a href="#" className="opacity-80 hover:opacity-100 transition-all text-white"><ArrowUpRight size={20} /></a>
+        {/* 3. SIDEBAR NAVIGATION CONTENT */}
+        <div className="fixed inset-0 flex items-center justify-end z-0">
+          <div className="w-[85%] md:w-[50%] pl-8 md:pl-24">
+            <nav className="flex flex-col gap-1 md:gap-4">
+              <AnimatePresence>
+                {isMenuOpen && navLinks.map((link, i) => (
+                  <motion.div
+                    key={link.name}
+                    initial={{ x: 100, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: 50, opacity: 0 }}
+                    transition={{ delay: 0.2 + (i * 0.1), duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <MenuLink link={link} closeMenu={() => setIsMenuOpen(false)} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </nav>
           </div>
         </div>
-      </div>
 
-      {/* Main Extracted View */}
-      <motion.main 
-        animate={{ 
-          scale: isMenuOpen ? (window.innerWidth < 768 ? 0.9 : 0.95) : 1, 
-          x: isMenuOpen ? (window.innerWidth < 768 ? "-75%" : "-35%") : "0%",
-          boxShadow: isMenuOpen ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)" : "none"
-        }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className={`relative ${isMenuOpen ? "h-screen overflow-hidden" : "min-h-screen overflow-x-hidden pt-px"} bg-brand-bg w-full origin-left z-10 transition-colors`}
-      >
-        <div className={`w-full h-full ${isMenuOpen ? 'pointer-events-none' : ''}`}>
-          <CustomCursor />
-          <CursorTail />
-          <Navbar isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
-          <Hero />
-          <GiantTicker />
-          <WorkSection />
-          <ServicesSection />
-          <SuccessSection />
-          <VideoShowreel />
-          <TestimonialSection />
-          <LogoTicker />
-          <ContactFooter />
-          
-          {/* Noise Overlay */}
-          <div className="fixed inset-0 pointer-events-none z-[100] bg-noise mix-blend-overlay opacity-[0.03]" />
-        </div>
-      </motion.main>
-    </div>
+        {/* 4. CLOSE BUTTON (Attached to Canvas Edge) */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0, rotate: -90 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              exit={{ opacity: 0, scale: 0, rotate: 90 }}
+              onClick={() => setIsMenuOpen(false)}
+              className="fixed top-1/2 left-[5%] md:left-[45%] -translate-y-1/2 z-[200] w-16 h-16 md:w-24 md:h-24 bg-white rounded-full flex items-center justify-center text-black cursor-pointer shadow-2xl hover:scale-110 transition-transform duration-500"
+            >
+              <div className="relative w-full h-full flex items-center justify-center">
+                <div className="absolute w-6 md:w-8 h-[2px] bg-black rotate-45" />
+                <div className="absolute w-6 md:w-8 h-[2px] bg-black -rotate-45" />
+              </div>
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* 5. MAIN CONTENT CANVAS (The 3D Element) */}
+        <motion.main 
+          animate={{ 
+            scale: isMenuOpen ? 0.85 : 1, 
+            x: isMenuOpen ? (window.innerWidth < 768 ? "-85%" : "-40%") : "0%",
+            rotateY: isMenuOpen ? 10 : 0, // Cinematic Valtero 3D Tilt
+            rotateX: isMenuOpen ? 2 : 0, 
+            borderRadius: isMenuOpen ? "40px" : "0px",
+          }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          style={{ transformOrigin: "left center" }}
+          className="relative min-h-screen bg-black w-full z-10 shadow-[0_100px_200px_rgba(0,0,0,1)] overflow-hidden border border-white/5"
+        >
+          {/* Interaction blocker - Click site to close menu */}
+          {isMenuOpen && (
+            <div 
+              onClick={() => setIsMenuOpen(false)} 
+              className="absolute inset-0 z-[200] cursor-pointer" 
+            />
+          )}
+
+          <div className={`w-full transition-all duration-1000 ${isMenuOpen ? 'brightness-[0.2] saturate-50' : ''}`}>
+            <CustomCursor />
+            <CursorTail />
+            <Navbar isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
+            
+            <Routes>
+              {/* LANDING PAGE */}
+              <Route path="/" element={
+                <div className="flex flex-col">
+                  <Hero />
+                  <div id="work"><WorkSection /></div>
+                  <div id="studio"><ServicesSection /></div>
+                  <SuccessSection />
+                  <div id="pricing"><PricingSection /></div>
+                  <TestimonialSection />
+                </div>
+              } />
+
+              {/* DYNAMIC CASE STUDY PAGE */}
+              <Route path="/work/:slug" element={<ProjectDetail />} />
+
+              {/* CONTACT PAGE */}
+              <Route path="/contact" element={<ContactPage />} />
+            </Routes>
+
+            <div id="contact"><ContactFooter /></div>
+            
+            {/* NOISE OVERLAY */}
+            <div className="fixed inset-0 pointer-events-none z-[150] bg-noise opacity-[0.02] mix-blend-overlay" />
+          </div>
+        </motion.main>
+      </div>
+    </Router>
+  );
+}
+
+/**
+ * MENU LINK COMPONENT
+ * Handles Redirects, Active States (Cyan), and Hover Effects (Violet Arrow)
+ */
+function MenuLink({ link, closeMenu }: { link: any, closeMenu: () => void }) {
+  const location = useLocation();
+  
+  // Logic to determine if the link is active (Path or Hash match)
+  const isActive = 
+    (link.href === "/" && location.pathname === "/" && !location.hash) ||
+    (link.href.startsWith("/#") && location.hash === link.href.replace("/", ""));
+
+  return (
+    <Link
+      to={link.href}
+      onClick={closeMenu}
+      className={`group flex items-center gap-6 transition-all duration-500 ${
+        isActive ? 'text-[#00F0FF]' : 'text-white/40 hover:text-white'
+      }`}
+    >
+      <span className="text-5xl md:text-8xl lg:text-[7.5vw] font-black uppercase tracking-tighter leading-[0.8] group-hover:translate-x-8 transition-transform duration-700 group-hover:italic">
+        {link.name}
+      </span>
+      
+      {/* Dynamic Arrow from image_2d9778.png */}
+      <ArrowUpRight 
+        className={`transition-all duration-700 ${
+          isActive 
+            ? 'opacity-100 text-[#00F0FF] translate-x-0' 
+            : 'opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-2 text-[#BD00FF]'
+        }`} 
+        size={60} 
+        strokeWidth={3}
+      />
+    </Link>
   );
 }
