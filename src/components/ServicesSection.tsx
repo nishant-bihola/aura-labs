@@ -39,7 +39,7 @@ const SERVICE_DETAILS = [
   }
 ];
 
-function ServiceCard({ service, index }: { service: typeof SERVICE_DETAILS[0]; index: number }) {
+function ServiceCard({ service, index }: { service: typeof SERVICE_DETAILS[0]; index: number, key?: any }) {
   const trackerRef = useRef<HTMLDivElement>(null);
   
   const { scrollYProgress } = useScroll({
