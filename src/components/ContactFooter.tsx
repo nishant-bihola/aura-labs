@@ -54,38 +54,38 @@ export default function ContactFooter() {
               Let's Talk
             </motion.span>
           </h2>
-          <a href="mailto:hello@auralabs.io" className="text-xl md:text-3xl font-light opacity-60 hover:opacity-100 transition-opacity underline decoration-brand-text/20 underline-offset-12">
+          <a href="mailto:hello@auralabs.io" className="text-xl md:text-3xl font-valtero-serif italic opacity-60 hover:opacity-100 transition-opacity underline decoration-white/20 underline-offset-8">
             hello@auralabs.io
           </a>
         </motion.div>
 
-        <div className="w-full grid md:grid-cols-3 gap-12 pt-24 border-t border-border-soft items-start">
-          <div className="text-left space-y-4">
-            <div className="text-lg font-semibold tracking-tighter">AURA LABS</div>
-            <p className="text-[10px] uppercase kerning-wide opacity-40 leading-relaxed font-bold">
+        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16 pt-16 md:pt-24 border-t border-white/10 items-start">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
+            <div className="text-lg md:text-xl font-bold tracking-tighter uppercase font-valtero-sans">AURA LABS</div>
+            <p className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] opacity-40 leading-relaxed font-bold">
               Digital Residency Studio<br />
               Berlin — Tokyo — NY
             </p>
           </div>
 
-          <div className="flex justify-center flex-wrap gap-8">
+          <div className="flex justify-center flex-wrap gap-6 md:gap-8 pt-2 md:pt-0">
             {SOCIALS.map(s => (
-              <a key={s.name} href={s.href} className="text-[10px] uppercase kerning-wide font-bold opacity-40 hover:opacity-100 transition-opacity">
+              <a key={s.name} href={s.href} target="_blank" rel="noreferrer" className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-bold opacity-40 hover:opacity-100 transition-opacity">
                 {s.name}
               </a>
             ))}
           </div>
 
-          <div className="md:text-right space-y-4">
-            <p className="text-[10px] uppercase kerning-wide opacity-40 font-bold">The Journal</p>
+          <div className="flex flex-col items-center md:items-end text-center md:text-right space-y-4">
+            <p className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] opacity-40 font-bold">The Journal</p>
             <NewsletterForm />
-            <p className="text-[10px] uppercase kerning-wide opacity-20 font-bold mt-4">Local Time: YEG {time}</p>
+            <p className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] opacity-20 font-bold mt-2">Local Time: YEG {time}</p>
           </div>
         </div>
 
-        <div className="w-full flex justify-between items-center mt-32 pt-8 border-t border-border-soft opacity-20 text-[9px] uppercase kerning-wide font-bold">
-          <span>© 2026 RIGHTS ONLY TO NISHANT BIHOLA RESERVED</span>
-          <div className="flex gap-4">
+        <div className="w-full flex flex-col md:flex-row justify-between items-center gap-6 mt-20 md:mt-32 pt-8 border-t border-white/10 opacity-30 text-[8px] md:text-[9px] uppercase tracking-[0.2em] font-bold">
+          <span className="text-center md:text-left leading-relaxed">© 2026 NISHANT BIHOLA.<br className="block md:hidden" /> ALL RIGHTS RESERVED.</span>
+          <div className="flex gap-6">
             <a href="#" className="hover:opacity-100 transition-opacity">Privacy</a>
             <a href="#" className="hover:opacity-100 transition-opacity">Terms</a>
           </div>
@@ -120,23 +120,24 @@ function NewsletterForm() {
   };
 
   return (
-    <form onSubmit={subscribe} className="relative max-w-[240px] md:ml-auto">
+    <form onSubmit={subscribe} className="relative w-full max-w-[280px] md:max-w-[240px] mx-auto md:ml-auto md:mr-0">
       <input 
         type="email" 
         required
         placeholder="Email Address"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="w-full bg-white/5 border border-white/10 rounded-full px-5 py-2.5 text-[11px] focus:outline-none focus:border-white/30 transition-all placeholder:opacity-20"
+        className="w-full bg-white/5 border border-white/10 rounded-full pl-6 pr-20 py-3 text-[11px] md:text-xs focus:outline-none focus:border-white/30 transition-all placeholder:opacity-30 text-white"
       />
       <button 
         type="submit" 
         disabled={status === "loading"}
-        className="absolute right-1 top-1 bottom-1 px-4 bg-white text-black rounded-full text-[9px] font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors disabled:opacity-50"
+        className="absolute right-1.5 top-1.5 bottom-1.5 px-5 bg-white text-black rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center"
       >
         {status === "loading" ? "..." : (status === "success" ? "✓" : "Join")}
       </button>
-      {status === "error" && <p className="text-[9px] text-red-500 mt-2 text-left absolute -bottom-4">Error.</p>}
+      {status === "error" && <p className="text-[9px] text-red-500 mt-2 text-center md:text-left absolute -bottom-5 w-full">Error subscribing.</p>}
+      {status === "success" && <p className="text-[9px] text-green-500 mt-2 text-center md:text-left absolute -bottom-5 w-full">Success!</p>}
     </form>
   );
 }

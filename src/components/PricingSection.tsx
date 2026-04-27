@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Check, ArrowUpRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -229,12 +229,12 @@ export default function AuraPricing() {
           <p className="text-white/20 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-valtero-sans">
             Limited spots available for Q1 2026
           </p>
-          <a href="/contact" className="group flex items-center gap-3 md:gap-4 text-white/50 hover:text-white transition-colors duration-500">
+          <Link to="/contact" className="group flex items-center gap-3 md:gap-4 text-white/50 hover:text-white transition-colors duration-500">
             <span className="text-base md:text-lg font-valtero-serif italic">Need a custom enterprise solution?</span>
             <div className="w-7 h-7 md:w-8 md:h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:rotate-45 group-hover:border-white transition-all duration-500">
               <ArrowUpRight size={12} md:size={14} />
             </div>
-          </a>
+          </Link>
         </div>
       </div>
     </section>
