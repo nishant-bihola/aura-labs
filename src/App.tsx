@@ -46,32 +46,33 @@ function PageLoader() {
  * UTILITY: SCROLL RESET & ANCHOR HANDLING
  * Ensures navigating to /#work or /work/:slug works perfectly.
  */
-function ScrollHandler() {
+function ScrollHandler({ isMenuOpen }: { isMenuOpen: boolean }) {
   const { pathname, hash } = useLocation();
 
   useEffect(() => {
-    // If there's a hash, scroll to the element
-    if (hash) {
-      const id = hash.replace("#", "");
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-        return;
+    // We wait for the menu to fully close before calculating scroll position,
+    // otherwise the scaled-down canvas will report incorrect element coordinates.
+    const delay = isMenuOpen ? 500 : 50; 
+    
+    const timeoutId = setTimeout(() => {
+      if (hash) {
+        const id = hash.replace("#", "");
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+          return;
+        }
+      } else {
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: "instant"
+        });
       }
-    }
-    
-    // Otherwise, always reset to top on pathname change
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: "instant" // Use instant to avoid conflict with Lenis smooth scroll
-    });
-    
-    // Force a secondary reset for extra reliability (common fix for Lenis/Router conflicts)
-    setTimeout(() => {
-      window.scrollTo(0, 0);
-    }, 10);
-  }, [pathname, hash]);
+    }, delay);
+
+    return () => clearTimeout(timeoutId);
+  }, [pathname, hash, isMenuOpen]);
 
   return null;
 }
@@ -80,24 +81,26 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Initialize Smooth Scroll (Lenis) - Optimized for high-refresh displays
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      wheelMultiplier: 1.1, // Slightly faster for better responsiveness
-      touchMultiplier: 1.5,
-      infinite: false,
-    });
-
+    const isMobile = window.matchMedia("(pointer: coarse)").matches;
+    let lenis: Lenis | null = null;
     let rafId: number;
-    function raf(time: number) {
-      if (!isMenuOpen) lenis.raf(time);
-      rafId = requestAnimationFrame(raf);
-    }
-    
-    // Disable smooth scrolling loop on mobile to save massive CPU/battery
-    if (!window.matchMedia("(pointer: coarse)").matches) {
+
+    // Only initialize Lenis smooth scrolling on desktop/pointer devices
+    // This fixes the completely broken scrolling issue on touch devices
+    if (!isMobile) {
+      lenis = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+        wheelMultiplier: 1.1,
+        touchMultiplier: 1.5,
+        infinite: false,
+      });
+
+      function raf(time: number) {
+        if (!isMenuOpen && lenis) lenis.raf(time);
+        rafId = requestAnimationFrame(raf);
+      }
       rafId = requestAnimationFrame(raf);
     }
 
@@ -105,8 +108,8 @@ export default function App() {
     document.body.style.overflow = isMenuOpen ? "hidden" : "";
 
     return () => {
-      lenis.destroy();
-      cancelAnimationFrame(rafId);
+      if (lenis) lenis.destroy();
+      if (rafId) cancelAnimationFrame(rafId);
     };
   }, [isMenuOpen]);
 
@@ -120,7 +123,7 @@ export default function App() {
 
   return (
     <Router>
-      <ScrollHandler />
+      <ScrollHandler isMenuOpen={isMenuOpen} />
       
       {/* 1. PERSPECTIVE CONTAINER */}
       <div className="relative w-full min-h-screen bg-[#050505] overflow-hidden perspective-1000">
@@ -168,7 +171,7 @@ export default function App() {
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
               exit={{ opacity: 0, scale: 0, rotate: 90 }}
               onClick={() => setIsMenuOpen(false)}
-              className="fixed top-1/2 left-[5%] md:left-[45%] -translate-y-1/2 z-[200] w-16 h-16 md:w-24 md:h-24 bg-white rounded-full flex items-center justify-center text-black cursor-pointer shadow-2xl hover:scale-110 transition-transform duration-500"
+              className="fixed top-1/2 left-[5%] md:left-[45%] -translate-y-1/2 z-[200] w-16 h-16 md:w-24 md:h-24 bg-white rounded-full hidden md:flex items-center justify-center text-black cursor-pointer shadow-2xl hover:scale-110 transition-transform duration-500"
             >
               <div className="relative w-full h-full flex items-center justify-center">
                 <div className="absolute w-6 md:w-8 h-[2px] bg-black rotate-45" />
