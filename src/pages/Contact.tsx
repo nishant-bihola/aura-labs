@@ -56,9 +56,12 @@ export default function ContactPage() {
       if (response.ok) {
         setBookingStatus("success");
       } else {
+        const errData = await response.json();
+        console.error("Booking failed:", errData);
         setBookingStatus("error");
       }
     } catch (error) {
+      console.error("Connection error:", error);
       setBookingStatus("error");
     }
   };

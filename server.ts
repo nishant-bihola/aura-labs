@@ -251,7 +251,7 @@ async function startServer() {
 
       if (supabaseError) {
         console.error("Supabase Booking Error:", supabaseError);
-        return res.status(500).json({ success: false, error: "Database error" });
+        return res.status(500).json({ success: false, error: "Database error", details: supabaseError.message });
       }
 
       // 2. Respond immediately
