@@ -7,34 +7,66 @@ import { PROJECTS } from "../data/projects";
 import { useState, useRef } from "react";
 
 function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Smooth springs for the cursor follow effect
+  const springConfig = { damping: 25, stiffness: 150 };
+  const smoothX = useSpring(mouseX, springConfig);
+  const smoothY = useSpring(mouseY, springConfig);
+
+  // Map the mouse position to a slight offset for the image
+  const rotate = useTransform(smoothX, [-200, 200], [-5, 5]);
+  const xOffset = useTransform(smoothX, [-200, 200], [-20, 20]);
+  const yOffset = useTransform(smoothY, [-200, 200], [-20, 20]);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - (rect.left + rect.width / 2));
+    mouseY.set(e.clientY - (rect.top + rect.height / 2));
+  };
+
   return (
     <Link 
       to={`/work/${project.slug}`} 
       className="group block no-underline border-b border-white/10"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onMouseMove={handleMouseMove}
     >
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10%" }}
-        data-cursor="view-more"
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative py-12 md:py-24 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 cursor-none transition-colors hover:bg-white/[0.01] px-4 md:px-8"
+        className="relative py-12 md:py-24 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 cursor-none transition-colors hover:bg-white/[0.01] px-4 md:px-8 overflow-visible"
       >
-        {/* Floating Preview Image (Valtero Reveal) */}
-        <div className="absolute left-1/2 top-0 w-64 h-80 opacity-0 group-hover:opacity-100 transition-all duration-700 pointer-events-none hidden lg:block overflow-hidden rounded-sm z-10 -translate-x-1/2 -translate-y-1/2 mt-10 rotate-2 group-hover:rotate-0">
+        {/* Floating Preview Image (Cinematic Follow) */}
+        <motion.div 
+          style={{ 
+            x: xOffset, 
+            y: yOffset, 
+            rotate,
+            opacity: isHovered ? 1 : 0,
+            scale: isHovered ? 1 : 0.8,
+            willChange: "transform, opacity" // Performance optimization
+          }}
+          className="absolute left-1/2 top-1/2 w-64 h-80 pointer-events-none hidden lg:block overflow-hidden rounded-xl z-50 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 shadow-2xl"
+        >
           <img 
             src={project.mainImage} 
             alt={project.title} 
-            loading="lazy"
-            className="w-full h-full object-cover scale-125 group-hover:scale-100 transition-transform duration-1000 grayscale group-hover:grayscale-0 brightness-75 group-hover:brightness-100"
+            loading="lazy" // Fast load optimization
+            className="w-full h-full object-cover scale-110"
           />
-          <div className="absolute inset-0 bg-black/20 mix-blend-overlay group-hover:opacity-0 transition-opacity" />
-        </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        </motion.div>
 
         {/* Project ID and Title */}
         <div className="flex items-center gap-4 md:gap-20 relative z-20 w-full md:w-auto">
           <span className="text-[10px] md:text-sm font-medium opacity-20 serif italic min-w-[3ch]">{project.id}</span>
-          <h3 className="text-3xl md:text-6xl lg:text-[7vw] font-normal serif italic tracking-tighter group-hover:translate-x-6 transition-transform duration-700 ease-out leading-tight md:leading-none">
+          <h3 className="text-3xl md:text-6xl lg:text-[7vw] font-normal serif italic tracking-tighter group-hover:translate-x-6 transition-transform duration-700 ease-expo leading-tight md:leading-none">
             {project.title}
           </h3>
         </div>

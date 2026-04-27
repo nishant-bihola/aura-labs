@@ -11,9 +11,14 @@ export default function CustomCursor() {
   const cursorY = useSpring(mouseY, springConfig);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
+    const handleMouseMove = (e: MouseEvent | TouchEvent) => {
+      if ('touches' in e) {
+        mouseX.set(e.touches[0].clientX);
+        mouseY.set(e.touches[0].clientY);
+      } else {
+        mouseX.set(e.clientX);
+        mouseY.set(e.clientY);
+      }
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -39,10 +44,12 @@ export default function CustomCursor() {
     };
 
     window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("touchmove", handleMouseMove);
     window.addEventListener("mouseover", handleMouseOver);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchmove", handleMouseMove);
       window.removeEventListener("mouseover", handleMouseOver);
     };
   }, [mouseX, mouseY]);
@@ -60,7 +67,7 @@ export default function CustomCursor() {
         height: cursorState === "view-more" ? 100 : cursorState === "hover" ? 40 : 12,
         backgroundColor: cursorState === "view-more" ? "rgba(245, 245, 244, 1)" : cursorState === "hover" ? "rgba(245, 245, 244, 0.15)" : "rgba(245, 245, 244, 1)",
       }}
-      className="fixed pointer-events-none z-[9999] rounded-full mix-blend-difference hidden md:flex items-center justify-center overflow-hidden"
+      className="fixed pointer-events-none z-[9999] rounded-full mix-blend-difference flex items-center justify-center overflow-hidden"
     >
       <AnimatePresence>
         {cursorState === "view-more" && (

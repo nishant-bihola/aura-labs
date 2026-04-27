@@ -18,9 +18,14 @@ export default function CursorTail() {
       canvas.height = window.innerHeight;
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      mouse.current.x = e.clientX;
-      mouse.current.y = e.clientY;
+    const handleMouseMove = (e: MouseEvent | TouchEvent) => {
+      if ('touches' in e) {
+        mouse.current.x = e.touches[0].clientX;
+        mouse.current.y = e.touches[0].clientY;
+      } else {
+        mouse.current.x = e.clientX;
+        mouse.current.y = e.clientY;
+      }
     };
 
     // Initialize points
@@ -76,19 +81,21 @@ export default function CursorTail() {
 
     window.addEventListener("resize", resize);
     window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("touchmove", handleMouseMove);
     resize();
     animate();
 
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchmove", handleMouseMove);
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-[80] mix-blend-screen opacity-100 hidden md:block"
+      className="fixed inset-0 pointer-events-none z-[80] mix-blend-screen opacity-100 block"
     />
   );
 }
