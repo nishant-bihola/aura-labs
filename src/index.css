@@ -22,7 +22,7 @@
     font-display: swap;
   }
   body {
-    @apply bg-brand-bg text-brand-text font-sans selection:bg-brand-text selection:text-brand-bg antialiased;
+    @apply bg-brand-bg text-brand-text font-sans selection:bg-brand-text selection:text-brand-bg antialiased overflow-x-hidden;
   }
 }
 

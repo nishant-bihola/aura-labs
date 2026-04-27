@@ -49,7 +49,7 @@ export default function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOp
   };
 
   return (
-    <header className="absolute top-0 left-0 w-full z-[100] px-6 md:px-12 py-6 md:py-8 flex items-center mix-blend-difference selection:bg-white/10">
+    <header className="absolute top-0 left-0 w-full z-[100] px-6 md:px-12 py-6 md:py-8 flex items-center md:mix-blend-difference selection:bg-white/10">
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}

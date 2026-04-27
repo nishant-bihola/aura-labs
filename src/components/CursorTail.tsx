@@ -7,6 +7,9 @@ export default function CursorTail() {
   const segmentCount = 20;
 
   useEffect(() => {
+    // Disable on touch devices to save performance
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 

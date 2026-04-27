@@ -95,7 +95,11 @@ export default function App() {
       if (!isMenuOpen) lenis.raf(time);
       rafId = requestAnimationFrame(raf);
     }
-    rafId = requestAnimationFrame(raf);
+    
+    // Disable smooth scrolling loop on mobile to save massive CPU/battery
+    if (!window.matchMedia("(pointer: coarse)").matches) {
+      rafId = requestAnimationFrame(raf);
+    }
 
     // Prevent scrolling when the 3D menu is active
     document.body.style.overflow = isMenuOpen ? "hidden" : "";
@@ -121,17 +125,17 @@ export default function App() {
       {/* 1. PERSPECTIVE CONTAINER */}
       <div className="relative w-full min-h-screen bg-[#050505] overflow-hidden perspective-1000">
         
-        {/* 2. VIBRANT SIDEBAR AURA (Background Layer) */}
-        <div className={`fixed inset-0 z-0 transition-opacity duration-1000 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`}>
+        {/* 2. VIBRANT SIDEBAR AURA (Background Layer) - Hidden on mobile for performance */}
+        <div className={`fixed inset-0 z-0 transition-opacity duration-1000 ${isMenuOpen ? 'opacity-100' : 'opacity-0'} hidden md:block`}>
           <motion.div 
             animate={{ scale: [1, 1.2, 1], x: [0, 30, 0], y: [0, -20, 0] }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-[-10%] right-[-10%] w-full h-full bg-[#00F0FF]/10 rounded-full blur-[120px]" 
+            className="absolute top-[-10%] right-[-10%] w-full h-full bg-[#00F0FF]/10 rounded-full blur-[120px] will-change-transform" 
           />
           <motion.div 
             animate={{ scale: [1, 1.3, 1], x: [0, -30, 0], y: [0, 40, 0] }}
             transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-[-10%] left-[-10%] w-full h-full bg-[#BD00FF]/10 rounded-full blur-[120px]" 
+            className="absolute bottom-[-10%] left-[-10%] w-full h-full bg-[#BD00FF]/10 rounded-full blur-[120px] will-change-transform" 
           />
         </div>
 
@@ -146,7 +150,7 @@ export default function App() {
                     initial={{ x: 100, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: 50, opacity: 0 }}
-                    transition={{ delay: 0.2 + (i * 0.1), duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ delay: 0.1 + (i * 0.05), duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   >
                     <MenuLink link={link} closeMenu={() => setIsMenuOpen(false)} />
                   </motion.div>
@@ -177,15 +181,15 @@ export default function App() {
         {/* 5. MAIN CONTENT CANVAS (The 3D Element) */}
         <motion.main 
           animate={{ 
-            scale: isMenuOpen ? 0.85 : 1, 
-            x: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? "-75%" : "-40%") : "0%",
-            rotateY: isMenuOpen ? 10 : 0, // Cinematic Valtero 3D Tilt
-            rotateX: isMenuOpen ? 2 : 0, 
+            scale: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0.95 : 0.85) : 1, 
+            x: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? "-60%" : "-40%") : "0%",
+            rotateY: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 10) : 0, 
+            rotateX: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 2) : 0, 
             borderRadius: isMenuOpen ? "40px" : "0px",
           }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           style={{ transformOrigin: "left center" }}
-          className="relative min-h-screen bg-black w-full z-10 shadow-[0_100px_200px_rgba(0,0,0,1)] overflow-hidden border border-white/5"
+          className="relative min-h-screen bg-black w-full z-10 shadow-[0_100px_200px_rgba(0,0,0,1)] overflow-hidden border border-white/5 will-change-transform"
         >
           {/* Interaction blocker - Click site to close menu */}
           {isMenuOpen && (
@@ -195,7 +199,7 @@ export default function App() {
             />
           )}
 
-          <div className={`w-full transition-all duration-1000 ${isMenuOpen ? 'brightness-[0.2] saturate-50' : ''}`}>
+          <div className={`w-full transition-all duration-700 ${isMenuOpen ? 'md:brightness-[0.2] md:saturate-50 opacity-50 md:opacity-100' : ''}`}>
             <CustomCursor />
             <CursorTail />
             <Navbar isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
@@ -224,8 +228,8 @@ export default function App() {
 
             <div id="contact"><ContactFooter /></div>
             
-            {/* NOISE OVERLAY */}
-            <div className="fixed inset-0 pointer-events-none z-[150] bg-noise opacity-[0.02] mix-blend-overlay" />
+            {/* NOISE OVERLAY - Hidden on mobile */}
+            <div className="fixed inset-0 pointer-events-none z-[150] bg-noise opacity-[0.02] mix-blend-overlay hidden md:block" />
           </div>
         </motion.main>
       </div>
