@@ -5,10 +5,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const SOCIALS = [
-  { name: "Instagram", href: "#" },
-  { name: "LinkedIn", href: "#" },
-  { name: "Twitter", href: "#" },
-  { name: "Dribbble", href: "#" },
+  { name: "Instagram", href: "https://www.instagram.com/nishantbihola?igsh=cHE5bGZoa3kyanNr&utm_source=qr" },
+  { name: "LinkedIn", href: "https://www.linkedin.com/in/nishantsinh-bihola-8bb500321?utm_source=share_via&utm_content=profile&utm_medium=member_ios" },
 ];
 
 export default function ContactFooter() {
@@ -86,7 +84,7 @@ export default function ContactFooter() {
         </div>
 
         <div className="w-full flex justify-between items-center mt-32 pt-8 border-t border-border-soft opacity-20 text-[9px] uppercase kerning-wide font-bold">
-          <span>© 2026 AURA LABS — ALL RIGHTS RESERVED</span>
+          <span>© 2026 RIGHTS ONLY TO NISHANT BIHOLA RESERVED</span>
           <div className="flex gap-4">
             <a href="#" className="hover:opacity-100 transition-opacity">Privacy</a>
             <a href="#" className="hover:opacity-100 transition-opacity">Terms</a>

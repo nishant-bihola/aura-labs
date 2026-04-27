@@ -49,28 +49,30 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
             y: yOffset, 
             rotate,
             opacity: isHovered ? 1 : 0,
-            scale: isHovered ? 1 : 0.8
+            scale: isHovered ? 1 : 0.8,
+            willChange: "transform, opacity" // Performance optimization
           }}
           className="absolute left-1/2 top-1/2 w-64 h-80 pointer-events-none hidden lg:block overflow-hidden rounded-xl z-50 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 shadow-2xl"
         >
           <img 
             src={project.mainImage} 
             alt={project.title} 
+            loading="lazy" // Fast load optimization
             className="w-full h-full object-cover scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         </motion.div>
 
         {/* Project ID and Title */}
-        <div className="flex items-center gap-6 md:gap-20 relative z-20 w-full md:w-auto">
+        <div className="flex items-center gap-4 md:gap-20 relative z-20 w-full md:w-auto">
           <span className="text-[10px] md:text-sm font-medium opacity-20 serif italic min-w-[3ch]">{project.id}</span>
-          <h3 className="text-4xl md:text-8xl lg:text-[7vw] font-normal serif italic tracking-tighter group-hover:translate-x-6 transition-transform duration-700 ease-expo leading-none">
+          <h3 className="text-3xl md:text-6xl lg:text-[7vw] font-normal serif italic tracking-tighter group-hover:translate-x-6 transition-transform duration-700 ease-expo leading-tight md:leading-none">
             {project.title}
           </h3>
         </div>
 
         {/* Category, Year, and Icon */}
-        <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start w-full md:w-auto gap-4 md:gap-2 relative z-20">
+        <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start w-full md:w-auto gap-4 md:gap-2 relative z-20 pt-2 md:pt-0">
           <div className="flex items-center gap-4">
             <p className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold opacity-60 group-hover:opacity-100 transition-opacity">
               {project.category}
@@ -79,7 +81,7 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
                 <ArrowUpRight size={18} className="md:w-6 md:h-6 group-hover:rotate-45 transition-transform duration-500" />
             </div>
           </div>
-          <p className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-medium opacity-20 group-hover:opacity-40 transition-opacity">
+          <p className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-medium opacity-20 group-hover:opacity-40 transition-opacity hidden md:block">
             Case Study — {project.year}
           </p>
         </div>

@@ -3,7 +3,7 @@
  * Cinematic 3D Perspective + Vibrant Aura Sidebar + Routing
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import Lenis from "lenis";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,9 +21,26 @@ import ContactFooter from "./components/ContactFooter";
 import CustomCursor from "./components/CustomCursor";
 import CursorTail from "./components/CursorTail";
 
-// Pages
-import ProjectDetail from "./pages/ProjectDetail";
-import ContactPage from "./pages/Contact";
+// Lazy Loaded Pages for performance
+const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
+const ContactPage = lazy(() => import("./pages/Contact"));
+
+/**
+ * LOADING INDICATOR (Cinematic)
+ */
+function PageLoader() {
+  return (
+    <div className="w-full h-screen flex items-center justify-center bg-black">
+      <motion.div 
+        animate={{ opacity: [0.2, 1, 0.2] }} 
+        transition={{ duration: 1.5, repeat: Infinity }}
+        className="text-[10px] tracking-[0.5em] uppercase font-bold text-white/50"
+      >
+        Architecting...
+      </motion.div>
+    </div>
+  );
+}
 
 /**
  * UTILITY: SCROLL RESET & ANCHOR HANDLING
@@ -63,23 +80,30 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Initialize Smooth Scroll (Lenis)
+    // Initialize Smooth Scroll (Lenis) - Optimized for high-refresh displays
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
+      wheelMultiplier: 1.1, // Slightly faster for better responsiveness
+      touchMultiplier: 1.5,
+      infinite: false,
     });
 
+    let rafId: number;
     function raf(time: number) {
       if (!isMenuOpen) lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
     // Prevent scrolling when the 3D menu is active
     document.body.style.overflow = isMenuOpen ? "hidden" : "";
 
-    return () => lenis.destroy();
+    return () => {
+      lenis.destroy();
+      cancelAnimationFrame(rafId);
+    };
   }, [isMenuOpen]);
 
   const navLinks = [
@@ -149,12 +173,12 @@ export default function App() {
             </motion.button>
           )}
         </AnimatePresence>
-
+ 
         {/* 5. MAIN CONTENT CANVAS (The 3D Element) */}
         <motion.main 
           animate={{ 
             scale: isMenuOpen ? 0.85 : 1, 
-            x: isMenuOpen ? (window.innerWidth < 768 ? "-85%" : "-40%") : "0%",
+            x: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? "-75%" : "-40%") : "0%",
             rotateY: isMenuOpen ? 10 : 0, // Cinematic Valtero 3D Tilt
             rotateX: isMenuOpen ? 2 : 0, 
             borderRadius: isMenuOpen ? "40px" : "0px",
@@ -176,25 +200,27 @@ export default function App() {
             <CursorTail />
             <Navbar isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
             
-            <Routes>
-              {/* LANDING PAGE */}
-              <Route path="/" element={
-                <div className="flex flex-col">
-                  <Hero />
-                  <div id="work"><WorkSection /></div>
-                  <div id="studio"><ServicesSection /></div>
-                  <SuccessSection />
-                  <div id="pricing"><PricingSection /></div>
-                  <TestimonialSection />
-                </div>
-              } />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* LANDING PAGE */}
+                <Route path="/" element={
+                  <div className="flex flex-col">
+                    <Hero />
+                    <div id="work"><WorkSection /></div>
+                    <div id="studio"><ServicesSection /></div>
+                    <SuccessSection />
+                    <div id="pricing"><PricingSection /></div>
+                    <TestimonialSection />
+                  </div>
+                } />
 
-              {/* DYNAMIC CASE STUDY PAGE */}
-              <Route path="/work/:slug" element={<ProjectDetail />} />
+                {/* DYNAMIC CASE STUDY PAGE */}
+                <Route path="/work/:slug" element={<ProjectDetail />} />
 
-              {/* CONTACT PAGE */}
-              <Route path="/contact" element={<ContactPage />} />
-            </Routes>
+                {/* CONTACT PAGE */}
+                <Route path="/contact" element={<ContactPage />} />
+              </Routes>
+            </Suspense>
 
             <div id="contact"><ContactFooter /></div>
             

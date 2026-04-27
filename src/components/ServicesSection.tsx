@@ -71,7 +71,11 @@ function ServiceCard({ service, index }: { service: typeof SERVICE_DETAILS[0]; i
            <motion.img 
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              src={service.image} alt={service.title} className="w-full h-full object-cover" 
+              src={service.image} 
+              alt={service.title} 
+              loading="lazy"
+              className="w-full h-full object-cover" 
+              style={{ willChange: "transform" }}
            />
         </div>
         <div className="lg:col-span-4 lg:col-start-6 flex flex-col space-y-3 pt-1">
@@ -96,9 +100,9 @@ export default function ServicesSection() {
     <section className="bg-brand-bg px-4 md:px-0 relative overflow-hidden">
       <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-20 md:py-32">
         
-        <div className="flex flex-col items-center text-center pb-20 md:pb-32 mb-10">
-          <h2 className="text-3xl md:text-[2.75rem] font-bold leading-[1.2] tracking-tight text-white mb-8">
-            Timeless design powered by<br />modern growth strategy.
+        <div className="flex flex-col items-center text-center pb-12 md:pb-32 mb-10">
+          <h2 className="text-2xl md:text-5xl lg:text-[2.75rem] font-bold leading-[1.1] tracking-tight text-white mb-8 max-w-3xl">
+            Timeless design powered by<br className="hidden md:block" /> modern growth strategy.
           </h2>
           <a href="#work" className="bg-white text-black px-6 py-3 rounded-full text-[10px] uppercase tracking-widest font-bold hover:scale-105 transition-transform inline-block">
             VIEW ALL WORKS

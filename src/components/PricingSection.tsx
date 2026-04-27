@@ -38,22 +38,6 @@ const PLANS = [
       "Performance tuning & optimization"
     ],
     highlight: true
-  },
-  {
-    name: "Inner Circle",
-    tagline: "The Digital Journal",
-    description: "Join our exclusive network of designers and entrepreneurs.",
-    price: "Free",
-    period: "/forever",
-    features: [
-      "Bi-weekly digital insights",
-      "Early access to new projects",
-      "Exclusive UI asset packs",
-      "Behind-the-scenes content",
-      "Invitation to private events"
-    ],
-    highlight: false,
-    isNewsletter: true
   }
 ];
 
@@ -67,8 +51,23 @@ export default function AuraPricing() {
     const ctx = gsap.context(() => {
       // Title Reveal Animation
       gsap.fromTo(
+        ".pricing-title-fill",
+        { width: "0%" },
+        {
+          width: "100%",
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 60%",
+            end: "top 20%",
+            scrub: true,
+          }
+        }
+      );
+
+      gsap.fromTo(
         ".pricing-title-reveal",
-        { y: 80, opacity: 0 },
+        { y: 50, opacity: 0 },
         {
           y: 0,
           opacity: 1,
@@ -103,14 +102,15 @@ export default function AuraPricing() {
   }, []);
 
   const handleGetStarted = (planName: string) => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    // Explicitly scroll to top before navigation for immediate feedback
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     navigate(`/contact?plan=${encodeURIComponent(planName)}`);
   };
 
   return (
     <section 
       ref={sectionRef}
-      className="fluid-py fluid-px bg-[#050505] text-white overflow-hidden"
+      className="fluid-py fluid-px bg-[#050505] text-white overflow-hidden relative"
       id="pricing"
     >
       <style>{`
@@ -121,22 +121,42 @@ export default function AuraPricing() {
           -webkit-text-stroke: 1px rgba(255,255,255,0.3);
           color: transparent;
         }
+        .pricing-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+        @media (min-width: 640px) {
+          .pricing-grid {
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+          }
+        }
+        @media (min-width: 1024px) {
+          .pricing-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2.5rem;
+          }
+        }
       `}</style>
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Header Section */}
-        <div className="mb-20 md:mb-32">
-          <div className="flex items-center gap-2 mb-6 opacity-60">
+        <div className="mb-12 md:mb-32">
+          <div className="flex items-center gap-2 mb-4 md:mb-6 opacity-60">
             <span className="w-8 h-[1px] bg-white"></span>
-            <p className="text-[10px] tracking-[0.3em] uppercase font-valtero-sans">Investment</p>
+            <p className="text-[9px] md:text-[10px] tracking-[0.3em] uppercase font-valtero-sans">Investment</p>
           </div>
           
-          <h2 className="pricing-title-reveal fluid-h2 font-valtero-serif leading-[0.85] tracking-tight">
-            Pricing <span className="text-outline italic font-valtero-serif opacity-80">©26</span>
+          <h2 className="pricing-title-reveal fluid-h2 font-valtero-serif leading-[0.85] tracking-tight relative inline-block">
+            <span className="text-outline opacity-20 italic font-valtero-serif">Pricing ©26</span>
+            <div className="pricing-title-fill absolute top-0 left-0 overflow-hidden whitespace-nowrap text-white italic font-valtero-serif">
+              Pricing ©26
+            </div>
           </h2>
           
-          <div className="mt-8 max-w-lg">
-            <p className="pricing-title-reveal text-lg md:text-xl text-white/50 font-valtero-sans leading-relaxed">
+          <div className="mt-6 md:mt-8 max-w-lg">
+            <p className="pricing-title-reveal text-base md:text-xl text-white/50 font-valtero-sans leading-relaxed">
               From launch-ready basics to high-performance <br className="hidden md:block" /> 
               cinematic driven experiences.
             </p>
@@ -144,130 +164,79 @@ export default function AuraPricing() {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div ref={cardsRef} className="grid md:grid-cols-2 lg:grid-cols-3 fluid-gap">
+        <div ref={cardsRef} className="pricing-grid max-w-5xl">
           {PLANS.map((plan) => (
             <div 
               key={plan.name}
-              className={`pricing-card group relative p-8 md:p-12 rounded-[40px] border transition-all duration-700 flex flex-col justify-between ${
+              className={`pricing-card group relative p-6 md:p-10 lg:p-12 rounded-[24px] md:rounded-[40px] border transition-all duration-700 flex flex-col justify-between overflow-hidden ${
                 plan.highlight 
-                ? "bg-white/5 border-white/20 shadow-2xl shadow-white/[0.02]" 
-                : "bg-transparent border-white/10 hover:border-white/30"
+                ? "bg-white/[0.03] border-white/20 shadow-2xl shadow-white/[0.01]" 
+                : "bg-transparent border-white/5 hover:border-white/20"
               }`}
             >
-              {/* Interactive Hover Glow */}
-              <div className="absolute inset-0 bg-radial-at-t from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-[40px]" />
+              {/* Refined Subtle Glow */}
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
               <div className="relative z-10">
-                <div className="flex justify-between items-start mb-12">
+                <div className="flex justify-between items-start mb-6 md:mb-12">
                   <div>
-                    <h3 className="text-4xl font-valtero-serif mb-2 group-hover:italic transition-all">{plan.name}</h3>
-                    <p className="text-[10px] tracking-[0.2em] uppercase text-white/40 font-valtero-sans">{plan.tagline}</p>
+                    <h3 className="text-2xl md:text-4xl font-valtero-serif mb-1 group-hover:italic transition-all duration-500">{plan.name}</h3>
+                    <p className="text-[8px] md:text-[10px] tracking-[0.2em] uppercase text-white/30 font-valtero-sans">{plan.tagline}</p>
                   </div>
-                  <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
-                    <ArrowUpRight size={20} />
+                  <div className="w-8 h-8 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black group-hover:border-white transition-all duration-500">
+                    <ArrowUpRight size={16} md:size={18} />
                   </div>
                 </div>
 
-                <div className="mb-12">
+                <div className="mb-6 md:mb-12">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-5xl md:text-6xl font-valtero-serif tracking-tighter">{plan.price}</span>
-                    <span className="text-white/30 text-sm font-valtero-sans">{plan.period}</span>
+                    <span className="text-3xl md:text-5xl lg:text-6xl font-valtero-serif tracking-tighter">{plan.price}</span>
+                    <span className="text-white/20 text-[10px] md:text-sm font-valtero-sans">{plan.period}</span>
                   </div>
                 </div>
 
-                <div className="h-[1px] w-full bg-white/10 mb-12" />
+                <div className="h-[1px] w-full bg-white/5 mb-6 md:mb-12" />
 
-                <ul className="space-y-6 mb-16">
+                <ul className="space-y-3 md:space-y-6 mb-10 md:mb-16">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-4 text-white/70 group-hover:text-white transition-colors duration-300">
-                      <div className="w-4 h-4 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                        <Check size={8} className="text-white/50" />
+                    <li key={feature} className="flex items-start gap-3 md:gap-4 text-white/50 group-hover:text-white/80 transition-colors duration-300">
+                      <div className="w-3 h-3 md:w-4 md:h-4 mt-0.5 md:mt-1 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                        <Check size={6} md:size={8} className="text-white/40" />
                       </div>
-                      <span className="text-sm font-valtero-sans">{feature}</span>
+                      <span className="text-[11px] md:text-sm font-valtero-sans leading-snug">{feature}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               <div className="relative z-10">
-                {(plan as any).isNewsletter ? (
-                  <PricingNewsletterForm />
-                ) : (
-                  <button 
-                    onClick={() => handleGetStarted(plan.name)}
-                    className="relative w-full py-5 rounded-full overflow-hidden group/btn transition-all duration-500"
-                  >
-                    <div className="absolute inset-0 bg-white translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-500 ease-expo" />
-                    <div className={`absolute inset-0 border border-white/20 rounded-full ${plan.highlight ? 'bg-white/10' : 'bg-white/5'}`} />
-                    <span className="relative z-10 text-[10px] tracking-[0.3em] uppercase font-bold group-hover/btn:text-black transition-colors duration-500">
-                      Get Started
-                    </span>
-                  </button>
-                )}
+                <button 
+                  onClick={() => handleGetStarted(plan.name)}
+                  className="relative w-full py-4 md:py-5 rounded-full overflow-hidden group/btn transition-all duration-500 bg-white/5 border border-white/10 hover:border-white/40"
+                >
+                  <div className="absolute inset-0 bg-white translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-500 ease-[0.16,1,0.3,1]" />
+                  <span className="relative z-10 text-[9px] md:text-[10px] tracking-[0.3em] uppercase font-bold group-hover/btn:text-black transition-colors duration-500">
+                    Get Started
+                  </span>
+                </button>
               </div>
             </div>
           ))}
         </div>
 
         {/* Dynamic Footer Link (Valtero Style) */}
-        <div className="mt-24 md:mt-40 pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="text-white/30 text-[10px] tracking-[0.2em] uppercase font-valtero-sans">
+        <div className="mt-20 md:mt-40 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
+          <p className="text-white/20 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-valtero-sans">
             Limited spots available for Q1 2026
           </p>
-          <a href="/contact" className="group flex items-center gap-4 text-white/80 hover:text-white transition-colors">
-            <span className="text-lg font-valtero-serif italic">Need a custom enterprise solution?</span>
-            <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
-              <ArrowUpRight size={14} />
+          <a href="/contact" className="group flex items-center gap-3 md:gap-4 text-white/50 hover:text-white transition-colors duration-500">
+            <span className="text-base md:text-lg font-valtero-serif italic">Need a custom enterprise solution?</span>
+            <div className="w-7 h-7 md:w-8 md:h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:rotate-45 group-hover:border-white transition-all duration-500">
+              <ArrowUpRight size={12} md:size={14} />
             </div>
           </a>
         </div>
       </div>
     </section>
-  );
-}
-
-function PricingNewsletterForm() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-
-  const subscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus("loading");
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, type: "Newsletter", name: "Inner Circle Member", message: "Joined from Pricing" }),
-      });
-      if (res.ok) {
-        setStatus("success");
-        setEmail("");
-      } else {
-        setStatus("error");
-      }
-    } catch (err) {
-      setStatus("error");
-    }
-  };
-
-  return (
-    <form onSubmit={subscribe} className="relative w-full">
-      <input 
-        type="email" 
-        required
-        placeholder="Enter email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full bg-white/5 border border-white/10 rounded-full px-6 py-4 text-xs focus:outline-none focus:border-white/30 transition-all placeholder:opacity-30"
-      />
-      <button 
-        type="submit" 
-        disabled={status === "loading"}
-        className="absolute right-1 top-1 bottom-1 px-6 bg-white text-black rounded-full text-[9px] font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors disabled:opacity-50"
-      >
-        {status === "loading" ? "..." : (status === "success" ? "✓" : "Join")}
-      </button>
-      {status === "error" && <p className="text-[9px] text-red-500 mt-2 text-center absolute -bottom-5 w-full">Try again.</p>}
-    </form>
   );
 }

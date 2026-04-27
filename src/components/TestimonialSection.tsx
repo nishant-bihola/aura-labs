@@ -134,6 +134,13 @@ export default function PinnedStaircaseTestimonials() {
             duration: 3
         }, (i * 2.0) + 8); 
       });
+
+      // 3. BACKGROUND TEXT FILL
+      tl.fromTo(".testimonials-fill",
+        { width: "0%" },
+        { width: "100%", ease: "none", duration: 15 },
+        0
+      );
     }, containerRef);
 
     return () => {
@@ -162,9 +169,8 @@ export default function PinnedStaircaseTestimonials() {
         @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@900&family=Inter:wght@400;600;800&display=swap');
       `}</style>
 
-      {/* Background Text */}
-      <h1
-        ref={textRef}
+      {/* Background Text Reveal */}
+      <div
         style={{
           position: "absolute",
           left: "50%",
@@ -173,23 +179,29 @@ export default function PinnedStaircaseTestimonials() {
           fontFamily: "'Barlow Condensed', sans-serif",
           fontSize: isMobile ? "18vw" : "clamp(100px, 16vw, 240px)",
           fontWeight: 900,
-          color: "white",
           margin: 0,
           lineHeight: 0.85,
           letterSpacing: "-0.05em",
-          display: "flex",
           zIndex: 1,
           pointerEvents: "none",
           whiteSpace: "nowrap",
-          opacity: 0.5
         }}
       >
-        {"TESTIMONIALS".split("").map((char, i) => (
-          <span key={i} style={{ display: "inline-block", overflow: "hidden" }}>
-            <span className="char" style={{ display: "inline-block" }}>{char}</span>
-          </span>
-        ))}
-      </h1>
+        <span className="text-outline" style={{ opacity: 0.1, display: "block" }}>TESTIMONIALS</span>
+        <div 
+          className="testimonials-fill"
+          style={{ 
+            position: "absolute", 
+            top: 0, 
+            left: 0, 
+            overflow: "hidden", 
+            color: "white",
+            whiteSpace: "nowrap"
+          }}
+        >
+          TESTIMONIALS
+        </div>
+      </div>
 
       {/* Cards Container */}
       <div style={{ position: "absolute", inset: 0, zIndex: 10, pointerEvents: "none" }}>
