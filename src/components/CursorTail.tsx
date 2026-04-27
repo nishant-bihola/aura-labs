@@ -7,9 +7,6 @@ export default function CursorTail() {
   const segmentCount = 20;
 
   useEffect(() => {
-    // Disable on touch devices to save performance
-    if (window.matchMedia("(pointer: coarse)").matches) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -91,7 +88,7 @@ export default function CursorTail() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-[80] mix-blend-screen opacity-100"
+      className="fixed inset-0 pointer-events-none z-[80] mix-blend-screen opacity-100 hidden md:block"
     />
   );
 }
