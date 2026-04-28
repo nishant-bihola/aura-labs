@@ -124,7 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
       const { error } = await supabase
         .from('newsletter_subscribers')
-        .upsert([{ email, subscribed_at: new Date().toISOString(), status: 'active' }], { onConflict: 'email' });
+        .upsert([{ email, status: 'active' }], { onConflict: 'email' });
       if (error) console.warn('[Subscribe] Supabase warn:', error.message);
     } catch (err: any) {
       console.warn('[Subscribe] Supabase skipped:', err.message);
