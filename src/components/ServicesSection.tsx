@@ -47,63 +47,83 @@ const SERVICE_DETAILS = [
 
 function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
   return (
-    <div className="group relative py-12 md:py-24 border-b border-white/5 transition-colors hover:bg-white/[0.02]">
-      <div className="max-w-7xl mx-auto fluid-px">
-        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-start">
+    <div className="group relative py-16 md:py-32 border-b border-white/5 transition-colors hover:bg-white/[0.01] overflow-hidden">
+      {/* Background Watermark */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/4 pointer-events-none opacity-[0.02] select-none transition-transform duration-1000 group-hover:-translate-x-0">
+        <span className="text-[15vw] font-black italic tracking-tighter uppercase leading-none">
+          {service.bgText}
+        </span>
+      </div>
+
+      <div className="max-w-7xl mx-auto fluid-px relative z-10">
+        <div className="flex flex-col lg:grid lg:grid-cols-[0.8fr_1.5fr_0.7fr] gap-12 lg:gap-20 items-center">
           
-          {/* Left Side: Image */}
-          <div className="w-full lg:w-1/3 xl:w-[30%] shrink-0">
-            <div className="relative aspect-[4/5] md:aspect-[16/10] lg:aspect-[4/5] rounded-[2rem] overflow-hidden bg-[#0A0A0A] border border-white/10 group-hover:border-white/20 transition-colors shadow-2xl">
+          {/* 1. Image Column */}
+          <div className="w-full relative">
+            <div className="relative aspect-[4/3] rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden bg-[#0A0A0A] border border-white/10 group-hover:border-white/20 transition-all duration-500 shadow-2xl">
               <img 
                 src={service.image} 
                 alt={service.title} 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
               />
-              {/* Subtle glass overlay */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
               
-              {/* Numbering as a badge on mobile/tablet */}
-              <div className="absolute top-6 left-6 md:hidden">
-                 <div className="bg-white text-black px-3 py-1 rounded-md font-black text-[10px] tracking-tighter">
+              {/* Floating ID Tag */}
+              <div className="absolute top-6 left-6 md:top-8 md:left-8">
+                 <div className="bg-white text-black px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest flex items-center gap-2">
+                   <span className="w-1.5 h-1.5 bg-black rounded-full animate-pulse" />
                    {service.id}
                  </div>
               </div>
             </div>
           </div>
- 
-          {/* Right Side: Content */}
-          <div className="flex-grow flex flex-col lg:flex-row justify-between gap-12 w-full">
-             <div className="space-y-8 max-w-2xl">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-6">
-                    <span className="hidden md:block text-[12px] font-black opacity-20 serif italic">{service.id}</span>
-                    <h3 className="fluid-h2 font-normal font-valtero-serif italic tracking-tight text-white leading-none">
-                      {service.title}
-                    </h3>
-                  </div>
-                  <p className="text-white/40 text-lg md:text-xl font-light leading-relaxed">
-                    {service.desc}
-                  </p>
-                </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {service.categories.map((c) => (
-                    <span 
-                      key={c} 
-                      className="text-[10px] bg-white/5 text-white/70 border border-white/5 px-4 py-2 rounded-lg font-bold hover:bg-white hover:text-black transition-all duration-300 cursor-default uppercase tracking-wider"
-                    >
-                      {c}
-                    </span>
-                  ))}
-                </div>
-             </div>
+          {/* 2. Text Content Column */}
+          <div className="flex flex-col gap-6 md:gap-8">
+            <div className="space-y-4 md:space-y-6">
+              <h3 className="text-4xl md:text-6xl lg:text-7xl font-normal font-valtero-serif italic tracking-tight text-white leading-[0.9] group-hover:text-[#00F0FF] transition-colors duration-500">
+                {service.title}
+              </h3>
+              <p className="text-white/50 text-lg md:text-xl font-light leading-relaxed max-w-xl">
+                {service.desc}
+              </p>
+            </div>
+            
+            {/* Tags (Desktop: Visible here, Mobile: Stacked) */}
+            <div className="flex flex-wrap gap-2 md:hidden">
+              {service.categories.map((c) => (
+                <span key={c} className="text-[9px] bg-white/5 text-white/40 border border-white/10 px-3 py-1 rounded-full uppercase tracking-tighter">
+                  {c}
+                </span>
+              ))}
+            </div>
+          </div>
 
-             {/* Dynamic Link/Action */}
-             <div className="flex items-end lg:pb-4">
-                <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500 transform group-hover:scale-110">
-                   <ArrowUpRight size={24} className="group-hover:rotate-45 transition-transform duration-500" />
-                </div>
-             </div>
+          {/* 3. Stats/Categories & Action Column (Desktop Only) */}
+          <div className="hidden lg:flex flex-col items-end gap-12">
+            <div className="flex flex-col items-end gap-4">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-2">Capabilities</span>
+              <div className="flex flex-col items-end gap-2">
+                {service.categories.map((c) => (
+                  <span 
+                    key={c} 
+                    className="text-xs text-white/40 font-medium hover:text-white transition-colors cursor-default whitespace-nowrap"
+                  >
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="w-20 h-20 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500 transform group-hover:scale-110 group-hover:shadow-[0_0_50px_rgba(255,255,255,0.2)]">
+               <ArrowUpRight size={28} className="group-hover:rotate-45 transition-transform duration-500" />
+            </div>
+          </div>
+
+          {/* Mobile Action Button */}
+          <div className="lg:hidden flex justify-between items-center w-full pt-4 border-t border-white/5">
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/30">View Portfolio</span>
+            <ArrowUpRight size={24} className="text-white/50" />
           </div>
 
         </div>

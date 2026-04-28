@@ -12,60 +12,78 @@ const CHAT_MESSAGES = [
 
 export default function SuccessSection() {
   return (
-    <section className="fluid-py fluid-px border-x border-border-soft mx-3 md:mx-6">
+    <section className="fluid-py fluid-px border-x border-white/5 mx-3 md:mx-6 bg-black relative">
       <div className="w-full max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-24 items-center">
-          <div className="space-y-12">
-            <h2 className="fluid-h2 font-normal font-valtero-serif italic leading-[0.9] tracking-tighter">
-              Built for your success.
-            </h2>
-            <p className="text-xl font-light opacity-60 max-w-md">
-              From idea to launch, we move fast and stay personal — every detail, every step.
-            </p>
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-32 items-center">
+          
+          {/* Left Content */}
+          <div className="space-y-12 md:space-y-16">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 opacity-40">
+                <span className="w-10 h-px bg-white" />
+                <span className="text-[10px] uppercase tracking-[0.4em] font-bold">Performance</span>
+              </div>
+              <h2 className="text-5xl md:text-7xl lg:text-[5.5vw] font-normal font-valtero-serif italic leading-[0.9] tracking-tighter text-white">
+                Built for your success.
+              </h2>
+              <p className="text-lg md:text-xl font-light text-white/50 max-w-md leading-relaxed">
+                From initial concept to final launch, we move with precision and speed, ensuring every detail aligns with your vision.
+              </p>
+            </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pt-12">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-10 md:gap-12">
                {[
                  { val: 67, suffix: "+", label: "Projects completed" },
                  { val: 42, suffix: "+", label: "Global Clients" },
                  { val: 12, suffix: "%", label: "Conversion increase" }
                ].map((stat, i) => (
-                 <div key={i} className="space-y-2">
-                    <div className="text-2xl md:text-4xl font-normal font-valtero-serif italic">
+                 <div key={i} className="group flex flex-col gap-3">
+                    <div className="text-3xl md:text-5xl font-normal font-valtero-serif italic text-white group-hover:text-[#00F0FF] transition-colors duration-500">
                       <Counter value={stat.val} />{stat.suffix}
                     </div>
-                    <div className="text-[9px] md:text-[10px] uppercase kerning-wide font-bold opacity-40">{stat.label}</div>
+                    <div className="text-[10px] uppercase tracking-[0.2em] font-black opacity-30 group-hover:opacity-60 transition-opacity">
+                      {stat.label}
+                    </div>
                  </div>
                ))}
             </div>
           </div>
 
+          {/* Right Visual (Image + Chat) */}
           <div className="relative group">
-            <div className="aspect-[4/5] rounded-sm overflow-hidden mb-12">
+            <div className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 group-hover:border-white/20 transition-all duration-700">
               <img 
                 src="https://cdn.prod.website-files.com/697344b93b0e03014bb98903/697946b71c91bd8ad83419a1_Group-Discussion-Scene.webp" 
                 alt="Our process" 
-                className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0" 
+                className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-1000 group-hover:scale-105" 
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60" />
             </div>
 
-            {/* Chat Overlay */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xs space-y-4">
+            {/* Chat Overlay - More responsive positioning */}
+            <div className="absolute inset-0 flex flex-col justify-center p-6 md:p-12 space-y-3 md:space-y-4">
               {CHAT_MESSAGES.map((msg, i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, y: 20, scale: 0.8 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: msg.delay, type: "spring", stiffness: 100 }}
+                  initial={{ opacity: 0, x: msg.side === "right" ? 20 : -20, scale: 0.9 }}
+                  whileInView={{ opacity: 1, x: 0, scale: 1 }}
+                  viewport={{ once: true, margin: "-20%" }}
+                  transition={{ delay: msg.delay, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   className={`flex ${msg.side === "right" ? "justify-end" : "justify-start"}`}
                 >
-                  <div className={`px-4 py-3 rounded-2xl text-xs font-medium ${msg.color || "bg-white/10 backdrop-blur-md"} border border-white/5 shadow-2xl`}>
+                  <div className={`px-4 py-2 md:px-6 md:py-3 rounded-2xl md:rounded-3xl text-[10px] md:text-xs font-semibold backdrop-blur-xl ${
+                    msg.side === "right" 
+                    ? "bg-[#00F0FF]/10 text-[#00F0FF] border-[#00F0FF]/20" 
+                    : "bg-white/10 text-white border-white/10"
+                  } border shadow-2xl transition-transform hover:scale-105 cursor-default`}
+                  >
                     {msg.text}
                   </div>
                 </motion.div>
               ))}
             </div>
           </div>
+
         </div>
       </div>
     </section>
