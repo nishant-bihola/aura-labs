@@ -16,10 +16,11 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || "",
-  process.env.SUPABASE_KEY || ""
-);
+const SUPABASE_URL = process.env.SUPABASE_URL || "";
+// Server-side: prefer service_role key to bypass RLS for inserts
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || "";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const GOOGLE_MEET_LINK = process.env.GOOGLE_MEET_LINK || "https://meet.google.com/aura-labs-consult";
 

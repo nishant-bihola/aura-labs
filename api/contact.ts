@@ -10,7 +10,8 @@ const RESEND_KEY = process.env.RESEND_API_KEY || '';
 const BREVO_USER = process.env.BREVO_USER || 'nishant15bihola@gmail.com';
 const BREVO_PASS = (process.env.BREVO_SMTP_KEY || '').replace(/\s+/g, '');
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+// Server-side: use service_role key to bypass RLS for inserts
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 const NOTION_TOKEN = process.env.NOTION_TOKEN || process.env.VITE_NOTION_TOKEN || '';
 const NOTION_DB_ID = process.env.NOTION_DATABASE_ID || process.env.VITE_NOTION_DATABASE_ID || '';
 const OWNER_EMAIL = 'nishant15bihola@gmail.com';

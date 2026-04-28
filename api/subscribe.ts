@@ -4,7 +4,8 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Support both VITE_ prefixed (frontend) and plain (serverless) env vars
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+// Server-side: prefer service_role key to bypass RLS for inserts
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 const EMAIL_USER = process.env.BREVO_USER || 'nishant15bihola@gmail.com';
 const EMAIL_PASS = (process.env.BREVO_SMTP_KEY || '').replace(/\s+/g, '');
 const OWNER_EMAIL = 'nishant15bihola@gmail.com';
