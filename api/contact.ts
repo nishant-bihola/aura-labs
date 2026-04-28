@@ -1,229 +1,333 @@
-import { Resend } from "resend";
-import nodemailer from "nodemailer";
-import { createClient } from "@supabase/supabase-js";
-import { Client as NotionClient } from "@notionhq/client";
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
+import { createClient } from '@supabase/supabase-js';
+import { Client as NotionClient } from '@notionhq/client';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// 1. Configure Services
-const resend = new Resend(process.env.RESEND_API_KEY);
+// ─── Environment Variables ────────────────────────────────────────────────────
+// Support both VITE_ prefixed and plain variants for Vercel serverless
+const RESEND_KEY = process.env.RESEND_API_KEY || '';
+const BREVO_USER = process.env.BREVO_USER || 'nishant15bihola@gmail.com';
+const BREVO_PASS = (process.env.BREVO_SMTP_KEY || '').replace(/\s+/g, '');
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+const NOTION_TOKEN = process.env.NOTION_TOKEN || process.env.VITE_NOTION_TOKEN || '';
+const NOTION_DB_ID = process.env.NOTION_DATABASE_ID || process.env.VITE_NOTION_DATABASE_ID || '';
+const OWNER_EMAIL = 'nishant15bihola@gmail.com';
 
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
+// ─── Service Clients ─────────────────────────────────────────────────────────
+const resend = RESEND_KEY ? new Resend(RESEND_KEY) : null;
+const brevo = nodemailer.createTransport({
+  host: 'smtp-relay.brevo.com',
   port: 587,
-  secure: false, // use STARTTLS
-  auth: {
-    user: process.env.BREVO_USER || "nishant15bihola@gmail.com",
-    pass: process.env.BREVO_SMTP_KEY,
-  },
+  secure: false,
+  auth: { user: BREVO_USER, pass: BREVO_PASS },
 });
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || "",
-  process.env.SUPABASE_KEY || ""
-);
+// ─── Email Templates ──────────────────────────────────────────────────────────
+const adminEmailHTML = (name: string, email: string, message: string, type: string, plan?: string) => `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0" /></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:48px 20px;">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+        <tr><td style="padding-bottom:40px;text-align:center;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,0.25);">AURA LABS · ADMIN ALERT</span>
+        </td></tr>
+        <tr><td style="background:#111;border:1px solid rgba(255,255,255,0.06);border-radius:24px;overflow:hidden;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="height:3px;background:linear-gradient(90deg,#ff4d4d,#ff9900);"></td></tr>
+          </table>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="padding:48px 48px 40px;">
+              <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#ff9900;">New ${type}</p>
+              <h1 style="margin:0 0 32px;font-size:28px;font-weight:300;color:#ffffff;letter-spacing:-0.5px;line-height:1.3;">Incoming Inquiry</h1>
 
-const notion = new NotionClient({ 
-  auth: process.env.NOTION_TOKEN 
-});
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                <tr>
+                  <td style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);">Name</p>
+                    <p style="margin:0;font-size:15px;color:#fff;">${name}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);">Email</p>
+                    <a href="mailto:${email}" style="margin:0;font-size:15px;color:#00f0ff;text-decoration:none;">${email}</a>
+                  </td>
+                </tr>
+                ${plan ? `
+                <tr>
+                  <td style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);">Plan</p>
+                    <p style="margin:0;font-size:15px;color:#fff;">${plan}</p>
+                  </td>
+                </tr>` : ''}
+                <tr>
+                  <td style="padding:16px 0;">
+                    <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);">Message</p>
+                    <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(255,255,255,0.6);font-style:italic;">"${message || 'No message provided.'}"</p>
+                  </td>
+                </tr>
+              </table>
 
-const generateBaseTemplate = (content: string, accentColor: string = "#00F0FF") => `
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
-      body { margin: 0; padding: 0; background-color: #000000; }
-      a { color: ${accentColor}; text-decoration: none; font-weight: 600; }
-    </style>
-  </head>
-  <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #000000; padding: 40px 20px;">
-    <div style="max-width: 600px; margin: 0 auto; background: linear-gradient(180deg, #0a0a0a 0%, #000000 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 40px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.8);">
-      <div style="padding: 60px 50px;">
-        <div style="margin-bottom: 50px; text-align: center;">
-          <div style="display: inline-block; padding: 2px; background: linear-gradient(90deg, ${accentColor}, #0077FF); border-radius: 10px;">
-            <div style="background: #000; padding: 10px 20px; border-radius: 8px;">
-               <span style="color: #fff; font-weight: 800; font-size: 16px; letter-spacing: 4px; text-transform: uppercase;">AURA LABS</span>
-            </div>
-          </div>
-        </div>
-        ${content}
-        <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
-          <p style="color: rgba(255,255,255,0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">
-            Transmission Secure • Edmonton, AB • © 2026
-          </p>
-        </div>
-      </div>
-    </div>
-  </body>
-  </html>
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr><td style="border-radius:100px;background:#ffffff;">
+                  <a href="mailto:${email}" style="display:inline-block;padding:13px 32px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#000;text-decoration:none;">Reply Now</a>
+                </td></tr>
+              </table>
+            </td></tr>
+          </table>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="padding:20px 48px;border-top:1px solid rgba(255,255,255,0.06);">
+              <p style="margin:0;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase;">Aura Labs · Edmonton, Alberta · © 2026</p>
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
 `;
 
-const generateContactEmailHTML = (name: string, email: string, message: string, type: string, plan?: string) => {
-  const meetLink = process.env.GOOGLE_MEET_LINK || "https://meet.google.com/aura-labs-consult";
+const userConfirmationHTML = (name: string, plan?: string) => {
+  const firstName = name.split(' ')[0] || name;
   return `
-    <h2 style="color: #ffffff; font-size: 32px; margin-bottom: 30px; font-weight: 800; letter-spacing: -1.5px; line-height: 1;">New ${type} <br/>Arrival Detected.</h2>
-    
-    <div style="background: rgba(255,255,255,0.02); padding: 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px;">
-      <div style="margin-bottom: 25px;">
-        <p style="color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px 0; font-weight: 700;">Identity</p>
-        <p style="color: #ffffff; font-size: 18px; font-weight: 600; margin: 0;">${name}</p>
-      </div>
-      <div style="margin-bottom: 25px;">
-        <p style="color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px 0; font-weight: 700;">Connection</p>
-        <p style="color: #00F0FF; font-size: 16px; margin: 0; font-weight: 600;">${email}</p>
-      </div>
-      ${plan ? `
-      <div>
-        <p style="color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px 0; font-weight: 700;">Target Configuration</p>
-        <p style="color: #ffffff; font-size: 16px; margin: 0;">${plan} Plan</p>
-      </div>` : ""}
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0" /></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:48px 20px;">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
 
-    <div style="margin-bottom: 40px;">
-      <p style="color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 15px 0; font-weight: 700;">Intelligence Gathering</p>
-      <div style="background: rgba(0,240,255,0.03); padding: 30px; border-radius: 20px; border-left: 4px solid #00F0FF;">
-        <p style="color: #ffffff; font-size: 16px; line-height: 1.8; margin: 0; font-style: italic; font-weight: 400;">"${message}"</p>
-      </div>
-    </div>
+        <!-- Logo -->
+        <tr><td style="padding-bottom:48px;text-align:center;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,0.25);">AURA LABS</span>
+        </td></tr>
 
-    <a href="${meetLink}" style="display: block; text-align: center; background: #ffffff; color: #000000; padding: 22px; border-radius: 20px; font-weight: 800; font-size: 14px; text-decoration: none; text-transform: uppercase; letter-spacing: 2px;">
-      Join Strategy Boardroom
-    </a>
-  `;
+        <!-- Card -->
+        <tr><td style="background:#111;border:1px solid rgba(255,255,255,0.06);border-radius:24px;overflow:hidden;">
+
+          <!-- Accent bar -->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="height:3px;background:linear-gradient(90deg,#00f0ff,#0055ff);"></td></tr>
+          </table>
+
+          <!-- Content -->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="padding:52px 48px 44px;">
+              <p style="margin:0 0 16px;font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#00f0ff;">Transmission Received</p>
+              <h1 style="margin:0 0 20px;font-size:34px;font-weight:300;color:#ffffff;letter-spacing:-1px;line-height:1.2;">
+                We've got you,<br />${firstName}.
+              </h1>
+              <p style="margin:0 0 36px;font-size:15px;line-height:1.75;color:rgba(255,255,255,0.55);">
+                Your inquiry has landed with our team. We review every submission personally and typically respond within <strong style="color:rgba(255,255,255,0.8);font-weight:600;">1–2 business days</strong>.
+              </p>
+
+              <!-- Divider -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+                <tr><td style="height:1px;background:rgba(255,255,255,0.06);"></td></tr>
+              </table>
+
+              <!-- What happens next -->
+              <p style="margin:0 0 20px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);">What Happens Next</p>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:36px;">
+                <tr><td style="padding:0 0 16px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="width:28px;vertical-align:top;padding-top:2px;">
+                        <div style="width:20px;height:20px;border-radius:50%;background:rgba(0,240,255,0.1);border:1px solid rgba(0,240,255,0.3);text-align:center;line-height:20px;font-size:9px;font-weight:700;color:#00f0ff;">1</div>
+                      </td>
+                      <td style="padding-left:14px;">
+                        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;">Our team reviews your project brief</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td></tr>
+                <tr><td style="padding:0 0 16px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="width:28px;vertical-align:top;padding-top:2px;">
+                        <div style="width:20px;height:20px;border-radius:50%;background:rgba(0,240,255,0.1);border:1px solid rgba(0,240,255,0.3);text-align:center;line-height:20px;font-size:9px;font-weight:700;color:#00f0ff;">2</div>
+                      </td>
+                      <td style="padding-left:14px;">
+                        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;">We reach out to schedule a strategy call</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td></tr>
+                <tr><td>
+                  <table role="presentation" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="width:28px;vertical-align:top;padding-top:2px;">
+                        <div style="width:20px;height:20px;border-radius:50%;background:rgba(0,240,255,0.1);border:1px solid rgba(0,240,255,0.3);text-align:center;line-height:20px;font-size:9px;font-weight:700;color:#00f0ff;">3</div>
+                      </td>
+                      <td style="padding-left:14px;">
+                        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;">We architect your digital experience together</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td></tr>
+              </table>
+
+              ${plan ? `
+              <!-- Plan badge -->
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:36px;">
+                <tr><td style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:10px 20px;">
+                  <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.5);">Enquiring about: <span style="color:#fff;">${plan} Plan</span></p>
+                </td></tr>
+              </table>` : ''}
+
+              <!-- CTA -->
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr><td style="border-radius:100px;background:#fff;">
+                  <a href="https://calendar.app.google/ZQNXkk3AFDSdbyReA" style="display:inline-block;padding:14px 36px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#000;text-decoration:none;">Book a Call Now</a>
+                </td></tr>
+              </table>
+
+            </td></tr>
+          </table>
+
+          <!-- Footer -->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="padding:24px 48px;border-top:1px solid rgba(255,255,255,0.06);">
+              <p style="margin:0;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase;">
+                © 2026 Aura Labs · Edmonton, Alberta · <a href="https://aura-labs-one.vercel.app" style="color:rgba(255,255,255,0.2);text-decoration:none;">aura-labs.com</a>
+              </p>
+            </td></tr>
+          </table>
+
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+`;
 };
 
-const generateUserThankYouHTML = (name: string) => {
-  const meetLink = process.env.GOOGLE_MEET_LINK || "https://meet.google.com/aura-labs-consult";
-  return generateBaseTemplate(`
-    <h2 style="color: #ffffff; font-size: 42px; margin-bottom: 30px; font-weight: 800; letter-spacing: -2px; line-height: 1;">Project <br/>Acknowledged.</h2>
-    <p style="font-size: 18px; line-height: 1.8; color: rgba(255,255,255,0.8); margin-bottom: 40px; font-weight: 400;">
-      Greetings, ${name.split(' ')[0]}. Your transmission has been successfully decrypted and routed to our lead architecture team.
-    </p>
-    
-    <div style="background: rgba(255,255,255,0.03); padding: 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px;">
-      <div style="display: flex; align-items: center; margin-bottom: 20px;">
-        <div style="width: 10px; height: 10px; background: #00F0FF; border-radius: 50%; box-shadow: 0 0 10px #00F0FF; margin-right: 15px;"></div>
-        <p style="color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0;">Status: Analyzing Vision</p>
-      </div>
-      <p style="color: rgba(255,255,255,0.7); font-size: 14px; margin: 0; line-height: 1.6; font-weight: 400;">
-        Our team has been alerted. Your project is now in our priority queue for instant review.
-      </p>
-    </div>
-
-    <div style="text-align: center;">
-      <p style="color: rgba(255,255,255,0.5); font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; font-weight: 700;">Urgent Inquiry?</p>
-      <a href="${meetLink}" style="display: inline-block; background: transparent; color: #ffffff; padding: 18px 35px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.3); font-weight: 700; font-size: 12px; text-decoration: none; text-transform: uppercase; letter-spacing: 2px;">
-        Enter Open Boardroom
-      </a>
-    </div>
-  `);
-};
-
+// ─── Handler ──────────────────────────────────────────────────────────────────
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { name, email, phone, message, type, plan } = req.body;
-  const inquiryType = type || "Contact";
-  const clientName = name || "Anonymous User";
+  const inquiryType = type || 'Contact';
+  const clientName = name || 'Anonymous';
 
-  try {
-    // 1. Database Operations
-    const supabaseOps = [];
-    
-    // Always log to leads
-    supabaseOps.push(supabase.from("leads").insert([{ 
-      name: clientName, 
-      email, 
-      phone: phone || null,
-      message, 
-      service_type: inquiryType,
-      plan: plan,
-      status: 'New'
-    }]));
+  console.log(`[Contact] New ${inquiryType} from ${clientName} <${email}>`);
 
-    // If newsletter, also add to newsletter_subscribers table
-    if (inquiryType === "Newsletter") {
-      supabaseOps.push(supabase.from("newsletter_subscribers").upsert([{ 
-        email, 
-        status: 'active'
-      }], { onConflict: 'email' }));
+  if (!email) {
+    return res.status(400).json({ success: false, error: 'Email is required.' });
+  }
+
+  const results: Record<string, boolean> = {};
+
+  // 1. Supabase — best effort, never throw
+  if (SUPABASE_URL && SUPABASE_KEY) {
+    try {
+      const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+      const { error } = await supabase.from('leads').insert([{
+        name: clientName,
+        email,
+        phone: phone || null,
+        message,
+        service_type: inquiryType,
+        plan: plan || null,
+        status: 'New',
+      }]);
+      results.supabase = !error;
+      if (error) console.warn('[Contact] Supabase warn:', error.message);
+    } catch (err: any) {
+      results.supabase = false;
+      console.warn('[Contact] Supabase skipped:', err.message);
     }
+  }
 
-    // 2. Email Operations
-    const adminEmailPromise = resend.emails.send({
-      from: "Aura Labs <onboarding@resend.dev>",
-      to: "nishant15bihola@gmail.com",
-      replyTo: email,
-      subject: `⚡ NEW ${inquiryType.toUpperCase()} | ${clientName}`,
-      html: generateBaseTemplate(generateContactEmailHTML(clientName, email, message, inquiryType, plan)),
-    });
+  // 2. Admin alert via Resend (preferred) — best effort
+  if (resend) {
+    try {
+      await resend.emails.send({
+        from: 'Aura Labs <onboarding@resend.dev>',
+        to: OWNER_EMAIL,
+        replyTo: email,
+        subject: `⚡ NEW ${inquiryType.toUpperCase()} — ${clientName}`,
+        html: adminEmailHTML(clientName, email, message, inquiryType, plan),
+      });
+      results.adminEmail = true;
+    } catch (err: any) {
+      results.adminEmail = false;
+      console.error('[Contact] Admin email (Resend) failed:', err.message);
+    }
+  } else {
+    // Fallback: admin via Brevo
+    try {
+      await brevo.sendMail({
+        from: `"Aura Labs" <${BREVO_USER}>`,
+        to: OWNER_EMAIL,
+        replyTo: email,
+        subject: `⚡ NEW ${inquiryType.toUpperCase()} — ${clientName}`,
+        html: adminEmailHTML(clientName, email, message, inquiryType, plan),
+      });
+      results.adminEmail = true;
+    } catch (err: any) {
+      results.adminEmail = false;
+      console.error('[Contact] Admin email (Brevo) failed:', err.message);
+    }
+  }
 
-    const userSubject = inquiryType === "Newsletter" ? "Welcome to The Journal | Aura Labs" : "Transmission Received | Aura Labs";
-    const userHTML = inquiryType === "Newsletter" ? generateBaseTemplate(`
-          <h1 style="color: #ffffff; font-size: 42px; margin-bottom: 30px; font-weight: 800; letter-spacing: -2px; line-height: 1;">The Future, <br/>Delivered.</h1>
-          <p style="font-size: 18px; line-height: 1.8; color: rgba(255,255,255,0.6); margin-bottom: 40px;">
-            Your residency in <span style="color: #00F0FF;">The Journal</span> is confirmed. Prepare for intelligence on the bleeding edge of design and AI.
-          </p>
-          <div style="background: rgba(0,240,255,0.05); padding: 30px; border-radius: 20px; border: 1px dashed rgba(0,240,255,0.2); text-align: center;">
-            <p style="color: #00F0FF; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; margin: 0;">Access Granted • Welcome Aboard</p>
-          </div>
-        `) : generateUserThankYouHTML(clientName);
+  // 3. User confirmation via Brevo — best effort
+  if (BREVO_PASS) {
+    try {
+      await brevo.sendMail({
+        from: `"Aura Labs" <${BREVO_USER}>`,
+        to: email,
+        subject: 'We received your inquiry | Aura Labs',
+        html: userConfirmationHTML(clientName, plan),
+      });
+      results.userEmail = true;
+      console.log('[Contact] Confirmation sent to:', email);
+    } catch (err: any) {
+      results.userEmail = false;
+      console.error('[Contact] User confirmation email failed:', err.message);
+    }
+  } else {
+    console.warn('[Contact] No BREVO_SMTP_KEY — user confirmation skipped.');
+    results.userEmail = false;
+  }
 
-    const userEmailPromise = transporter.sendMail({
-      from: `"Aura Labs" <${process.env.BREVO_USER || "nishant15bihola@gmail.com"}>`,
-      to: email,
-      subject: userSubject,
-      html: userHTML,
-    });
-
-    // 3. Notion Sync (Improved mapping from Apex Towing)
-    let notionPromise = Promise.resolve(null);
-    if (process.env.NOTION_TOKEN && process.env.NOTION_DATABASE_ID && process.env.NOTION_TOKEN !== "placeholder") {
-      notionPromise = notion.pages.create({
-        parent: { database_id: process.env.NOTION_DATABASE_ID },
+  // 4. Notion — best effort, never throw
+  if (NOTION_TOKEN && NOTION_DB_ID) {
+    try {
+      const notion = new NotionClient({ auth: NOTION_TOKEN });
+      await notion.pages.create({
+        parent: { database_id: NOTION_DB_ID },
         properties: {
           Name: { title: [{ text: { content: clientName } }] },
-          Email: { email: email },
-          Phone: { phone_number: phone || "" },
-          Message: { rich_text: [{ text: { content: message || "No message" } }] },
+          Email: { email },
+          Phone: { phone_number: phone || '' },
+          Message: { rich_text: [{ text: { content: message || 'No message' } }] },
           Type: { select: { name: inquiryType } },
           ...(plan && { Plan: { select: { name: plan } } }),
           Date: { date: { start: new Date().toISOString() } },
-          Status: { status: { name: 'Not started' } }
-        }
+          Status: { status: { name: 'Not started' } },
+        },
       });
+      results.notion = true;
+    } catch (err: any) {
+      results.notion = false;
+      console.warn('[Contact] Notion skipped:', err.message);
     }
-
-    // Execute All in Parallel
-    console.log(`Starting high-speed transmission for ${clientName}...`);
-    const results = await Promise.allSettled([
-      ...supabaseOps, 
-      adminEmailPromise, 
-      userEmailPromise, 
-      notionPromise
-    ]);
-
-    // 3. Log Results for Debugging
-    const [sb, resStatus, node, not] = results;
-    console.log("Service Optimization Status:", {
-      supabase: sb.status,
-      resendAdmin: resStatus.status,
-      nodemailerUser: node.status,
-      notionSync: not.status
-    });
-
-    return res.status(200).json({ 
-      success: true,
-      performance: "Optimized Parallel Submission",
-      diagnostics: {
-        database: sb.status === "fulfilled",
-        adminAlert: resStatus.status === "fulfilled",
-        clientResponse: node.status === "fulfilled",
-        notion: not.status === "fulfilled"
-      }
-    });
-  } catch (error) {
-    console.error("Critical Submission Error:", error);
-    return res.status(500).json({ success: false, error: "Submission failed" });
   }
+
+  console.log('[Contact] Results:', results);
+  return res.status(200).json({ success: true, results });
 }

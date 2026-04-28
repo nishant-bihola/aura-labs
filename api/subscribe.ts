@@ -2,141 +2,162 @@ import { createClient } from '@supabase/supabase-js';
 import nodemailer from 'nodemailer';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-const supabase = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!);
-
-const EMAIL_USER = process.env.BREVO_USER || process.env.EMAIL_USER || "nishant15bihola@gmail.com";
-const EMAIL_PASS = process.env.BREVO_SMTP_KEY || process.env.EMAIL_PASS || "";
-const OWNER_EMAIL = "nishant15bihola@gmail.com";
+// Support both VITE_ prefixed (frontend) and plain (serverless) env vars
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+const EMAIL_USER = process.env.BREVO_USER || 'nishant15bihola@gmail.com';
+const EMAIL_PASS = (process.env.BREVO_SMTP_KEY || '').replace(/\s+/g, '');
+const OWNER_EMAIL = 'nishant15bihola@gmail.com';
 
 const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
+  host: 'smtp-relay.brevo.com',
   port: 587,
   secure: false,
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS.replace(/\s+/g, '')
-  }
+  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
 });
 
+// Clean, premium email template
+const welcomeEmailHTML = (email: string) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to The Journal | Aura Labs</title>
+</head>
+<body style="margin:0;padding:0;background-color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:48px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+          <!-- Logo -->
+          <tr>
+            <td style="padding-bottom:48px;text-align:center;">
+              <span style="font-size:11px;font-weight:700;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,0.3);">AURA LABS</span>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background:#111111;border:1px solid rgba(255,255,255,0.06);border-radius:24px;overflow:hidden;">
+
+              <!-- Header accent bar -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="height:3px;background:linear-gradient(90deg,#00f0ff,#0055ff);"></td>
+                </tr>
+              </table>
+
+              <!-- Body content -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:52px 48px 40px;">
+                    <p style="margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#00f0ff;">The Journal</p>
+                    <h1 style="margin:0 0 24px;font-size:36px;font-weight:300;line-height:1.2;color:#ffffff;letter-spacing:-1px;">You're in.</h1>
+                    <p style="margin:0 0 32px;font-size:15px;line-height:1.75;color:rgba(255,255,255,0.55);font-weight:400;">
+                      Welcome aboard. You'll receive curated insights on design, technology, and the craft behind building exceptional digital products — straight from our studio in Edmonton.
+                    </p>
+
+                    <!-- Divider -->
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+                      <tr><td style="height:1px;background:rgba(255,255,255,0.06);"></td></tr>
+                    </table>
+
+                    <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);">Subscribed As</p>
+                    <p style="margin:0 0 40px;font-size:14px;color:rgba(255,255,255,0.7);">${email}</p>
+
+                    <!-- CTA -->
+                    <table role="presentation" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="border-radius:100px;background:#ffffff;">
+                          <a href="https://aura-labs-one.vercel.app" style="display:inline-block;padding:14px 36px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#000000;text-decoration:none;">
+                            Explore Our Work
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Footer -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:24px 48px;border-top:1px solid rgba(255,255,255,0.06);">
+                    <p style="margin:0;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase;">
+                      © 2026 Aura Labs · Edmonton, Alberta · <a href="https://aura-labs-one.vercel.app" style="color:rgba(255,255,255,0.2);text-decoration:none;">Unsubscribe</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { email } = req.body;
-  console.log('--- NEW SUBSCRIPTION ---', email);
+  console.log('[Subscribe] New subscriber:', email);
 
-  if (!email) {
-    return res.status(400).json({ success: false, error: 'Email is required.' });
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ success: false, error: 'Valid email is required.' });
   }
 
-  try {
-    // 1. Save to Supabase subscribers table (best-effort)
-    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+  // 1. Save to Supabase (best-effort, never fail the request if this fails)
+  if (SUPABASE_URL && SUPABASE_KEY) {
+    try {
+      const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
       const { error } = await supabase
         .from('newsletter_subscribers')
-        .insert([{ email }]);
-      if (error && error.code !== '23505') { // Ignore unique violation if already subscribed
-        console.warn('Supabase subscriber insert warning:', error.message);
-      }
-    }
-
-    if (!EMAIL_PASS) {
-      console.warn('No EMAIL_PASS — skipping emails.');
-      return res.status(200).json({ success: true, message: 'Subscribed (emails skipped in dev).' });
-    }
-
-    // 2. Notify owner
-    try {
-      await transporter.sendMail({
-        from: `"Aura Labs System" <${EMAIL_USER}>`,
-        to: OWNER_EMAIL,
-        subject: `New Journal Subscriber: ${email}`,
-        html: `
-          <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#111;color:#fff;padding:40px;">
-            <h3 style="color:#fff;">📬 New Subscriber</h3>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><em>They have subscribed to The Journal.</em></p>
-          </div>
-        `
-      });
+        .upsert([{ email, subscribed_at: new Date().toISOString(), status: 'active' }], { onConflict: 'email' });
+      if (error) console.warn('[Subscribe] Supabase warn:', error.message);
     } catch (err: any) {
-      console.error('Owner notification email failed:', err.message);
+      console.warn('[Subscribe] Supabase skipped:', err.message);
     }
-
-    // 3. Confirmation email to subscriber
-    try {
-      await transporter.sendMail({
-        from: `"Aura Labs" <${EMAIL_USER}>`,
-        to: email,
-        subject: "Welcome to The Journal | Aura Labs",
-        html: `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          </head>
-          <body style="margin:0;padding:0;background:#0A0A0A;font-family:Arial,Helvetica,sans-serif;color:#ffffff;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:40px 20px;">
-              <tr>
-                <td align="center">
-                  <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#111111;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);">
-                    <!-- Header Banner -->
-                    <tr>
-                      <td style="padding:36px 40px;text-align:center;">
-                        <h1 style="margin:0;color:#ffffff;font-size:28px;letter-spacing:2px;font-family:serif;font-style:italic;">AURA LABS</h1>
-                        <p style="margin:8px 0 0;color:#ffffff;font-size:11px;opacity:0.4;letter-spacing:4px;text-transform:uppercase;">Digital Residency Studio</p>
-                      </td>
-                    </tr>
-                    <!-- Hero Message -->
-                    <tr>
-                      <td style="padding:48px 40px 32px;text-align:center;">
-                        <h2 style="margin:0 0 16px;color:#ffffff;font-size:26px;font-weight:400;font-family:serif;font-style:italic;">You're on the list.</h2>
-                        <p style="margin:0;color:#aaaaaa;font-size:15px;line-height:1.7;max-width:440px;margin:0 auto;">
-                          Welcome to The Journal. You'll now receive exclusive insights into our latest projects, design philosophies, and technological explorations.
-                        </p>
-                      </td>
-                    </tr>
-                    <!-- Divider -->
-                    <tr>
-                      <td style="padding:0 40px;">
-                        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.1);margin:0;">
-                      </td>
-                    </tr>
-                    <!-- CTA Button -->
-                    <tr>
-                      <td style="padding:48px 40px;text-align:center;">
-                        <a href="https://aura-labs-one.vercel.app" 
-                           style="display:inline-block;background:#ffffff;color:#000000;text-decoration:none;font-weight:700;font-size:11px;padding:16px 40px;border-radius:100px;letter-spacing:2px;text-transform:uppercase;">
-                          Explore Aura Labs
-                        </a>
-                      </td>
-                    </tr>
-                    <!-- Footer -->
-                    <tr>
-                      <td style="background:#050505;padding:24px 40px;text-align:center;border-top:1px solid rgba(255,255,255,0.05);">
-                        <p style="margin:0;color:#666666;font-size:10px;line-height:1.7;letter-spacing:1px;text-transform:uppercase;">
-                          © 2026 AURA LABS. ALL RIGHTS RESERVED.
-                        </p>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-          </body>
-          </html>
-        `
-      });
-      console.log('Subscription confirmation email sent to:', email);
-    } catch (err: any) {
-      console.error('Subscription confirmation email failed:', err.message);
-    }
-
-    return res.status(200).json({ success: true, message: 'Subscribed and confirmation email sent.' });
-  } catch (error: any) {
-    console.error('Subscribe API Error:', error);
-    return res.status(500).json({ success: false, error: error.message });
   }
+
+  // If no SMTP key, succeed silently (dev mode)
+  if (!EMAIL_PASS) {
+    console.warn('[Subscribe] No BREVO_SMTP_KEY — skipping emails.');
+    return res.status(200).json({ success: true, message: 'Subscribed (email skipped in dev).' });
+  }
+
+  // 2. Send owner notification (fire-and-forget)
+  transporter.sendMail({
+    from: `"Aura Labs" <${EMAIL_USER}>`,
+    to: OWNER_EMAIL,
+    subject: `New Journal Subscriber: ${email}`,
+    html: `<div style="font-family:sans-serif;padding:24px;background:#111;color:#fff;border-radius:12px;max-width:480px;"><h3 style="color:#00f0ff;margin:0 0 12px;">📬 New Subscriber</h3><p style="color:#aaa;margin:0;"><strong style="color:#fff;">${email}</strong> just subscribed to The Journal.</p></div>`,
+  }).catch(err => console.error('[Subscribe] Owner email failed:', err.message));
+
+  // 3. Send confirmation email to subscriber
+  try {
+    await transporter.sendMail({
+      from: `"Aura Labs" <${EMAIL_USER}>`,
+      to: email,
+      subject: 'Welcome to The Journal | Aura Labs',
+      html: welcomeEmailHTML(email),
+    });
+    console.log('[Subscribe] Confirmation sent to:', email);
+  } catch (err: any) {
+    console.error('[Subscribe] Confirmation email failed:', err.message);
+    // Still return success — subscriber was saved to DB
+  }
+
+  return res.status(200).json({ success: true, message: 'Subscribed successfully.' });
 }
