@@ -122,7 +122,7 @@ export default function ContactPage() {
       `}</style>
 
       {/* 1. CINEMATIC HERO SECTION */}
-      <section ref={heroRef} className="relative pt-32 md:pt-48 pb-20 fluid-px border-b border-white/5 mx-3 md:mx-6 border-x border-white/5">
+      <section id="contact" ref={heroRef} className="relative pt-32 md:pt-48 pb-20 fluid-px border-b border-white/5 mx-3 md:mx-6 border-x border-white/5">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -183,7 +183,7 @@ export default function ContactPage() {
                       </div>
                       <div>
                         <h3 className="text-2xl md:text-3xl font-serif italic mb-2">Transmission Received</h3>
-                        <p className="opacity-40 text-xs md:text-sm">Expect a response within one business day.</p>
+                        <p className="opacity-40 text-xs md:text-sm">Check your inbox for a secure confirmation transmission.</p>
                       </div>
                       <button 
                         onClick={() => setStatus("idle")}

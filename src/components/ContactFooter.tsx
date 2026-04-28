@@ -47,7 +47,7 @@ export default function ContactFooter() {
             <h2 
               onClick={() => {
                 window.scrollTo({ top: 0, behavior: 'instant' });
-                navigate('/contact');
+                navigate('/contact#contact');
               }}
               className="text-[15vw] md:text-[18vw] font-valtero-serif italic leading-[0.8] tracking-tighter cursor-pointer transition-all duration-700 hover:scale-[1.02]"
             >

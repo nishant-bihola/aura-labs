@@ -63,15 +63,15 @@ export default function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOp
       <div className="flex gap-6 md:gap-4 items-center ml-auto">
         {/* Cal.com Trigger Button */}
         <button 
-          data-cal-namespace="15min"
-          data-cal-link="nishant-bihola-aura-lab/15min"
-          data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":true,"theme":"dark"}'
+          onClick={() => {
+            window.location.href = '/contact#contact';
+          }}
           className="group relative bg-white text-black px-4 md:px-6 py-2 rounded-full text-[9px] md:text-[11px] uppercase kerning-wide font-bold overflow-hidden h-8 md:h-9 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:bg-[#0055FF] hover:text-white"
         >
           <div className="relative h-4 overflow-hidden pointer-events-none font-sans z-10">
             <div className="flex flex-col transition-transform duration-500 ease-[0.16, 1, 0.3, 1] group-hover:-translate-y-1/2">
               <span className="h-4 flex items-center">LET'S TALK</span>
-              <span className="h-4 flex items-center">BOOK A CALL</span>
+              <span className="h-4 flex items-center">GET STARTED</span>
             </div>
           </div>
         </button>

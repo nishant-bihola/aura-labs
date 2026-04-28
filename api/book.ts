@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.EMAIL_USER || "nishant15bihola@gmail.com",
-    pass: process.env.EMAIL_PASS,
+    pass: (process.env.EMAIL_PASS || "").replace(/\s/g, ""),
   },
 });
 
@@ -89,7 +89,7 @@ const generateUserBookingHTML = (firstName: string, date: string, time: string) 
       <p style="color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0;">Boardroom Ready</p>
     </div>
     <p style="color: rgba(255,255,255,0.7); font-size: 14px; margin: 0; line-height: 1.6; font-weight: 400;">
-      Our lead architects are preparing for the deep dive. Join the secure boardroom link below at the scheduled time.
+      Our team has been alerted. Your session is now synchronized across all architectural departments.
     </p>
   </div>
 

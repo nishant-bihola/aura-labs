@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.EMAIL_USER || "nishant15bihola@gmail.com",
-    pass: process.env.EMAIL_PASS,
+    pass: (process.env.EMAIL_PASS || "").replace(/\s/g, ""),
   },
 });
 
@@ -104,7 +104,7 @@ const generateUserThankYouHTML = (name: string) => {
         <p style="color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0;">Status: Analyzing Vision</p>
       </div>
       <p style="color: rgba(255,255,255,0.7); font-size: 14px; margin: 0; line-height: 1.6; font-weight: 400;">
-        Expect a direct liaison to establish contact within the next 24 business hours.
+        Our team has been alerted. Your project is now in our priority queue for instant review.
       </p>
     </div>
 
