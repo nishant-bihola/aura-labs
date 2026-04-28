@@ -1,8 +1,18 @@
 import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
+// 1. Configure Services
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER || "nishant15bihola@gmail.com",
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 const supabase = createClient(
   process.env.SUPABASE_URL || "",
@@ -26,7 +36,7 @@ const generateBookingEmailHTML = (firstName: string, lastName: string, email: st
   <div style="background: #0a0a0a; padding: 30px; border-radius: 20px; border: 1px solid #1a1a1a; margin-bottom: 24px;">
     <p style="margin: 10px 0;"><strong>Client:</strong> ${firstName} ${lastName}</p>
     <p style="margin: 10px 0;"><strong>Email:</strong> ${email}</p>
-    <p style="margin: 10px 0;"><strong>Scheduled:</strong> <span style="color: #00FF66;">${date} at ${time}</span></p>
+    <p style="margin: 10px 0;"><strong>Scheduled:</strong> <span style="color: #00FF6 green;">${date} at ${time}</span></p>
     <p style="margin: 10px 0;"><strong>Zone:</strong> ${timeZone}</p>
   </div>
 `;
@@ -53,7 +63,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 1. Store in Supabase
     await supabase.from("bookings").insert([{ first_name: firstName, last_name: lastName, email, booking_date: date, booking_time: time, time_zone: timeZone }]);
 
-    // 2. Parallel Emails via Resend
+    // 2. HYBRID EMAIL LOGIC
+    // Admin Email via Resend (To You)
     const adminEmailPromise = resend.emails.send({
       from: "Aura Labs <onboarding@resend.dev>",
       to: "nishant15bihola@gmail.com",
@@ -62,8 +73,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       html: generateBaseTemplate(generateBookingEmailHTML(firstName, lastName, email, date, time, timeZone), "#00FF66"),
     });
 
-    const userEmailPromise = resend.emails.send({
-      from: "Aura Labs <onboarding@resend.dev>",
+    // User Email via Nodemailer (To User)
+    const userEmailPromise = transporter.sendMail({
+      from: `"Aura Labs" <${process.env.EMAIL_USER || "nishant15bihola@gmail.com"}>`,
       to: email,
       subject: "Consultation Secured | Aura Labs",
       html: generateUserBookingHTML(firstName, date, time)

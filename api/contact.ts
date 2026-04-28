@@ -1,9 +1,19 @@
 import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { createClient } from "@supabase/supabase-js";
 import { Client as NotionClient } from "@notionhq/client";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
+// 1. Configure Services
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER || "nishant15bihola@gmail.com",
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 const supabase = createClient(
   process.env.SUPABASE_URL || "",
@@ -72,7 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (supabaseError) console.error("Supabase Error:", supabaseError);
 
-    // 2. Send Emails via Resend
+    // 2. HYBRID EMAIL LOGIC
+    // Admin Email via Resend (To You) - Highly Reliable
     const adminEmailPromise = resend.emails.send({
       from: "Aura Labs <onboarding@resend.dev>",
       to: "nishant15bihola@gmail.com",
@@ -81,27 +92,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       html: generateBaseTemplate(generateContactEmailHTML(name, email, message, inquiryType, plan)),
     });
 
+    // User Email via Nodemailer (To User) - Free for anyone
     let userEmailPromise = Promise.resolve(null);
-    if (inquiryType === "Newsletter") {
-      userEmailPromise = resend.emails.send({
-        from: "Aura Labs <onboarding@resend.dev>",
-        to: email,
-        subject: "Welcome to The Journal | Aura Labs",
-        html: generateBaseTemplate(`
+    const userSubject = inquiryType === "Newsletter" ? "Welcome to The Journal | Aura Labs" : "Transmission Received | Aura Labs";
+    const userHTML = inquiryType === "Newsletter" ? generateBaseTemplate(`
           <h1 style="color: #ffffff; font-size: 32px; margin-bottom: 24px; font-weight: 700; letter-spacing: -1px;">Welcome to the Inner Circle</h1>
           <p style="font-size: 18px; line-height: 1.8; color: #a0a0a0; margin-bottom: 40px;">
             Your subscription to <span style="color: #00F0FF;">The Journal</span> is confirmed. You'll receive our deep dives into the future of digital residency.
           </p>
-        `)
-      });
-    } else {
-      userEmailPromise = resend.emails.send({
-        from: "Aura Labs <onboarding@resend.dev>",
-        to: email,
-        subject: "Transmission Received | Aura Labs",
-        html: generateUserThankYouHTML(name)
-      });
-    }
+        `) : generateUserThankYouHTML(name);
+
+    userEmailPromise = transporter.sendMail({
+      from: `"Aura Labs" <${process.env.EMAIL_USER || "nishant15bihola@gmail.com"}>`,
+      to: email,
+      subject: userSubject,
+      html: userHTML,
+    });
 
     // 3. Notion Sync
     let notionPromise = Promise.resolve(null);
