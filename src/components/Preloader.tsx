@@ -6,9 +6,9 @@ export default function Preloader({ onComplete }: { onComplete: () => void }) {
   const [isExit, setIsExit] = useState(false);
 
   useEffect(() => {
-    // Total duration 4.5 seconds
-    const duration = 4500;
-    const intervalTime = 45; // roughly 100 steps
+    // Total duration 3 seconds
+    const duration = 3000;
+    const intervalTime = 30; // 100 steps
     const increment = 100 / (duration / intervalTime);
 
     const timer = setInterval(() => {
@@ -17,8 +17,8 @@ export default function Preloader({ onComplete }: { onComplete: () => void }) {
           clearInterval(timer);
           setTimeout(() => {
             setIsExit(true);
-            setTimeout(onComplete, 1000); // Wait for exit animation
-          }, 500);
+            setTimeout(onComplete, 800);
+          }, 400);
           return 100;
         }
         return Math.min(prev + increment, 100);
@@ -28,68 +28,95 @@ export default function Preloader({ onComplete }: { onComplete: () => void }) {
     return () => clearInterval(timer);
   }, [onComplete]);
 
+  const letterVariants = {
+    initial: { rotateY: 90, opacity: 0, z: -100 },
+    animate: { rotateY: 0, opacity: 1, z: 0 },
+  };
+
   return (
     <AnimatePresence>
       {!isExit && (
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ 
-            y: "-100%",
+            clipPath: "inset(0 0 100% 0)",
             transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } 
           }}
-          className="fixed inset-0 z-[999] bg-black flex flex-col items-center justify-center overflow-hidden"
+          className="fixed inset-0 z-[999] bg-[#050505] flex flex-col items-center justify-center overflow-hidden perspective-[1000px]"
         >
-          {/* Main Logo / Text */}
-          <div className="relative overflow-hidden">
-            <motion.h1
-              initial={{ y: 100 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-4xl md:text-6xl font-valtero-serif italic text-white tracking-tighter"
-            >
-              AURA LABS
-            </motion.h1>
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: "100%" }}
-              transition={{ duration: 4, ease: "linear" }}
-              className="h-px bg-white/20 mt-4"
-            />
-          </div>
-
-          {/* Progress Counter */}
-          <div className="absolute bottom-12 md:bottom-20 left-12 md:left-20 overflow-hidden">
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              className="flex items-baseline gap-2"
-            >
-              <span className="text-4xl md:text-8xl font-black text-white/10 leading-none">
-                {Math.round(progress).toString().padStart(2, '0')}
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-white/40 mb-2 md:mb-4">
-                Architecture in progress
-              </span>
-            </motion.div>
-          </div>
-
-          {/* Side Info */}
-          <div className="absolute top-12 md:top-20 right-12 md:right-20 hidden md:block">
-             <p className="text-[10px] uppercase tracking-[0.4em] font-bold text-white/20">
-               © 2026 NISHANT BIHOLA<br />
-               EST. 2024
-             </p>
-          </div>
-
-          {/* Aesthetic Blur Element */}
+          {/* Dynamic Vibrant Background Glow */}
           <motion.div 
             animate={{ 
-              scale: [1, 1.2, 1],
-              opacity: [0.1, 0.2, 0.1]
+              scale: [1, 1.5, 1],
+              opacity: [0.3, 0.6, 0.3],
+              background: [
+                "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,1) 70%)",
+                "radial-gradient(circle, rgba(100,100,255,0.15) 0%, rgba(0,0,0,1) 70%)",
+                "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,1) 70%)"
+              ]
             }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-white rounded-full blur-[150px] pointer-events-none z-[-1]"
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 z-[-1]"
           />
+
+          {/* 3D Rotating Typography */}
+          <div className="flex gap-[0.1em] overflow-hidden">
+            {"AURA LABS".split("").map((char, i) => (
+              <motion.span
+                key={i}
+                variants={letterVariants}
+                initial="initial"
+                animate="animate"
+                transition={{ 
+                  duration: 0.8, 
+                  delay: i * 0.05, 
+                  ease: [0.16, 1, 0.3, 1] 
+                }}
+                className={`text-4xl md:text-7xl font-valtero-serif italic text-white tracking-tighter inline-block ${char === " " ? "w-4 md:w-8" : ""}`}
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                {char}
+              </motion.span>
+            ))}
+          </div>
+
+          {/* Progress Indicator */}
+          <div className="mt-8 flex flex-col items-center gap-4">
+             <div className="w-48 h-[2px] bg-white/10 relative overflow-hidden rounded-full">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  className="absolute top-0 left-0 h-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.8)]"
+                />
+             </div>
+             <motion.div
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               className="text-[10px] uppercase tracking-[0.5em] font-bold text-white/40 flex items-center gap-4"
+             >
+               <span>Loading Experience</span>
+               <span className="text-white tabular-nums">{Math.round(progress)}%</span>
+             </motion.div>
+          </div>
+
+          {/* 3D Decor Element */}
+          <motion.div 
+            animate={{ 
+              rotateX: [0, 360],
+              rotateY: [0, 360],
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-white/5 z-[-1] rounded-full"
+            style={{ transformStyle: "preserve-3d" }}
+          />
+
+          {/* Copyright Info */}
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 md:left-auto md:right-12 md:translate-x-0">
+             <p className="text-[9px] uppercase tracking-[0.3em] font-medium text-white/20 text-center md:text-right leading-relaxed">
+               Crafting Excellence<br />
+               © 2026 AURA LABS
+             </p>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
