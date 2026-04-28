@@ -282,28 +282,30 @@ export default function ContactPage() {
                </div>
             </div>
 
-            <div className="w-full lg:w-auto">
+            <div className="w-full lg:w-[400px] flex-shrink-0">
               <motion.div 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="bg-white/[0.02] p-10 md:p-16 rounded-[40px] md:rounded-[60px] border border-white/10 flex flex-col items-center space-y-8"
+                className="bg-white/[0.02] p-8 md:p-12 rounded-[32px] md:rounded-[40px] border border-white/10 flex flex-col items-center justify-center space-y-6 md:space-y-8 backdrop-blur-md"
               >
-                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center border border-white/10 mb-2">
-                  <Calendar size={32} strokeWidth={1.5} />
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                  <Calendar size={28} strokeWidth={1.5} className="md:w-8 md:h-8" />
                 </div>
-                <div className="text-center">
-                  <h3 className="text-xl md:text-2xl font-serif italic mb-2">Live Availability</h3>
-                  <p className="text-white/30 text-xs uppercase tracking-widest">Mountain Time (Edmonton)</p>
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl md:text-3xl font-serif italic text-white">Live Availability</h3>
+                  <p className="text-white/40 text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold">Mountain Time (Edmonton)</p>
                 </div>
-                <a 
-                  href="https://calendar.app.google/ZQNXkk3AFDSdbyReA" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="valtero-btn scale-125 md:scale-150"
-                >
-                  Schedule Strategy Session
-                </a>
-                <p className="text-[9px] text-white/20 uppercase tracking-[0.2em] pt-4">Instant Confirmation Guaranteed</p>
+                <div className="w-full flex justify-center pt-2">
+                  <a 
+                    href="https://calendar.app.google/ZQNXkk3AFDSdbyReA" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="valtero-btn whitespace-nowrap !text-[10px] md:!text-xs !px-8 md:!px-10 !py-4 md:!py-5 w-full sm:w-auto text-center"
+                  >
+                    Schedule Strategy Session
+                  </a>
+                </div>
+                <p className="text-[8px] md:text-[9px] text-white/30 uppercase tracking-[0.2em] text-center max-w-[200px]">Instant Confirmation Guaranteed</p>
               </motion.div>
             </div>
           </div>
