@@ -132,7 +132,7 @@ export default function FAQSection() {
                   onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
                   className="w-full text-left py-6 md:py-12 flex items-center justify-between gap-6 md:gap-8 focus:outline-none"
                 >
-                  <h3 className={`text-base md:text-2xl font-valtero-serif transition-all duration-500 pr-4 ${
+                  <h3 className={`text-[15px] sm:text-base md:text-2xl font-valtero-serif transition-all duration-500 pr-4 leading-[1.2] ${
                     openIndex === idx ? 'text-white italic' : 'text-white/40 group-hover:text-white group-hover:italic'
                   }`}>
                     {faq.question}

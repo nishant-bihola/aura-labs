@@ -339,7 +339,7 @@ export default function ContactPage() {
                 <div className="text-[9px] uppercase tracking-widest opacity-20">May 2026</div>
               </div>
               
-              <div className="grid grid-cols-7 gap-1 md:gap-4 text-center">
+              <div className="grid grid-cols-7 gap-1 sm:gap-4 text-center">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
                   <div key={d} className="text-[8px] font-bold opacity-20 py-2">{d}</div>
                 ))}
@@ -357,7 +357,7 @@ export default function ContactPage() {
                       disabled={!isSelectable}
                       onClick={() => setBookingData({...bookingData, date: `2026-05-${day.toString().padStart(2, '0')}`})}
                       className={`
-                        aspect-square rounded-full flex items-center justify-center text-[10px] md:text-sm transition-all duration-500
+                        aspect-square rounded-full flex items-center justify-center text-[10px] sm:text-sm transition-all duration-500
                         ${isSelected ? 'bg-white text-black font-bold scale-110' : ''}
                         ${!isSelectable ? 'opacity-5 pointer-events-none' : 'hover:bg-white/10 opacity-60'}
                       `}
@@ -403,14 +403,14 @@ export default function ContactPage() {
                         placeholder="Full Name"
                         value={bookingData.name}
                         onChange={(e) => setBookingData({...bookingData, name: e.target.value})}
-                        className="bg-transparent border-b border-white/10 py-2 text-sm focus:outline-none focus:border-white transition-all placeholder:opacity-20"
+                        className="bg-transparent border-b border-white/10 py-2 text-xs sm:text-sm focus:outline-none focus:border-white transition-all placeholder:opacity-20"
                       />
                       <input 
                         type="email" 
                         placeholder="Email Address"
                         value={bookingData.email}
                         onChange={(e) => setBookingData({...bookingData, email: e.target.value})}
-                        className="bg-transparent border-b border-white/10 py-2 text-sm focus:outline-none focus:border-white transition-all placeholder:opacity-20"
+                        className="bg-transparent border-b border-white/10 py-2 text-xs sm:text-sm focus:outline-none focus:border-white transition-all placeholder:opacity-20"
                       />
                     </div>
                   </div>

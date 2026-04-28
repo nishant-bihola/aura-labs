@@ -55,7 +55,7 @@
     text-wrap: balance;
   }
   .fluid-h1 {
-    font-size: clamp(3.5rem, 15vw, 12rem);
+    font-size: clamp(2.5rem, 12vw, 12rem);
   }
   .fluid-h2 {
     font-size: clamp(2.25rem, 8vw, 7.5rem);
@@ -96,11 +96,12 @@
   
   /* Mobile Border Fixes */
   @media (max-width: 768px) {
-    .mx-6 { margin-left: 0.75rem; margin-right: 0.75rem; }
+    .mx-6 { margin-left: 0.5rem; margin-right: 0.5rem; }
     .px-12 { padding-left: 1rem; padding-right: 1rem; }
-    .py-24 { padding-top: 5rem; padding-bottom: 5rem; }
-    .fluid-px { padding-left: 1.25rem; padding-right: 1.25rem; }
-    .fluid-py { padding-top: 4.5rem; padding-bottom: 4.5rem; }
+    .py-24 { padding-top: 4rem; padding-bottom: 4rem; }
+    .fluid-px { padding-left: 1rem; padding-right: 1rem; }
+    .fluid-py { padding-top: 4rem; padding-bottom: 4rem; }
+    .fluid-h1 { font-size: clamp(2.2rem, 15vw, 4rem); }
   }
 
   /* Ultrawide adjustments */

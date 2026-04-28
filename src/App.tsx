@@ -83,16 +83,8 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const hasLoaded = sessionStorage.getItem("aura-labs-loaded");
-    if (hasLoaded) {
-      setIsLoading(false);
-    }
-  }, []);
-
   const handleLoadingComplete = () => {
     setIsLoading(false);
-    sessionStorage.setItem("aura-labs-loaded", "true");
   };
 
   useEffect(() => {

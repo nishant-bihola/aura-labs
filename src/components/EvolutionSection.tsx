@@ -50,7 +50,7 @@ export default function EvolutionSection() {
   return (
     <section 
       ref={containerRef}
-      className="w-full min-h-[60vh] flex items-center justify-center bg-[#050505] px-6 md:px-12 py-32 border-x border-white/5 mx-3 md:mx-6"
+      className="w-full min-h-[60vh] flex items-center justify-center bg-[#050505] fluid-px fluid-py border-x border-white/5 mx-3 md:mx-6"
     >
       <h2 
         ref={textRef}

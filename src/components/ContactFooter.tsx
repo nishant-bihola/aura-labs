@@ -32,7 +32,7 @@ export default function ContactFooter() {
   }, []);
 
   return (
-    <footer id="contact" className="pt-0 pb-24 md:pb-32 px-4 md:px-6 border-x border-border-soft mx-3 md:mx-6 relative overflow-hidden bg-brand-bg">
+    <footer id="contact" className="pt-0 fluid-pb fluid-px border-x border-border-soft mx-3 md:mx-6 relative overflow-hidden bg-brand-bg">
       <div className="absolute top-0 left-0 w-full h-[1px] bg-border-soft opacity-30" />
 
       <div className="w-full max-w-7xl mx-auto flex flex-col items-center text-center">

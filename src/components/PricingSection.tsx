@@ -87,8 +87,8 @@ export default function AuraPricing() {
         {
           y: 0,
           opacity: 1,
-          stagger: 0.05,
-          duration: 0.5,
+          stagger: 0.03,
+          duration: 0.4,
           ease: "power4.out",
           scrollTrigger: {
             trigger: cardsRef.current,
@@ -148,9 +148,9 @@ export default function AuraPricing() {
             <p className="text-[9px] md:text-[10px] tracking-[0.3em] uppercase font-valtero-sans">Investment</p>
           </div>
           
-          <h2 className="pricing-title-reveal fluid-h2 font-valtero-serif leading-[1.1] pb-4 tracking-tight relative inline-block">
+          <h2 className="pricing-title-reveal fluid-h2 font-valtero-serif leading-[1.2] pb-6 tracking-tight relative inline-block">
             <span className="text-outline opacity-20 italic font-valtero-serif">Pricing ©26</span>
-            <div className="pricing-title-fill absolute top-0 left-0 overflow-hidden whitespace-nowrap text-white italic font-valtero-serif">
+            <div className="pricing-title-fill absolute top-0 left-0 h-full overflow-hidden whitespace-nowrap text-white italic font-valtero-serif">
               Pricing ©26
             </div>
           </h2>

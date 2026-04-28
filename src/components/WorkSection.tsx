@@ -92,7 +92,7 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
 
 export default function WorkSection() {
   return (
-    <section id="work" className="py-24 md:py-40 px-6 md:px-6 border-x border-white/5 mx-3 md:mx-6 relative bg-black overflow-visible">
+    <section id="work" className="fluid-py fluid-px border-x border-white/5 mx-3 md:mx-6 relative bg-black overflow-visible">
       {/* Cinematic Background Text */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[35vw] md:text-[40vw] font-black opacity-[0.01] select-none pointer-events-none serif italic leading-none text-white whitespace-nowrap">
         Works

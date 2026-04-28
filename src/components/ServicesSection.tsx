@@ -105,7 +105,7 @@ function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
 
 export default function ServicesSection() {
   return (
-    <section id="services" className="bg-black relative pt-32 pb-12 overflow-hidden selection:bg-white selection:text-black mx-3 md:mx-6 border-x border-white/5">
+    <section id="services" className="bg-black relative fluid-py overflow-hidden selection:bg-white selection:text-black mx-3 md:mx-6 border-x border-white/5">
       {/* SECTION HEADER - Subtle but present */}
       <div className="max-w-7xl mx-auto fluid-px mb-20">
          <div className="flex items-center gap-4 opacity-20">

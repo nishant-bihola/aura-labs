@@ -39,7 +39,7 @@ export default function Hero() {
            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
            className="relative w-full"
         >
-          <h1 className="fluid-h1 leading-[0.75] font-black uppercase font-display tracking-tight text-white flex flex-wrap items-center justify-center">
+          <h1 className="fluid-h1 leading-[0.75] font-black uppercase font-display tracking-tight text-white flex flex-wrap items-center justify-center balance-text">
             {"AURA LABS".split("").map((char, i) => (
               char === " " ? (
                 <span key={i} className="w-[4vw]">&nbsp;</span>

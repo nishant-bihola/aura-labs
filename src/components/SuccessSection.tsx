@@ -12,7 +12,7 @@ const CHAT_MESSAGES = [
 
 export default function SuccessSection() {
   return (
-    <section className="fluid-py px-6 border-x border-border-soft mx-3 md:mx-6">
+    <section className="fluid-py fluid-px border-x border-border-soft mx-3 md:mx-6">
       <div className="w-full max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-24 items-center">
           <div className="space-y-12">
