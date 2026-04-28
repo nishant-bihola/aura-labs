@@ -110,17 +110,18 @@ function NewsletterForm() {
     e.preventDefault();
     setStatus("loading");
     try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, type: "Newsletter", name: "Newsletter Subscriber", message: "Subscribed to journal" }),
+      // Must dynamically import or define at top. Since submitServiceRequest is in another file, let's assume it's imported above.
+      const { submitServiceRequest } = await import("../api/bookingApi");
+      await submitServiceRequest({
+        name: "Newsletter Subscriber",
+        email: email,
+        serviceType: "Newsletter",
+        timestamp: new Date().toISOString(),
+        source: 'Newsletter'
       });
-      if (res.ok) {
-        setStatus("success");
-        setEmail("");
-      } else {
-        setStatus("error");
-      }
+      
+      setStatus("success");
+      setEmail("");
     } catch (err) {
       setStatus("error");
     }

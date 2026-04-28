@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight, Calendar, Mail, Check, Video } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { submitServiceRequest } from "../api/bookingApi";
 
 export default function ContactPage() {
   useEffect(() => {
@@ -24,27 +25,22 @@ export default function ContactPage() {
     setStatus("loading");
 
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          message: formData.message,
-          plan: selectedPlan || "Custom",
-          type: selectedPlan === "Project" ? "Project Inquiry" : (selectedPlan ? "Pricing Lead" : "Contact"),
-        }),
+      await submitServiceRequest({
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        message: formData.message,
+        plan: selectedPlan || "Custom",
+        serviceType: selectedPlan === "Project" ? "Project Inquiry" : (selectedPlan ? "Pricing Lead" : "Contact"),
+        timestamp: new Date().toISOString(),
+        source: 'Website Form'
       });
 
-      if (response.ok) {
-        setStatus("success");
-        setFormData({ firstName: "", lastName: "", email: "", message: "" });
-        // Scroll to top after successful submission
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        setStatus("error");
-      }
+      setStatus("success");
+      setFormData({ firstName: "", lastName: "", email: "", message: "" });
+      // Scroll to top after successful submission
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
+      console.error("Submission failed:", error);
       setStatus("error");
     }
   };
@@ -72,7 +68,7 @@ export default function ContactPage() {
         }
         @media (min-width: 768px) {
           .fluid-h1-contact {
-            font-size: clamp(4rem, 14vw, 11rem);
+            font-size: clamp(4rem, 11vw, 11rem);
           }
         }
         .custom-scrollbar::-webkit-scrollbar {
@@ -134,7 +130,7 @@ export default function ContactPage() {
             <span className="text-[10px] tracking-[0.4em] uppercase font-bold">Connect</span>
           </div>
           
-          <h1 className="fluid-h1 font-serif italic tracking-tighter mb-8 md:mb-12">
+          <h1 className="fluid-h1-contact font-serif italic tracking-tighter mb-8 md:mb-12">
             Let's build <br className="hidden md:block" /> something <br className="md:hidden" />
             <span className="relative inline-block">
               <span className="text-outline opacity-20 italic">Extraordinary.</span>
@@ -196,7 +192,7 @@ export default function ContactPage() {
                     <form onSubmit={handleSubmit} className="relative z-10 space-y-8 md:space-y-10">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
                         <div className="space-y-3">
-                          <label className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-30 ml-1">First Name</label>
+                          <label className="text-[12px] uppercase tracking-[0.2em] font-bold opacity-60 ml-1">First Name</label>
                           <input 
                             type="text" 
                             required
@@ -207,7 +203,7 @@ export default function ContactPage() {
                           />
                         </div>
                         <div className="space-y-3">
-                          <label className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-30 ml-1">Last Name</label>
+                          <label className="text-[12px] uppercase tracking-[0.2em] font-bold opacity-60 ml-1">Last Name</label>
                           <input 
                             type="text" 
                             required
@@ -220,7 +216,7 @@ export default function ContactPage() {
                       </div>
 
                       <div className="space-y-3">
-                        <label className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-30 ml-1">Email Address</label>
+                        <label className="text-[12px] uppercase tracking-[0.2em] font-bold opacity-60 ml-1">Email Address</label>
                         <input 
                           type="email" 
                           required
@@ -232,7 +228,7 @@ export default function ContactPage() {
                       </div>
 
                       <div className="space-y-3">
-                        <label className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-30 ml-1">Message</label>
+                        <label className="text-[12px] uppercase tracking-[0.2em] font-bold opacity-60 ml-1">Message</label>
                         <textarea 
                           rows={3}
                           required

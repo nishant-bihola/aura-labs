@@ -34,7 +34,7 @@ export default function Hero() {
       {/* Huge Centered Text */}
       <div className="relative z-10 flex flex-col items-center text-center px-4 w-full">
         <motion.div
-           initial={{ opacity: 0, scale: 0.95 }}
+           initial={{ opacity: 1, scale: 0.95 }}
            animate={{ opacity: 1, scale: 1 }}
            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
            className="relative w-full"

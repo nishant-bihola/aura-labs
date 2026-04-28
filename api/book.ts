@@ -103,59 +103,83 @@ const generateUserBookingHTML = (firstName: string, date: string, time: string) 
 
   <div style="text-align: center;">
     <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Consultation+with+Aura+Labs&details=Join+Google+Meet:+${encodeURIComponent(GOOGLE_MEET_LINK)}&dates=${date.replace(/-/g, '')}T${time.replace(/:/g, '')}00Z" style="color: rgba(255,255,255,0.4); text-decoration: underline; font-size: 12px; font-weight: 600;">Add to Google Calendar</a>
-  </div>
 `, "#00F0FF");
+
+const generateContactEmailHTML = (name: string, email: string, message: string, type: string, plan: string) => `
+  <h2 style="color: #ffffff; font-size: 32px; margin-bottom: 30px; font-weight: 800; letter-spacing: -1.5px; line-height: 1;">New Client Inquiry</h2>
+  <div style="background: rgba(255,255,255,0.02); padding: 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05);">
+    <p><strong>Name:</strong> ${name}</p>
+    <p><strong>Email:</strong> ${email}</p>
+    <p><strong>Type:</strong> ${type}</p>
+    <p><strong>Plan:</strong> ${plan}</p>
+    <p><strong>Message:</strong> ${message}</p>
+  </div>
+`;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { firstName, lastName, email, date, time, timeZone } = req.body;
+  const { name, email, phone, message, plan } = req.body;
+  const clientName = name || "Anonymous User";
 
   try {
-    // 1. Prepare All Promises (Parallel Execution)
-    const supabasePromise = supabase.from("bookings").insert([{ 
-      first_name: firstName, 
-      last_name: lastName, 
+    // 1. Database Sync (Supabase)
+    const supabasePromise = supabase.from("booking_submissions").insert([{ 
+      name: clientName, 
       email, 
-      booking_date: date, 
-      booking_time: time, 
-      time_zone: timeZone 
+      phone: phone || null,
+      message, 
+      plan: plan || "Consultation"
     }]);
 
+    // 2. Email Operations (Parallel)
     const adminEmailPromise = resend.emails.send({
       from: "Aura Labs <onboarding@resend.dev>",
       to: "nishant15bihola@gmail.com",
       replyTo: email,
-      subject: `NEW CONSULTATION: ${firstName} ${lastName}`,
-      html: generateBaseTemplate(generateBookingEmailHTML(firstName, lastName, email, date, time, timeZone), "#00FF66"),
+      subject: `📅 NEW BOOKING | ${clientName}`,
+      html: generateBaseTemplate(generateContactEmailHTML(clientName, email, message, "Consultation Booking", plan)),
     });
 
     const userEmailPromise = transporter.sendMail({
-      from: `"Aura Labs" <${process.env.EMAIL_USER || "nishant15bihola@gmail.com"}>`,
+      from: `"Aura Labs" <${process.env.BREVO_USER || "nishant15bihola@gmail.com"}>`,
       to: email,
-      subject: "Consultation Secured | Aura Labs",
-      html: generateUserBookingHTML(firstName, date, time)
+      subject: "Consultation Synchronized | Aura Labs",
+      html: generateUserThankYouHTML(clientName),
     });
 
-    // 2. Execute All Tasks in Parallel
-    console.log(`Starting booking transmission for ${firstName} (${email})...`);
+    // 3. Notion Sync (Improved)
+    let notionPromise = Promise.resolve(null);
+    if (process.env.NOTION_TOKEN && process.env.NOTION_DATABASE_ID && process.env.NOTION_TOKEN !== "placeholder") {
+      notionPromise = notion.pages.create({
+        parent: { database_id: process.env.NOTION_DATABASE_ID },
+        properties: {
+          Name: { title: [{ text: { content: clientName } }] },
+          Email: { email: email },
+          Phone: { phone_number: phone || "" },
+          Message: { rich_text: [{ text: { content: message || "Booking" } }] },
+          Type: { select: { name: "Booking" } },
+          Date: { date: { start: new Date().toISOString() } },
+          Status: { status: { name: 'Not started' } }
+        }
+      });
+    }
+
+    // Execute All in Parallel
+    console.log(`Starting booking sync for ${clientName}...`);
     const results = await Promise.allSettled([
       supabasePromise, 
       adminEmailPromise, 
-      userEmailPromise
+      userEmailPromise, 
+      notionPromise
     ]);
 
-    // 3. Log Results for Debugging
-    const [sb, res, node] = results;
-    console.log("Booking Service Status:", {
-      supabase: sb.status,
-      resendAdmin: res.status,
-      nodemailerUser: node.status
-    });
+    const [sb, resendRes, node, notionRes] = results;
 
     if (sb.status === "rejected") console.error("Supabase Error:", sb.reason);
-    if (res.status === "rejected") console.error("Resend Error:", res.reason);
+    if (resendRes.status === "rejected") console.error("Resend Error:", resendRes.reason);
     if (node.status === "rejected") console.error("Nodemailer Error:", node.reason);
+    if (notionRes.status === "rejected") console.error("Notion Error:", notionRes.reason);
 
     return res.status(200).json({ 
       success: true,

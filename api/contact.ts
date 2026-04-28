@@ -122,21 +122,34 @@ const generateUserThankYouHTML = (name: string) => {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { name, email, message, type, plan } = req.body;
+  const { name, email, phone, message, type, plan } = req.body;
   const inquiryType = type || "Contact";
   const clientName = name || "Anonymous User";
 
   try {
-    // 1. Prepare All Promises (Parallel Execution)
-    const supabasePromise = supabase.from("contact_submissions").insert([{ 
-      first_name: clientName.split(' ')[0], 
-      last_name: clientName.split(' ').slice(1).join(' '), 
+    // 1. Database Operations
+    const supabaseOps = [];
+    
+    // Always log to leads
+    supabaseOps.push(supabase.from("leads").insert([{ 
+      name: clientName, 
       email, 
+      phone: phone || null,
       message, 
-      type: inquiryType,
-      plan: plan
-    }]);
+      service_type: inquiryType,
+      plan: plan,
+      status: 'New'
+    }]));
 
+    // If newsletter, also add to newsletter_subscribers table
+    if (inquiryType === "Newsletter") {
+      supabaseOps.push(supabase.from("newsletter_subscribers").upsert([{ 
+        email, 
+        status: 'active'
+      }], { onConflict: 'email' }));
+    }
+
+    // 2. Email Operations
     const adminEmailPromise = resend.emails.send({
       from: "Aura Labs <onboarding@resend.dev>",
       to: "nishant15bihola@gmail.com",
@@ -157,12 +170,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `) : generateUserThankYouHTML(clientName);
 
     const userEmailPromise = transporter.sendMail({
-      from: `"Aura Labs" <${process.env.EMAIL_USER || "nishant15bihola@gmail.com"}>`,
+      from: `"Aura Labs" <${process.env.BREVO_USER || "nishant15bihola@gmail.com"}>`,
       to: email,
       subject: userSubject,
       html: userHTML,
     });
 
+    // 3. Notion Sync (Improved mapping from Apex Towing)
     let notionPromise = Promise.resolve(null);
     if (process.env.NOTION_TOKEN && process.env.NOTION_DATABASE_ID && process.env.NOTION_TOKEN !== "placeholder") {
       notionPromise = notion.pages.create({
@@ -170,18 +184,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         properties: {
           Name: { title: [{ text: { content: clientName } }] },
           Email: { email: email },
+          Phone: { phone_number: phone || "" },
           Message: { rich_text: [{ text: { content: message || "No message" } }] },
           Type: { select: { name: inquiryType } },
           ...(plan && { Plan: { select: { name: plan } } }),
-          Date: { date: { start: new Date().toISOString() } }
+          Date: { date: { start: new Date().toISOString() } },
+          Status: { status: { name: 'Not started' } }
         }
       });
     }
 
-    // 2. Execute All Tasks in Parallel
+    // Execute All in Parallel
     console.log(`Starting high-speed transmission for ${clientName}...`);
     const results = await Promise.allSettled([
-      supabasePromise, 
+      ...supabaseOps, 
       adminEmailPromise, 
       userEmailPromise, 
       notionPromise

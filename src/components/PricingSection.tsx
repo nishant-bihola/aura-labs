@@ -181,7 +181,7 @@ export default function AuraPricing() {
                 <div className="flex justify-between items-start mb-6 md:mb-12">
                   <div>
                     <h3 className="text-xl md:text-4xl font-serif mb-1 group-hover:italic transition-all duration-400">{plan.name}</h3>
-                    <p className="text-[7px] md:text-[10px] tracking-[0.2em] uppercase text-white/30 font-sans">{plan.tagline}</p>
+                    <p className="text-[9px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 font-sans">{plan.tagline}</p>
                   </div>
                   <div className="w-7 h-7 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black group-hover:border-white transition-all duration-400">
                     <ArrowUpRight size={14} md:size={18} />
@@ -191,7 +191,7 @@ export default function AuraPricing() {
                 <div className="mb-6 md:mb-12">
                   <div className="flex items-baseline gap-1">
                     <span className="text-2xl md:text-5xl lg:text-6xl font-serif tracking-tighter">{plan.price}</span>
-                    <span className="text-white/20 text-[9px] md:text-sm font-sans">{plan.period}</span>
+                    <span className="text-white/40 text-[11px] md:text-sm font-sans">{plan.period}</span>
                   </div>
                 </div>
 
@@ -199,11 +199,11 @@ export default function AuraPricing() {
 
                 <ul className="space-y-3 md:space-y-6 mb-10 md:mb-16">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 md:gap-4 text-white/50 group-hover:text-white/80 transition-colors duration-200">
-                      <div className="w-3 h-3 md:w-4 md:h-4 mt-0.5 md:mt-1 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                        <Check size={6} md:size={8} className="text-white/40" />
+                    <li key={feature} className="flex items-start gap-3 md:gap-4 text-white/70 group-hover:text-white transition-colors duration-200">
+                      <div className="w-3 h-3 md:w-4 md:h-4 mt-0.5 md:mt-1 rounded-full bg-white/5 border border-white/20 flex items-center justify-center shrink-0">
+                        <Check size={6} md:size={8} className="text-white/60" />
                       </div>
-                      <span className="text-[10px] md:text-sm font-sans leading-snug">{feature}</span>
+                      <span className="text-[12px] md:text-sm font-sans leading-snug">{feature}</span>
                     </li>
                   ))}
                 </ul>

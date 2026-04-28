@@ -49,9 +49,9 @@ export default function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOp
   };
 
   return (
-    <header className="absolute top-0 left-0 w-full z-[100] px-6 md:px-12 py-6 md:py-8 flex items-center md:mix-blend-difference selection:bg-white/10">
+    <header className="absolute top-0 left-0 w-full z-[100] px-4 md:px-12 py-6 md:py-8 flex items-center md:mix-blend-difference selection:bg-white/10">
       <motion.div 
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 1, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-base md:text-lg font-bold tracking-tighter"
       >
@@ -60,7 +60,7 @@ export default function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOp
         </a>
       </motion.div>
 
-      <div className="flex gap-6 md:gap-4 items-center ml-auto">
+      <div className="flex gap-3 md:gap-4 items-center ml-auto">
         {/* Cal.com Trigger Button */}
         <button 
           onClick={() => {
