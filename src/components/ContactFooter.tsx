@@ -32,7 +32,7 @@ export default function ContactFooter() {
   }, []);
 
   return (
-    <footer id="contact" className="py-24 md:py-32 px-4 md:px-6 border-x border-border-soft mx-4 md:mx-6 relative overflow-hidden bg-brand-bg">
+    <footer id="contact" className="pt-0 pb-24 md:pb-32 px-4 md:px-6 border-x border-border-soft mx-4 md:mx-6 relative overflow-hidden bg-brand-bg">
       <div className="absolute top-0 left-0 w-full h-[1px] bg-border-soft opacity-30" />
 
       <div className="w-full max-w-7xl mx-auto flex flex-col items-center text-center">
@@ -61,7 +61,7 @@ export default function ContactFooter() {
 
         <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16 pt-16 md:pt-24 border-t border-white/10 items-start">
           <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
-            <div className="text-lg md:text-xl font-bold tracking-tighter uppercase font-valtero-sans">AURA LABS</div>
+            <div className="text-lg md:text-xl font-bold tracking-tighter uppercase font-sans">AURA LABS</div>
             <p className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] opacity-40 leading-relaxed font-bold">
               Digital Residency Studio<br />
               Berlin — Tokyo — NY

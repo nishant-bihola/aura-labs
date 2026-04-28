@@ -55,7 +55,7 @@ export default function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOp
         animate={{ opacity: 1, y: 0 }}
         className="text-base md:text-lg font-bold tracking-tighter"
       >
-        <a href="/" className="no-underline text-white uppercase flex items-center gap-1 font-valtero-sans">
+        <a href="/" className="no-underline text-white uppercase flex items-center gap-1 font-sans">
           Aura Labs <span className="font-light text-sm">©</span>
         </a>
       </motion.div>
@@ -68,7 +68,7 @@ export default function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOp
           data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":true,"theme":"dark"}'
           className="group relative bg-white text-black px-4 md:px-6 py-2 rounded-full text-[9px] md:text-[11px] uppercase kerning-wide font-bold overflow-hidden h-8 md:h-9 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:bg-[#0055FF] hover:text-white"
         >
-          <div className="relative h-4 overflow-hidden pointer-events-none font-valtero-sans z-10">
+          <div className="relative h-4 overflow-hidden pointer-events-none font-sans z-10">
             <div className="flex flex-col transition-transform duration-500 ease-[0.16, 1, 0.3, 1] group-hover:-translate-y-1/2">
               <span className="h-4 flex items-center">LET'S TALK</span>
               <span className="h-4 flex items-center">BOOK A CALL</span>

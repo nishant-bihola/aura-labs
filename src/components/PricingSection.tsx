@@ -156,7 +156,7 @@ export default function AuraPricing() {
           </h2>
           
           <div className="mt-6 md:mt-8 max-w-lg">
-            <p className="pricing-title-reveal text-base md:text-xl text-white/50 font-valtero-sans leading-relaxed">
+            <p className="pricing-title-reveal text-base md:text-xl text-white/50 font-sans leading-relaxed">
               From launch-ready basics to high-performance <br className="hidden md:block" /> 
               cinematic driven experiences.
             </p>
@@ -180,8 +180,8 @@ export default function AuraPricing() {
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-6 md:mb-12">
                   <div>
-                    <h3 className="text-2xl md:text-4xl font-valtero-serif mb-1 group-hover:italic transition-all duration-500">{plan.name}</h3>
-                    <p className="text-[8px] md:text-[10px] tracking-[0.2em] uppercase text-white/30 font-valtero-sans">{plan.tagline}</p>
+                    <h3 className="text-2xl md:text-4xl font-serif mb-1 group-hover:italic transition-all duration-500">{plan.name}</h3>
+                    <p className="text-[8px] md:text-[10px] tracking-[0.2em] uppercase text-white/30 font-sans">{plan.tagline}</p>
                   </div>
                   <div className="w-8 h-8 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black group-hover:border-white transition-all duration-500">
                     <ArrowUpRight size={16} md:size={18} />
@@ -190,8 +190,8 @@ export default function AuraPricing() {
 
                 <div className="mb-6 md:mb-12">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl md:text-5xl lg:text-6xl font-valtero-serif tracking-tighter">{plan.price}</span>
-                    <span className="text-white/20 text-[10px] md:text-sm font-valtero-sans">{plan.period}</span>
+                    <span className="text-3xl md:text-5xl lg:text-6xl font-serif tracking-tighter">{plan.price}</span>
+                    <span className="text-white/20 text-[10px] md:text-sm font-sans">{plan.period}</span>
                   </div>
                 </div>
 
@@ -203,7 +203,7 @@ export default function AuraPricing() {
                       <div className="w-3 h-3 md:w-4 md:h-4 mt-0.5 md:mt-1 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
                         <Check size={6} md:size={8} className="text-white/40" />
                       </div>
-                      <span className="text-[11px] md:text-sm font-valtero-sans leading-snug">{feature}</span>
+                      <span className="text-[11px] md:text-sm font-sans leading-snug">{feature}</span>
                     </li>
                   ))}
                 </ul>

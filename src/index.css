@@ -11,6 +11,9 @@
   --color-brand-gray: rgba(245, 245, 244, 0.4);
   --color-border-soft: rgba(245, 245, 244, 0.15);
   --color-accent-green: #44cd2b;
+  
+  /* Performance optimizations */
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
@@ -27,8 +30,11 @@
 }
 
 @layer utilities {
-  .serif {
+  .serif, .font-valtero-serif {
     font-family: var(--font-serif);
+  }
+  .font-valtero-sans {
+    font-family: var(--font-sans);
   }
   .vertical-text {
     writing-mode: vertical-rl;
@@ -89,6 +95,16 @@
     .mx-6 { margin-left: 1rem; margin-right: 1rem; }
     .px-12 { padding-left: 1.5rem; padding-right: 1.5rem; }
     .py-24 { padding-top: 4rem; padding-bottom: 4rem; }
+    .fluid-px { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .fluid-py { padding-top: 3rem; padding-bottom: 3rem; }
+  }
+
+  .will-change-transform {
+    will-change: transform;
+  }
+  
+  .will-change-opacity {
+    will-change: opacity;
   }
 }
 

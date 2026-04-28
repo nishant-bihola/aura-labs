@@ -184,13 +184,18 @@ export default function App() {
         {/* 5. MAIN CONTENT CANVAS (The 3D Element) */}
         <motion.main 
           animate={{ 
-            scale: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0.95 : 0.85) : 1, 
-            x: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? "-60%" : "-40%") : "0%",
+            scale: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0.94 : 0.85) : 1, 
+            x: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? "-75%" : "-40%") : "0%",
             rotateY: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 10) : 0, 
             rotateX: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 2) : 0, 
-            borderRadius: isMenuOpen ? "40px" : "0px",
+            borderRadius: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? "20px" : "40px") : "0px",
           }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ 
+            duration: 0.4, 
+            ease: [0.22, 1, 0.36, 1],
+            // Use layout: "position" for smoother scaling if needed, 
+            // but here we want fast transforms.
+          }}
           style={{ transformOrigin: "left center" }}
           className="relative min-h-screen bg-black w-full z-10 shadow-[0_100px_200px_rgba(0,0,0,1)] overflow-hidden border border-white/5 will-change-transform"
         >
