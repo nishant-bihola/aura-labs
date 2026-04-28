@@ -55,48 +55,59 @@
     text-wrap: balance;
   }
   .fluid-h1 {
-    font-size: clamp(3.5rem, 18vw, 12rem);
+    font-size: clamp(3.5rem, 15vw, 12rem);
   }
   .fluid-h2 {
-    font-size: clamp(2.5rem, 12vw, 8rem);
+    font-size: clamp(2.25rem, 8vw, 7.5rem);
   }
   .fluid-h3 {
-    font-size: clamp(1.75rem, 8vw, 4rem);
+    font-size: clamp(1.75rem, 6vw, 4rem);
   }
   .fluid-h4 {
-    font-size: clamp(1.25rem, 5vw, 2.5rem);
+    font-size: clamp(1.25rem, 4vw, 2.5rem);
   }
   .fluid-p {
-    font-size: clamp(0.9rem, 1.5vw, 1.125rem);
+    font-size: clamp(0.95rem, 1.1vw, 1.15rem);
+  }
+  
+  .pricing-card {
+    will-change: transform, opacity;
   }
   
   .fluid-px {
-    padding-left: clamp(1.25rem, 6vw, 8rem);
-    padding-right: clamp(1.25rem, 6vw, 8rem);
+    padding-left: clamp(1.5rem, 6vw, 10rem);
+    padding-right: clamp(1.5rem, 6vw, 10rem);
   }
   .fluid-py {
-    padding-top: clamp(4rem, 12vw, 12rem);
-    padding-bottom: clamp(4rem, 12vw, 12rem);
+    padding-top: clamp(5rem, 12vw, 15rem);
+    padding-bottom: clamp(5rem, 12vw, 15rem);
   }
   .fluid-gap {
-    gap: clamp(1.25rem, 5vw, 5rem);
+    gap: clamp(1.5rem, 5vw, 8rem);
   }
   
   /* Responsive Container */
   .container-wide {
     width: 100%;
-    max-width: 1400px;
+    max-width: 1600px;
     margin-left: auto;
     margin-right: auto;
   }
   
   /* Mobile Border Fixes */
   @media (max-width: 768px) {
-    .mx-6 { margin-left: 1rem; margin-right: 1rem; }
-    .px-12 { padding-left: 1.5rem; padding-right: 1.5rem; }
-    .py-24 { padding-top: 4rem; padding-bottom: 4rem; }
+    .mx-6 { margin-left: 0.75rem; margin-right: 0.75rem; }
+    .px-12 { padding-left: 1rem; padding-right: 1rem; }
+    .py-24 { padding-top: 5rem; padding-bottom: 5rem; }
     .fluid-px { padding-left: 1.25rem; padding-right: 1.25rem; }
-    .fluid-py { padding-top: 3rem; padding-bottom: 3rem; }
+    .fluid-py { padding-top: 4.5rem; padding-bottom: 4.5rem; }
+  }
+
+  /* Ultrawide adjustments */
+  @media (min-width: 2000px) {
+    :root {
+      font-size: 18px;
+    }
   }
 
   .will-change-transform {

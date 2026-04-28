@@ -16,10 +16,12 @@ import WorkSection from "./components/WorkSection";
 import ServicesSection from "./components/ServicesSection";
 import SuccessSection from "./components/SuccessSection";
 import PricingSection from "./components/PricingSection";
-import TestimonialSection from "./components/TestimonialSection";
+import FAQSection from "./components/FAQSection";
+import EvolutionSection from "./components/EvolutionSection";
 import ContactFooter from "./components/ContactFooter";
 import CustomCursor from "./components/CustomCursor";
 import CursorTail from "./components/CursorTail";
+import Preloader from "./components/Preloader";
 
 // Lazy Loaded Pages for performance
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
@@ -79,6 +81,19 @@ function ScrollHandler({ isMenuOpen }: { isMenuOpen: boolean }) {
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const hasLoaded = sessionStorage.getItem("aura-labs-loaded");
+    if (hasLoaded) {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleLoadingComplete = () => {
+    setIsLoading(false);
+    sessionStorage.setItem("aura-labs-loaded", "true");
+  };
 
   useEffect(() => {
     const isMobile = window.matchMedia("(pointer: coarse)").matches;
@@ -123,6 +138,9 @@ export default function App() {
 
   return (
     <Router>
+      <AnimatePresence>
+        {isLoading && <Preloader onComplete={handleLoadingComplete} />}
+      </AnimatePresence>
       <ScrollHandler isMenuOpen={isMenuOpen} />
       
       {/* 1. PERSPECTIVE CONTAINER */}
@@ -222,7 +240,8 @@ export default function App() {
                     <div id="studio"><ServicesSection /></div>
                     <SuccessSection />
                     <div id="pricing"><PricingSection /></div>
-                    <TestimonialSection />
+                    <FAQSection />
+                    <EvolutionSection />
                   </div>
                 } />
 

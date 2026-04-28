@@ -86,6 +86,8 @@ export default function ContactPage() {
       if (response.ok) {
         setStatus("success");
         setFormData({ firstName: "", lastName: "", email: "", message: "" });
+        // Scroll to top after successful submission
+        window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
         setStatus("error");
       }
@@ -167,7 +169,7 @@ export default function ContactPage() {
       `}</style>
 
       {/* 1. CINEMATIC HERO SECTION */}
-      <section ref={heroRef} className="relative pt-32 md:pt-48 pb-20 fluid-px border-b border-white/5">
+      <section ref={heroRef} className="relative pt-32 md:pt-48 pb-20 fluid-px border-b border-white/5 mx-3 md:mx-6 border-x border-white/5">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -179,7 +181,7 @@ export default function ContactPage() {
             <span className="text-[10px] tracking-[0.4em] uppercase font-bold">Connect</span>
           </div>
           
-          <h1 className="fluid-h1-contact font-serif italic tracking-tighter mb-8 md:mb-12">
+          <h1 className="fluid-h1 font-serif italic tracking-tighter mb-8 md:mb-12">
             Let's build <br className="hidden md:block" /> something <br className="md:hidden" />
             <span className="relative inline-block">
               <span className="text-outline opacity-20 italic">Extraordinary.</span>
@@ -201,12 +203,12 @@ export default function ContactPage() {
                <div className="space-y-8">
                   <div className="group">
                      <p className="text-[10px] uppercase tracking-widest font-bold opacity-20 mb-2">Global HQ</p>
-                     <p className="text-sm md:text-base text-white/60">Zurich, Switzerland</p>
+                     <p className="text-sm md:text-base text-white/60">Edmonton, Alberta</p>
                   </div>
                   <div className="group">
                      <p className="text-[10px] uppercase tracking-widest font-bold opacity-20 mb-2">Email</p>
-                     <a href="mailto:studio@auralabs.io" className="text-base md:text-xl hover:text-white/60 transition-colors flex items-center gap-2">
-                        studio@auralabs.io <ArrowUpRight size={16} />
+                     <a href="mailto:Nishant15bihola@gmail.com" className="text-base md:text-xl hover:text-white/60 transition-colors flex items-center gap-2">
+                        Nishant15bihola@gmail.com <ArrowUpRight size={16} />
                      </a>
                   </div>
                </div>
@@ -307,7 +309,7 @@ export default function ContactPage() {
       </section>
 
       {/* 2. BOOKING SECTION */}
-      <section className="fluid-py fluid-px bg-black border-t border-white/5">
+      <section className="fluid-py fluid-px bg-black border-t border-white/5 mx-3 md:mx-6 border-x border-white/5">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row justify-between items-start gap-12 md:gap-20 mb-16 md:mb-24">
             <div className="max-w-2xl">
@@ -337,7 +339,7 @@ export default function ContactPage() {
                 <div className="text-[9px] uppercase tracking-widest opacity-20">May 2026</div>
               </div>
               
-              <div className="grid grid-cols-7 gap-2 md:gap-4 text-center">
+              <div className="grid grid-cols-7 gap-1 md:gap-4 text-center">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
                   <div key={d} className="text-[8px] font-bold opacity-20 py-2">{d}</div>
                 ))}
@@ -345,8 +347,8 @@ export default function ContactPage() {
                   const day = i + 1;
                   const dateObj = new Date(2026, 4, day); // May is index 4
                   const dayOfWeek = dateObj.getDay();
-                  const isWeekday = dayOfWeek > 0 && dayOfWeek < 6;
-                  const isSelectable = isWeekday;
+                  // Enable all days for booking
+                  const isSelectable = true;
                   const isSelected = bookingData.date === `2026-05-${day.toString().padStart(2, '0')}`;
                   
                   return (
@@ -355,7 +357,7 @@ export default function ContactPage() {
                       disabled={!isSelectable}
                       onClick={() => setBookingData({...bookingData, date: `2026-05-${day.toString().padStart(2, '0')}`})}
                       className={`
-                        aspect-square rounded-full flex items-center justify-center text-xs md:text-sm transition-all duration-500
+                        aspect-square rounded-full flex items-center justify-center text-[10px] md:text-sm transition-all duration-500
                         ${isSelected ? 'bg-white text-black font-bold scale-110' : ''}
                         ${!isSelectable ? 'opacity-5 pointer-events-none' : 'hover:bg-white/10 opacity-60'}
                       `}
@@ -464,12 +466,12 @@ export default function ContactPage() {
       </section>
 
       {/* Footer / CTA Area */}
-      <section className="py-32 md:py-60 px-6 bg-black text-white text-center border-t border-white/5 overflow-hidden">
+      <section className="py-32 md:py-60 fluid-px bg-black text-white text-center border-t border-white/5 overflow-hidden mx-3 md:mx-6 border-x border-white/5">
           <motion.p 
             initial={{ opacity: 0, scale: 0.98 }}
             whileInView={{ opacity: 0.1, scale: 1 }}
             transition={{ duration: 2 }}
-            className="text-4xl md:text-9xl font-serif italic tracking-tighter leading-none max-w-6xl mx-auto"
+            className="fluid-h1 font-serif italic tracking-tighter leading-none max-w-6xl mx-auto"
           >
             Evolution starts <br className="hidden md:block" /> with a conversation.
           </motion.p>

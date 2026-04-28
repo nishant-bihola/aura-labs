@@ -179,34 +179,37 @@ async function startServer() {
         try {
           const emailTasks = [];
 
-          // Admin Notification
-          if (inquiryType !== "Newsletter") {
-            emailTasks.push(resend_email.emails.send({
-              from: `Aura Labs <onboarding@resend.dev>`,
-              to: process.env.ADMIN_EMAIL || "",
-              reply_to: process.env.EMAIL_USER,
-              subject: `New ${inquiryType} Submission from ${name}`,
-              html: generateEmailHTML(name, email, message, inquiryType as any, plan),
-            }));
-          }
+          // Admin Notification (Always Send)
+          emailTasks.push(resend_email.emails.send({
+            from: `Aura Labs <onboarding@resend.dev>`,
+            to: process.env.ADMIN_EMAIL || "",
+            reply_to: email,
+            subject: `NEW ${inquiryType.toUpperCase()} SUBMISSION: ${name}`,
+            html: generateEmailHTML(name, email, message, inquiryType as any, plan),
+          }));
 
-          // Client Confirmation
-          if (inquiryType === "Newsletter") {
-            emailTasks.push(resend_email.emails.send({
-              from: `Aura Labs <onboarding@resend.dev>`,
-              to: email,
-              reply_to: process.env.EMAIL_USER,
-              subject: "Welcome to Aura Labs Journal",
-              html: generateNewsletterWelcomeHTML(email),
-            }));
+          // Client Confirmation (Only send if it's the verified admin email)
+          // NOTE: On Resend Free Tier (Sandbox), you can only send to your own email.
+          if (email.toLowerCase() === (process.env.ADMIN_EMAIL || "").toLowerCase()) {
+            if (inquiryType === "Newsletter") {
+              emailTasks.push(resend_email.emails.send({
+                from: `Aura Labs <onboarding@resend.dev>`,
+                to: email,
+                reply_to: process.env.ADMIN_EMAIL,
+                subject: "Welcome to Aura Labs Journal",
+                html: generateNewsletterWelcomeHTML(email),
+              }));
+            } else {
+              emailTasks.push(resend_email.emails.send({
+                from: `Aura Labs <onboarding@resend.dev>`,
+                to: email,
+                reply_to: process.env.ADMIN_EMAIL,
+                subject: "We received your inquiry!",
+                html: generateClientConfirmationHTML(name.split(' ')[0], plan ? `${plan} Inquiry` : "Digital Solution Inquiry"),
+              }));
+            }
           } else {
-            emailTasks.push(resend_email.emails.send({
-              from: `Aura Labs <onboarding@resend.dev>`,
-              to: email,
-              reply_to: process.env.EMAIL_USER,
-              subject: "We received your inquiry!",
-              html: generateClientConfirmationHTML(name.split(' ')[0], plan ? `${plan} Inquiry` : "Digital Solution Inquiry"),
-            }));
+            console.log(`Bypassing client confirmation for ${email} due to Resend Sandbox restrictions.`);
           }
 
           // Notion Sync
@@ -261,10 +264,11 @@ async function startServer() {
       (async () => {
         try {
           await Promise.allSettled([
-            // Admin Notification
+            // Admin Notification (Always Send)
             resend_email.emails.send({
               from: `Aura Labs <onboarding@resend.dev>`,
               to: process.env.ADMIN_EMAIL || "",
+              reply_to: email,
               subject: `NEW CALL BOOKED: ${name} on ${date}`,
               html: `
                 <div style="font-family: sans-serif; background: #000; color: #fff; padding: 40px; border-radius: 20px; border: 1px solid #333;">
@@ -286,20 +290,23 @@ async function startServer() {
                 </div>
               `,
             }),
-            // Client Confirmation
-            resend_email.emails.send({
-              from: `Aura Labs <onboarding@resend.dev>`,
-              to: email,
-              reply_to: process.env.EMAIL_USER,
-              subject: "Discovery Call Confirmed - Aura Labs",
-              html: generateBookingConfirmationHTML(name.split(' ')[0], date, time),
-            })
+            // Client Confirmation (Only if verified)
+            ...(email.toLowerCase() === (process.env.ADMIN_EMAIL || "").toLowerCase() ? [
+              resend_email.emails.send({
+                from: `Aura Labs <onboarding@resend.dev>`,
+                to: email,
+                reply_to: process.env.ADMIN_EMAIL,
+                subject: "Discovery Call Confirmed - Aura Labs",
+                html: generateBookingConfirmationHTML(name.split(' ')[0], date, time),
+              })
+            ] : [])
           ]);
           console.log(`Booking emails sent for ${email}`);
         } catch (err) {
           console.error("Booking Email Error:", err);
         }
       })();
+
 
     } catch (error) {
       console.error("Booking Error:", error);

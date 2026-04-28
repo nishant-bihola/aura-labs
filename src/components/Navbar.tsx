@@ -60,7 +60,7 @@ export default function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOp
         </a>
       </motion.div>
 
-      <div className="flex gap-4 items-center ml-auto">
+      <div className="flex gap-6 md:gap-4 items-center ml-auto">
         {/* Cal.com Trigger Button */}
         <button 
           data-cal-namespace="15min"

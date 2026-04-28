@@ -12,11 +12,11 @@ const CHAT_MESSAGES = [
 
 export default function SuccessSection() {
   return (
-    <section className="py-32 px-6 border-x border-border-soft mx-6">
+    <section className="fluid-py px-6 border-x border-border-soft mx-3 md:mx-6">
       <div className="w-full max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-24 items-center">
           <div className="space-y-12">
-            <h2 className="text-6xl md:text-8xl font-normal serif italic leading-[0.9] tracking-tighter">
+            <h2 className="fluid-h2 font-normal font-valtero-serif italic leading-[0.9] tracking-tighter">
               Built for your success.
             </h2>
             <p className="text-xl font-light opacity-60 max-w-md">
@@ -30,10 +30,10 @@ export default function SuccessSection() {
                  { val: 12, suffix: "%", label: "Conversion increase" }
                ].map((stat, i) => (
                  <div key={i} className="space-y-2">
-                    <div className="text-4xl font-normal serif italic">
+                    <div className="text-2xl md:text-4xl font-normal font-valtero-serif italic">
                       <Counter value={stat.val} />{stat.suffix}
                     </div>
-                    <div className="text-[10px] uppercase kerning-wide font-bold opacity-40">{stat.label}</div>
+                    <div className="text-[9px] md:text-[10px] uppercase kerning-wide font-bold opacity-40">{stat.label}</div>
                  </div>
                ))}
             </div>

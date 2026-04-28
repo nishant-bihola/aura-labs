@@ -49,7 +49,7 @@ export default function ProjectDetail() {
   return (
     <div ref={containerRef} className="bg-black text-white min-h-screen selection:bg-white selection:text-black">
       {/* 1. HERO SECTION (Clone of image_2e0c0d.png) */}
-      <section className="min-h-[70vh] md:h-screen flex flex-col justify-center px-6 md:px-12 relative border-b border-white/10 py-20 md:py-0">
+      <section className="min-h-[70vh] md:h-screen flex flex-col justify-center fluid-px relative border-b border-white/10 py-20 md:py-0 mx-3 md:mx-6 border-x border-white/5">
         <div className="overflow-hidden mb-12">
           <h1 className="hero-title fluid-h1 font-bold leading-[0.8] tracking-tighter uppercase text-center md:text-left">
             {project.title}
@@ -98,7 +98,7 @@ export default function ProjectDetail() {
       </section>
 
       {/* Hero Image */}
-      <section className="px-4 md:px-12 py-12">
+      <section className="fluid-px py-12 mx-3 md:mx-6 border-x border-white/5">
          <motion.div 
            initial={{ opacity: 0, scale: 0.95 }}
            animate={{ opacity: 1, scale: 1 }}
@@ -110,12 +110,12 @@ export default function ProjectDetail() {
       </section>
 
       {/* Overview & Gallery */}
-      <section className="py-20 md:py-48 px-6 md:px-12">
+      <section className="py-20 md:py-48 fluid-px mx-3 md:mx-6 border-x border-white/5">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 md:gap-32">
              <div className="lg:col-span-5">
                 <h2 className="text-[10px] md:text-[12px] uppercase font-bold tracking-[0.4em] opacity-40 mb-8">Concept</h2>
-                <p className="text-xl md:text-4xl font-serif italic leading-snug opacity-80">{project.description}</p>
+                <p className="fluid-h3 font-serif italic leading-snug opacity-80">{project.description}</p>
              </div>
              <div className="lg:col-span-7 space-y-12 md:space-y-16">
                 <div className="space-y-6">
@@ -131,11 +131,11 @@ export default function ProjectDetail() {
       </section>
 
       {/* Recent Work - High Fidelity Grid */}
-      <section className="py-20 md:py-40 px-6 md:px-12 border-t border-white/5">
+      <section className="py-20 md:py-40 fluid-px border-t border-white/5 mx-3 md:mx-6 border-x border-white/5">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-24 gap-8">
            <div>
               <h2 className="text-[10px] md:text-[12px] uppercase font-bold tracking-[0.4em] opacity-40 mb-4">Recent Work</h2>
-              <h3 className="text-3xl md:text-5xl font-serif italic">More from the Lab</h3>
+              <h3 className="fluid-h2 font-serif italic">More from the Lab</h3>
            </div>
            <button 
              onClick={() => {
@@ -175,7 +175,7 @@ export default function ProjectDetail() {
       </section>
 
       {/* Project CTA Section */}
-      <section className="py-20 md:py-40 px-6 md:px-12 border-y border-white/5 bg-white text-black">
+      <section className="py-20 md:py-40 fluid-px border-y border-white/5 bg-white text-black mx-3 md:mx-6 border-x border-white/5">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
           <div className="space-y-6 text-center md:text-left">
             <h2 className="text-[10px] uppercase font-bold tracking-[0.4em] opacity-40">Ready to build?</h2>
@@ -192,9 +192,9 @@ export default function ProjectDetail() {
       </section>
 
       {/* Impact Section - Responsive Typography */}
-      <section className="py-24 md:py-48 px-6 md:px-12 bg-black text-white text-center">
+      <section className="py-24 md:py-48 fluid-px bg-black text-white text-center mx-3 md:mx-6 border-x border-white/5 border-t border-white/5">
           <h2 className="text-[9px] md:text-[10px] uppercase font-bold tracking-[0.4em] opacity-40 mb-8 md:mb-12">The Impact</h2>
-          <p className="text-2xl md:text-5xl lg:text-7xl font-serif italic tracking-tighter leading-[1.1] max-w-5xl mx-auto px-4">
+          <p className="fluid-h2 font-serif italic tracking-tighter leading-[1.1] max-w-5xl mx-auto px-4">
             "{project.results}"
           </p>
       </section>

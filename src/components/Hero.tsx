@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section className="relative h-screen bg-black flex flex-col items-center justify-center overflow-hidden border-x border-border-soft mx-6">
+    <section className="relative h-screen bg-black flex flex-col items-center justify-center overflow-hidden border-x border-border-soft mx-3 md:mx-6">
       
       {/* Corner Labels - Hidden on small mobile */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full flex justify-between px-8 pointer-events-none hidden md:flex">
@@ -79,15 +79,15 @@ export default function Hero() {
           </h1>
         </motion.div>
         
-        <div className="max-w-[280px] md:max-w-xl mt-6 md:mt-8">
-           <motion.p 
-             initial={{ opacity: 0, y: 10 }}
-             animate={{ opacity: 0.5, y: 0 }}
-             transition={{ delay: 0.8 }}
-             className="text-[9px] md:text-xs uppercase kerning-wide font-medium leading-relaxed text-center opacity-60"
-           >
-             We design and build digital experiences through strategy, branding, and technology.
-           </motion.p>
+        <div className="max-w-[280px] md:max-w-xl mt-8 md:mt-12">
+            <motion.p 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 0.5, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="text-[10px] md:text-xs uppercase kerning-wide font-bold leading-relaxed text-center opacity-60 tracking-[0.2em]"
+            >
+              We design and build digital experiences through strategy, branding, and technology.
+            </motion.p>
         </div>
       </div>
 

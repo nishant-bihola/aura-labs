@@ -58,24 +58,24 @@ export default function AuraPricing() {
           ease: "none",
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: "top 60%",
+            start: "top 70%",
             end: "top 20%",
-            scrub: true,
+            scrub: 0.5,
           }
         }
       );
 
       gsap.fromTo(
         ".pricing-title-reveal",
-        { y: 50, opacity: 0 },
+        { y: 30, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          duration: 1,
-          ease: "expo.out",
+          duration: 0.7,
+          ease: "power3.out",
           scrollTrigger: {
             trigger: sectionRef.current,
-            start: "top 80%",
+            start: "top 85%",
           }
         }
       );
@@ -83,16 +83,16 @@ export default function AuraPricing() {
       // Cards Staggered Entrance
       gsap.fromTo(
         ".pricing-card",
-        { y: 50, opacity: 0 },
+        { y: 30, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          stagger: 0.1,
-          duration: 1,
-          ease: "expo.out",
+          stagger: 0.05,
+          duration: 0.7,
+          ease: "power3.out",
           scrollTrigger: {
             trigger: cardsRef.current,
-            start: "top 75%",
+            start: "top 80%",
           }
         }
       );
@@ -110,7 +110,7 @@ export default function AuraPricing() {
   return (
     <section 
       ref={sectionRef}
-      className="fluid-py fluid-px bg-[#050505] text-white overflow-hidden relative"
+      className="fluid-py fluid-px bg-[#050505] text-white overflow-hidden relative border-x border-white/5 mx-3 md:mx-6"
       id="pricing"
     >
       <style>{`
@@ -124,18 +124,18 @@ export default function AuraPricing() {
         .pricing-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 1.5rem;
+          gap: 1.25rem;
         }
         @media (min-width: 640px) {
           .pricing-grid {
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
+            gap: 1.5rem;
           }
         }
         @media (min-width: 1024px) {
           .pricing-grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 2.5rem;
+            gap: 2rem;
           }
         }
       `}</style>
@@ -156,7 +156,7 @@ export default function AuraPricing() {
           </h2>
           
           <div className="mt-6 md:mt-8 max-w-lg">
-            <p className="pricing-title-reveal text-base md:text-xl text-white/50 font-sans leading-relaxed">
+            <p className="pricing-title-reveal text-sm md:text-xl text-white/50 font-sans leading-relaxed">
               From launch-ready basics to high-performance <br className="hidden md:block" /> 
               cinematic driven experiences.
             </p>
@@ -168,30 +168,30 @@ export default function AuraPricing() {
           {PLANS.map((plan) => (
             <div 
               key={plan.name}
-              className={`pricing-card group relative p-6 md:p-10 lg:p-12 rounded-[24px] md:rounded-[40px] border transition-all duration-700 flex flex-col justify-between overflow-hidden ${
+              className={`pricing-card group relative p-6 md:p-10 lg:p-12 rounded-[24px] md:rounded-[40px] border transition-all duration-400 flex flex-col justify-between overflow-hidden ${
                 plan.highlight 
                 ? "bg-white/[0.03] border-white/20 shadow-2xl shadow-white/[0.01]" 
                 : "bg-transparent border-white/5 hover:border-white/20"
               }`}
             >
               {/* Refined Subtle Glow */}
-              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
 
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-6 md:mb-12">
                   <div>
-                    <h3 className="text-2xl md:text-4xl font-serif mb-1 group-hover:italic transition-all duration-500">{plan.name}</h3>
-                    <p className="text-[8px] md:text-[10px] tracking-[0.2em] uppercase text-white/30 font-sans">{plan.tagline}</p>
+                    <h3 className="text-xl md:text-4xl font-serif mb-1 group-hover:italic transition-all duration-400">{plan.name}</h3>
+                    <p className="text-[7px] md:text-[10px] tracking-[0.2em] uppercase text-white/30 font-sans">{plan.tagline}</p>
                   </div>
-                  <div className="w-8 h-8 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black group-hover:border-white transition-all duration-500">
-                    <ArrowUpRight size={16} md:size={18} />
+                  <div className="w-7 h-7 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black group-hover:border-white transition-all duration-400">
+                    <ArrowUpRight size={14} md:size={18} />
                   </div>
                 </div>
 
                 <div className="mb-6 md:mb-12">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl md:text-5xl lg:text-6xl font-serif tracking-tighter">{plan.price}</span>
-                    <span className="text-white/20 text-[10px] md:text-sm font-sans">{plan.period}</span>
+                    <span className="text-2xl md:text-5xl lg:text-6xl font-serif tracking-tighter">{plan.price}</span>
+                    <span className="text-white/20 text-[9px] md:text-sm font-sans">{plan.period}</span>
                   </div>
                 </div>
 
@@ -199,11 +199,11 @@ export default function AuraPricing() {
 
                 <ul className="space-y-3 md:space-y-6 mb-10 md:mb-16">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 md:gap-4 text-white/50 group-hover:text-white/80 transition-colors duration-300">
+                    <li key={feature} className="flex items-start gap-3 md:gap-4 text-white/50 group-hover:text-white/80 transition-colors duration-200">
                       <div className="w-3 h-3 md:w-4 md:h-4 mt-0.5 md:mt-1 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
                         <Check size={6} md:size={8} className="text-white/40" />
                       </div>
-                      <span className="text-[11px] md:text-sm font-sans leading-snug">{feature}</span>
+                      <span className="text-[10px] md:text-sm font-sans leading-snug">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -212,10 +212,10 @@ export default function AuraPricing() {
               <div className="relative z-10">
                 <button 
                   onClick={() => handleGetStarted(plan.name)}
-                  className="relative w-full py-4 md:py-5 rounded-full overflow-hidden group/btn transition-all duration-500 bg-white/5 border border-white/10 hover:border-white/40"
+                  className="relative w-full py-4 md:py-5 rounded-full overflow-hidden group/btn transition-all duration-400 bg-white/5 border border-white/10 hover:border-white/40"
                 >
                   <div className="absolute inset-0 bg-white translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-500 ease-[0.16,1,0.3,1]" />
-                  <span className="relative z-10 text-[9px] md:text-[10px] tracking-[0.3em] uppercase font-bold group-hover/btn:text-black transition-colors duration-500">
+                  <span className="relative z-10 text-[8px] md:text-[10px] tracking-[0.3em] uppercase font-bold group-hover/btn:text-black transition-colors duration-400">
                     Get Started
                   </span>
                 </button>

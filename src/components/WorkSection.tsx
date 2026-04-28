@@ -40,7 +40,7 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10%" }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative py-12 md:py-24 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 cursor-none transition-colors hover:bg-white/[0.01] px-4 md:px-8 overflow-visible"
+        className="relative py-10 md:py-24 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 cursor-none transition-colors hover:bg-white/[0.01] px-0 md:px-8 overflow-visible"
       >
         {/* Floating Preview Image (Cinematic Follow) */}
         <motion.div 
@@ -64,9 +64,9 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
         </motion.div>
 
         {/* Project ID and Title */}
-        <div className="flex items-center gap-4 md:gap-20 relative z-20 w-full md:w-auto">
+        <div className="flex items-center gap-6 md:gap-20 relative z-20 w-full md:w-auto">
           <span className="text-[10px] md:text-sm font-medium opacity-20 serif italic min-w-[3ch]">{project.id}</span>
-          <h3 className="text-3xl md:text-6xl lg:text-[7vw] font-normal serif italic tracking-tighter group-hover:translate-x-6 transition-transform duration-700 ease-expo leading-tight md:leading-none">
+          <h3 className="text-3xl md:text-6xl lg:text-[7vw] font-normal font-valtero-serif italic tracking-tighter group-hover:translate-x-6 transition-transform duration-700 ease-expo leading-tight md:leading-none">
             {project.title}
           </h3>
         </div>
@@ -92,7 +92,7 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
 
 export default function WorkSection() {
   return (
-    <section id="work" className="py-24 md:py-40 px-4 md:px-6 border-x border-white/5 mx-4 md:mx-6 relative bg-black overflow-visible">
+    <section id="work" className="py-24 md:py-40 px-6 md:px-6 border-x border-white/5 mx-3 md:mx-6 relative bg-black overflow-visible">
       {/* Cinematic Background Text */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[35vw] md:text-[40vw] font-black opacity-[0.01] select-none pointer-events-none serif italic leading-none text-white whitespace-nowrap">
         Works
@@ -108,7 +108,7 @@ export default function WorkSection() {
                   Selected Portfolio
                 </h2>
              </div>
-             <h3 className="text-2xl md:text-4xl font-serif italic opacity-40 md:ml-12">Featured Work / 2025-26</h3>
+              <h3 className="text-xl md:text-4xl font-valtero-serif italic opacity-40 md:ml-12">Featured Work / 2025-26</h3>
           </div>
           
           <div className="text-right hidden lg:block opacity-30">
