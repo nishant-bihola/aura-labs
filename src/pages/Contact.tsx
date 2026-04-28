@@ -16,41 +16,26 @@ export default function ContactPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [bookingStatus, setBookingStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [bookingData, setBookingData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     date: "",
     time: ""
   });
-  const navigate = useNavigate();
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const selectedPlan = searchParams.get("plan");
-  const projectName = searchParams.get("name");
-
-  // Auto-fill message if project context exists
-  useState(() => {
-    if (projectName) {
-      setFormData(prev => ({
-        ...prev,
-        message: `I'm interested in a project similar to ${projectName}. I'd love to discuss how we can achieve similar results for my brand.`
-      }));
-    } else if (selectedPlan) {
-       setFormData(prev => ({
-        ...prev,
-        message: `I'm interested in the ${selectedPlan} plan. Please send over more details on how we can get started.`
-      }));
-    }
-  });
 
   const handleBookingSubmit = async () => {
-    if (!bookingData.date || !bookingData.time || !bookingData.name || !bookingData.email) return;
+    if (!bookingData.date || !bookingData.time || !bookingData.firstName || !bookingData.email) return;
     
     setBookingStatus("loading");
     try {
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const response = await fetch("/api/book", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bookingData),
+        body: JSON.stringify({
+          ...bookingData,
+          timeZone
+        }),
       });
 
       if (response.ok) {
@@ -397,12 +382,19 @@ export default function ContactPage() {
                 <div className="space-y-10">
                   <div className="space-y-6">
                     <h3 className="text-lg md:text-xl font-serif italic">Your Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <input 
                         type="text" 
-                        placeholder="Full Name"
-                        value={bookingData.name}
-                        onChange={(e) => setBookingData({...bookingData, name: e.target.value})}
+                        placeholder="First Name"
+                        value={bookingData.firstName}
+                        onChange={(e) => setBookingData({...bookingData, firstName: e.target.value})}
+                        className="bg-transparent border-b border-white/10 py-2 text-xs sm:text-sm focus:outline-none focus:border-white transition-all placeholder:opacity-20"
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="Last Name"
+                        value={bookingData.lastName}
+                        onChange={(e) => setBookingData({...bookingData, lastName: e.target.value})}
                         className="bg-transparent border-b border-white/10 py-2 text-xs sm:text-sm focus:outline-none focus:border-white transition-all placeholder:opacity-20"
                       />
                       <input 
@@ -448,7 +440,7 @@ export default function ContactPage() {
 
                   <div className="pt-4">
                     <button
-                      disabled={!bookingData.date || !bookingData.time || !bookingData.name || !bookingData.email || bookingStatus === "loading"}
+                      disabled={!bookingData.date || !bookingData.time || !bookingData.firstName || !bookingData.email || bookingStatus === "loading"}
                       onClick={handleBookingSubmit}
                       className="valtero-btn w-full"
                     >
