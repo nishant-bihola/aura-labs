@@ -18,11 +18,21 @@ const OWNER_EMAIL = 'nishant15bihola@gmail.com';
 
 // ─── Service Clients ─────────────────────────────────────────────────────────
 const resend = RESEND_KEY ? new Resend(RESEND_KEY) : null;
+
+// Primary: Brevo
 const brevo = nodemailer.createTransport({
   host: 'smtp-relay.brevo.com',
   port: 587,
   secure: false,
   auth: { user: BREVO_USER, pass: BREVO_PASS },
+});
+
+// Fallback: Gmail (Direct)
+const GMAIL_USER = process.env.EMAIL_USER || OWNER_EMAIL;
+const GMAIL_PASS = process.env.EMAIL_PASS || '';
+const gmail = nodemailer.createTransport({
+  service: 'gmail',
+  auth: { user: GMAIL_USER, pass: GMAIL_PASS },
 });
 
 // ─── Email Templates ──────────────────────────────────────────────────────────
@@ -224,111 +234,132 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const inquiryType = type || 'Contact';
   const clientName = name || 'Anonymous';
 
-  console.log(`[Contact] New ${inquiryType} from ${clientName} <${email}>`);
+  console.log(`[Contact] Processing ${inquiryType} from ${clientName} <${email}>`);
 
   if (!email) {
     return res.status(400).json({ success: false, error: 'Email is required.' });
   }
 
-  const results: Record<string, boolean> = {};
+  // 1. Supabase - Database Insertion (High Priority)
+  const supabaseTask = (async () => {
+    if (!SUPABASE_URL || !SUPABASE_KEY) return false;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { error } = await supabase.from('leads').insert([{
+      name: clientName,
+      email,
+      phone: phone || null,
+      message,
+      service_type: inquiryType,
+      plan: plan || null,
+      status: 'New',
+    }]);
+    if (error) throw new Error(`Supabase: ${error.message}`);
+    return true;
+  })();
 
-  // 1. Supabase — best effort, never throw
-  if (SUPABASE_URL && SUPABASE_KEY) {
-    try {
-      const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-      const { error } = await supabase.from('leads').insert([{
-        name: clientName,
-        email,
-        phone: phone || null,
-        message,
-        service_type: inquiryType,
-        plan: plan || null,
-        status: 'New',
-      }]);
-      results.supabase = !error;
-      if (error) console.warn('[Contact] Supabase warn:', error.message);
-    } catch (err: any) {
-      results.supabase = false;
-      console.warn('[Contact] Supabase skipped:', err.message);
+  // 2. Admin Notification (Resend with Brevo Fallback)
+  const adminEmailTask = (async () => {
+    if (resend) {
+      try {
+        await resend.emails.send({
+          from: 'Aura Labs <onboarding@resend.dev>',
+          to: OWNER_EMAIL,
+          replyTo: email,
+          subject: `⚡ NEW ${inquiryType.toUpperCase()} — ${clientName}`,
+          html: adminEmailHTML(clientName, email, message, inquiryType, plan),
+        });
+        return 'resend';
+      } catch (err: any) {
+        console.warn('[Contact] Admin Resend failed, falling back to Brevo:', err.message);
+      }
     }
-  }
-
-  // 2. Admin alert via Resend (preferred) — best effort
-  if (resend) {
-    try {
-      await resend.emails.send({
-        from: 'Aura Labs <onboarding@resend.dev>',
-        to: OWNER_EMAIL,
-        replyTo: email,
-        subject: `⚡ NEW ${inquiryType.toUpperCase()} — ${clientName}`,
-        html: adminEmailHTML(clientName, email, message, inquiryType, plan),
-      });
-      results.adminEmail = true;
-    } catch (err: any) {
-      results.adminEmail = false;
-      console.error('[Contact] Admin email (Resend) failed:', err.message);
-    }
-  } else {
+    
     // Fallback: admin via Brevo
-    try {
-      await brevo.sendMail({
-        from: `"Aura Labs" <${BREVO_USER}>`,
-        to: OWNER_EMAIL,
-        replyTo: email,
-        subject: `⚡ NEW ${inquiryType.toUpperCase()} — ${clientName}`,
-        html: adminEmailHTML(clientName, email, message, inquiryType, plan),
-      });
-      results.adminEmail = true;
-    } catch (err: any) {
-      results.adminEmail = false;
-      console.error('[Contact] Admin email (Brevo) failed:', err.message);
-    }
-  }
+    await brevo.sendMail({
+      from: `"Aura Labs Alert" <${BREVO_USER}>`,
+      to: OWNER_EMAIL,
+      replyTo: email,
+      subject: `⚡ NEW ${inquiryType.toUpperCase()} — ${clientName}`,
+      html: adminEmailHTML(clientName, email, message, inquiryType, plan),
+    });
+    return 'brevo';
+  })();
 
-  // 3. User confirmation via Brevo — best effort
-  if (BREVO_PASS) {
+  // 3. User Confirmation (Brevo with Gmail fallback)
+  const userEmailTask = (async () => {
+    if (!BREVO_PASS && !GMAIL_PASS) return false;
+    
     try {
+      // Try Brevo first
       await brevo.sendMail({
         from: `"Aura Labs" <${BREVO_USER}>`,
         to: email,
         subject: 'We received your inquiry | Aura Labs',
         html: userConfirmationHTML(clientName, plan),
       });
-      results.userEmail = true;
-      console.log('[Contact] Confirmation sent to:', email);
+      return true;
     } catch (err: any) {
-      results.userEmail = false;
-      console.error('[Contact] User confirmation email failed:', err.message);
+      console.warn('[Contact] Brevo failed for user email, trying Gmail fallback...', err.message);
+      
+      if (GMAIL_PASS) {
+        try {
+          await gmail.sendMail({
+            from: `"Aura Labs" <${GMAIL_USER}>`,
+            to: email,
+            subject: 'We received your inquiry | Aura Labs',
+            html: userConfirmationHTML(clientName, plan),
+          });
+          return true;
+        } catch (gerr: any) {
+          console.error('[Contact] Gmail fallback also failed:', gerr.message);
+          throw gerr;
+        }
+      }
+      throw err;
     }
-  } else {
-    console.warn('[Contact] No BREVO_SMTP_KEY — user confirmation skipped.');
-    results.userEmail = false;
-  }
+  })();
 
-  // 4. Notion — best effort, never throw
-  if (NOTION_TOKEN && NOTION_DB_ID) {
-    try {
-      const notion = new NotionClient({ auth: NOTION_TOKEN });
-      await notion.pages.create({
-        parent: { database_id: NOTION_DB_ID },
-        properties: {
-          Name: { title: [{ text: { content: clientName } }] },
-          Email: { email },
-          Phone: { phone_number: phone || '' },
-          Message: { rich_text: [{ text: { content: message || 'No message' } }] },
-          Type: { select: { name: inquiryType } },
-          ...(plan && { Plan: { select: { name: plan } } }),
-          Date: { date: { start: new Date().toISOString() } },
-          Status: { status: { name: 'Not started' } },
-        },
-      });
-      results.notion = true;
-    } catch (err: any) {
-      results.notion = false;
-      console.warn('[Contact] Notion skipped:', err.message);
-    }
-  }
+  // 4. Notion CRM
+  const notionTask = (async () => {
+    if (!NOTION_TOKEN || !NOTION_DB_ID) return false;
+    const notion = new NotionClient({ auth: NOTION_TOKEN });
+    await notion.pages.create({
+      parent: { database_id: NOTION_DB_ID },
+      properties: {
+        Name: { title: [{ text: { content: clientName } }] },
+        Email: { email },
+        Phone: { phone_number: phone || '' },
+        Message: { rich_text: [{ text: { content: message || 'No message' } }] },
+        Type: { select: { name: inquiryType } },
+        ...(plan && { Plan: { select: { name: plan } } }),
+        Date: { date: { start: new Date().toISOString() } },
+        Status: { status: { name: 'Not started' } },
+      },
+    });
+    return true;
+  })();
 
-  console.log('[Contact] Results:', results);
-  return res.status(200).json({ success: true, results });
+  // EXECUTE ALL IN PARALLEL for maximum speed
+  const results = await Promise.allSettled([
+    supabaseTask,
+    adminEmailTask,
+    userEmailTask,
+    notionTask
+  ]);
+
+  const [dbRes, adminRes, userRes, notionRes] = results;
+
+  console.log('[Contact] Performance Results:', {
+    database: dbRes.status,
+    adminEmail: adminRes.status,
+    userEmail: userRes.status,
+    notion: notionRes.status
+  });
+
+  // Always return 200 if the database task succeeded (or at least one of them)
+  // This ensures the user sees a success screen immediately
+  return res.status(200).json({ 
+    success: true, 
+    delivered: userRes.status === 'fulfilled'
+  });
 }

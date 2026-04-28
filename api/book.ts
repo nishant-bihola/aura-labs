@@ -173,7 +173,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       success: true,
       services: {
         database: sb.status === "fulfilled",
-        adminEmail: res.status === "fulfilled",
+        adminEmail: resendRes.status === "fulfilled",
         userEmail: node.status === "fulfilled"
       }
     });
