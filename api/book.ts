@@ -141,29 +141,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       html: generateBaseTemplate(generateContactEmailHTML(clientName, email, message, "Consultation Booking", plan)),
     });
 
+    const firstName = clientName.split(' ')[0] || clientName;
     const userEmailPromise = transporter.sendMail({
       from: `"Aura Labs" <${process.env.BREVO_USER || "nishant15bihola@gmail.com"}>`,
       to: email,
-      subject: "Consultation Synchronized | Aura Labs",
-      html: generateUserThankYouHTML(clientName),
+      subject: "We received your booking | Aura Labs",
+      html: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:48px 20px;"><tr><td align="center"><table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#111;border:1px solid rgba(255,255,255,0.06);border-radius:24px;overflow:hidden;"><tr><td style="height:3px;background:linear-gradient(90deg,#00f0ff,#0055ff);"></td></tr><tr><td style="padding:48px;"><p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#00f0ff;">Booking Confirmed</p><h1 style="margin:0 0 20px;font-size:32px;font-weight:300;color:#fff;letter-spacing:-1px;">We've got you, ${firstName}.</h1><p style="margin:0 0 32px;font-size:15px;line-height:1.75;color:rgba(255,255,255,0.55);">Your consultation request is confirmed. We'll reach out within 1–2 business days to lock in a time that works for you.</p><table cellpadding="0" cellspacing="0"><tr><td style="border-radius:100px;background:#fff;"><a href="https://calendar.app.google/ZQNXkk3AFDSdbyReA" style="display:inline-block;padding:14px 36px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#000;text-decoration:none;">Book a Time Now</a></td></tr></table></td></tr><tr><td style="padding:20px 48px;border-top:1px solid rgba(255,255,255,0.06);"><p style="margin:0;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase;">© 2026 Aura Labs · Edmonton, Alberta</p></td></tr></table></td></tr></table></body></html>`,
     });
 
-    // 3. Notion Sync (Improved)
-    let notionPromise = Promise.resolve(null);
-    if (process.env.NOTION_TOKEN && process.env.NOTION_DATABASE_ID && process.env.NOTION_TOKEN !== "placeholder") {
-      notionPromise = notion.pages.create({
-        parent: { database_id: process.env.NOTION_DATABASE_ID },
-        properties: {
-          Name: { title: [{ text: { content: clientName } }] },
-          Email: { email: email },
-          Phone: { phone_number: phone || "" },
-          Message: { rich_text: [{ text: { content: message || "Booking" } }] },
-          Type: { select: { name: "Booking" } },
-          Date: { date: { start: new Date().toISOString() } },
-          Status: { status: { name: 'Not started' } }
-        }
-      });
-    }
+    // 3. Notion Sync — skipped in book.ts (handled by /api/notion endpoint)
+    const notionPromise = Promise.resolve(null);
 
     // Execute All in Parallel
     console.log(`Starting booking sync for ${clientName}...`);
