@@ -82,7 +82,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       } catch (err) {
         console.error("User confirmation email failed:", err);
-        // We don't fail the whole request if the user email fails
+      }
+    }
+
+    // 4. Send User Thank You (for Contact/Inquiry)
+    if (inquiryType !== "Newsletter") {
+      try {
+        await resend.emails.send({
+          from: "Aura Labs <onboarding@resend.dev>",
+          to: email,
+          subject: "Message Received | Aura Labs",
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #050505; color: #ffffff; padding: 40px; border-radius: 20px; border: 1px solid #333;">
+              <h2 style="color: #00F0FF; font-size: 24px; margin-bottom: 20px; font-style: italic;">Thank you for reaching out, ${name.split(' ')[0]}.</h2>
+              <p style="font-size: 16px; line-height: 1.6; color: #ddd; margin-bottom: 20px;">
+                We've received your transmission and our team is already reviewing the details of your inquiry.
+              </p>
+              <p style="font-size: 16px; line-height: 1.6; color: #ddd; margin-bottom: 30px;">
+                Expect a personalized response from one of our architects within 24-48 hours. We're looking forward to potentially building something extraordinary together.
+              </p>
+              <div style="padding: 20px; border-top: 1px solid #333; color: #444; font-size: 12px; text-align: center;">
+                © 2026 Aura Labs • Edmonton, Alberta
+              </div>
+            </div>
+          `
+        });
+      } catch (err) {
+        console.error("User thank you email failed:", err);
       }
     }
 

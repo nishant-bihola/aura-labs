@@ -53,6 +53,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `,
     });
 
+    // 3. Send User Confirmation
+    try {
+      await resend.emails.send({
+        from: "Aura Labs <onboarding@resend.dev>",
+        to: email,
+        subject: "Consultation Confirmed | Aura Labs",
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #050505; color: #ffffff; padding: 40px; border-radius: 20px; border: 1px solid #333; text-align: center;">
+            <h1 style="color: #00FF94; font-size: 28px; margin-bottom: 20px; font-style: italic;">Consultation Secured</h1>
+            <p style="font-size: 16px; line-height: 1.6; color: #ddd; margin-bottom: 20px;">
+              Hi ${name.split(' ')[0]}, your architectural consultation has been successfully scheduled.
+            </p>
+            <div style="background: #111; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: left;">
+              <p style="margin: 5px 0;"><strong>Date:</strong> ${date}</p>
+              <p style="margin: 5px 0;"><strong>Time:</strong> ${time} (Edmonton Time)</p>
+              <p style="margin: 5px 0;"><strong>Method:</strong> Virtual / Google Meet</p>
+            </div>
+            <p style="font-size: 14px; color: #888; margin-bottom: 30px;">
+              A calendar invitation with the meeting link will be sent to this email shortly.
+            </p>
+            <div style="padding: 20px; border-top: 1px solid #333; color: #444; font-size: 12px;">
+              © 2026 Aura Labs • Edmonton, Alberta
+            </div>
+          </div>
+        `
+      });
+    } catch (err) {
+      console.error("User booking confirmation failed:", err);
+    }
+
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error("Booking Error:", error);
