@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "motion/react";
+import { ArrowUpRight } from "lucide-react";
 
 const SERVICE_DETAILS = [
   {
@@ -46,55 +47,63 @@ const SERVICE_DETAILS = [
 
 function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
   return (
-    <div className="group relative py-20 border-b border-white/5 transition-colors hover:bg-white/[0.02]">
+    <div className="group relative py-12 md:py-24 border-b border-white/5 transition-colors hover:bg-white/[0.02]">
       <div className="max-w-7xl mx-auto fluid-px">
-        <div className="flex flex-col lg:flex-row items-start gap-12 lg:gap-20">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-start">
           
-          {/* 001 - Numbering */}
-          <div className="hidden md:flex items-start">
-            <div className="bg-white text-black px-3 py-1 rounded-md font-black text-[11px] tracking-tighter shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-              {service.id}
-            </div>
-          </div>
-
-          {/* Image Side */}
-          <div className="w-full lg:w-[40%] xl:w-[35%] shrink-0">
-            <div className="relative aspect-[16/10] rounded-[2rem] overflow-hidden bg-[#0A0A0A] border border-white/10 group-hover:border-white/20 transition-colors shadow-2xl">
+          {/* Left Side: Image */}
+          <div className="w-full lg:w-1/3 xl:w-[30%] shrink-0">
+            <div className="relative aspect-[4/5] md:aspect-[16/10] lg:aspect-[4/5] rounded-[2rem] overflow-hidden bg-[#0A0A0A] border border-white/10 group-hover:border-white/20 transition-colors shadow-2xl">
               <img 
                 src={service.image} 
                 alt={service.title} 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
               {/* Subtle glass overlay */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              {/* Numbering as a badge on mobile/tablet */}
+              <div className="absolute top-6 left-6 md:hidden">
+                 <div className="bg-white text-black px-3 py-1 rounded-md font-black text-[10px] tracking-tighter">
+                   {service.id}
+                 </div>
+              </div>
             </div>
           </div>
+ 
+          {/* Right Side: Content */}
+          <div className="flex-grow flex flex-col lg:flex-row justify-between gap-12 w-full">
+             <div className="space-y-8 max-w-2xl">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-6">
+                    <span className="hidden md:block text-[12px] font-black opacity-20 serif italic">{service.id}</span>
+                    <h3 className="fluid-h2 font-normal font-valtero-serif italic tracking-tight text-white leading-none">
+                      {service.title}
+                    </h3>
+                  </div>
+                  <p className="text-white/40 text-lg md:text-xl font-light leading-relaxed">
+                    {service.desc}
+                  </p>
+                </div>
 
-          {/* Text Content */}
-          <div className="flex-grow space-y-6 lg:pt-4">
-            <div className="space-y-4">
-              <h3 className="fluid-h2 font-bold tracking-tight text-white leading-none">
-                {service.title}
-              </h3>
-              <p className="text-white/40 text-lg font-light leading-relaxed max-w-xl">
-                {service.desc}
-              </p>
-            </div>
-          </div>
+                <div className="flex flex-wrap gap-2">
+                  {service.categories.map((c) => (
+                    <span 
+                      key={c} 
+                      className="text-[10px] bg-white/5 text-white/70 border border-white/5 px-4 py-2 rounded-lg font-bold hover:bg-white hover:text-black transition-all duration-300 cursor-default uppercase tracking-wider"
+                    >
+                      {c}
+                    </span>
+                  ))}
+                </div>
+             </div>
 
-          {/* Categories Side */}
-          <div className="w-full lg:w-[25%] space-y-4 lg:pt-4">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 block mb-4">Categories</span>
-            <div className="flex flex-wrap gap-2">
-              {service.categories.map((c) => (
-                <span 
-                  key={c} 
-                  className="text-[10px] bg-white/5 text-white/70 border border-white/5 px-4 py-2 rounded-lg font-bold hover:bg-white hover:text-black transition-all duration-300 cursor-default"
-                >
-                  {c}
-                </span>
-              ))}
-            </div>
+             {/* Dynamic Link/Action */}
+             <div className="flex items-end lg:pb-4">
+                <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500 transform group-hover:scale-110">
+                   <ArrowUpRight size={24} className="group-hover:rotate-45 transition-transform duration-500" />
+                </div>
+             </div>
           </div>
 
         </div>

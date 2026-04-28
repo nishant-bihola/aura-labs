@@ -127,19 +127,19 @@ function NewsletterForm() {
   };
 
   return (
-    <form onSubmit={subscribe} className="relative w-full max-w-[280px] md:max-w-[240px] mx-auto md:ml-auto md:mr-0">
+    <form onSubmit={subscribe} className="relative w-full max-w-[320px] mx-auto md:ml-auto md:mr-0">
       <input 
         type="email" 
         required
         placeholder="Email Address"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="w-full bg-white/5 border border-white/10 rounded-full pl-6 pr-20 py-3 text-[11px] md:text-xs focus:outline-none focus:border-white/30 transition-all placeholder:opacity-30 text-white"
+        className="w-full bg-white/5 border border-white/10 rounded-full pl-6 pr-24 py-3 text-[11px] md:text-xs focus:outline-none focus:border-white/30 transition-all placeholder:opacity-30 text-white"
       />
       <button 
         type="submit" 
         disabled={status === "loading"}
-        className="absolute right-1.5 top-1.5 bottom-1.5 px-5 bg-white text-black rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center"
+        className="absolute right-1.5 top-1.5 bottom-1.5 px-6 bg-white text-black rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center"
       >
         {status === "loading" ? "..." : (status === "success" ? "✓" : "Join")}
       </button>
