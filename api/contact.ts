@@ -1,17 +1,9 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import { Client as NotionClient } from "@notionhq/client";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-// 1. Configure Email Transporter (Nodemailer for Free Tier)
-// Use Gmail with an App Password or another SMTP service
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER || "nishant15bihola@gmail.com",
-    pass: process.env.EMAIL_PASS, // App Password required for Gmail
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const supabase = createClient(
   process.env.SUPABASE_URL || "",
@@ -80,10 +72,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (supabaseError) console.error("Supabase Error:", supabaseError);
 
-    // 2. Prepare Emails
-    const adminEmailPromise = transporter.sendMail({
-      from: `"Aura Labs Admin" <${process.env.EMAIL_USER || "nishant15bihola@gmail.com"}>`,
-      to: process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com",
+    // 2. Send Emails via Resend
+    const adminEmailPromise = resend.emails.send({
+      from: "Aura Labs <onboarding@resend.dev>",
+      to: "nishant15bihola@gmail.com",
       replyTo: email,
       subject: `NEW ${inquiryType.toUpperCase()} SUBMISSION: ${name}`,
       html: generateBaseTemplate(generateContactEmailHTML(name, email, message, inquiryType, plan)),
@@ -91,8 +83,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     let userEmailPromise = Promise.resolve(null);
     if (inquiryType === "Newsletter") {
-      userEmailPromise = transporter.sendMail({
-        from: `"Aura Labs" <${process.env.EMAIL_USER || "nishant15bihola@gmail.com"}>`,
+      userEmailPromise = resend.emails.send({
+        from: "Aura Labs <onboarding@resend.dev>",
         to: email,
         subject: "Welcome to The Journal | Aura Labs",
         html: generateBaseTemplate(`
@@ -103,8 +95,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `)
       });
     } else {
-      userEmailPromise = transporter.sendMail({
-        from: `"Aura Labs" <${process.env.EMAIL_USER || "nishant15bihola@gmail.com"}>`,
+      userEmailPromise = resend.emails.send({
+        from: "Aura Labs <onboarding@resend.dev>",
         to: email,
         subject: "Transmission Received | Aura Labs",
         html: generateUserThankYouHTML(name)
