@@ -14,42 +14,6 @@ export default function ContactPage() {
     message: "",
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [bookingStatus, setBookingStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [bookingData, setBookingData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    date: "",
-    time: ""
-  });
-
-  const handleBookingSubmit = async () => {
-    if (!bookingData.date || !bookingData.time || !bookingData.firstName || !bookingData.email) return;
-    
-    setBookingStatus("loading");
-    try {
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const response = await fetch("/api/book", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...bookingData,
-          timeZone
-        }),
-      });
-
-      if (response.ok) {
-        setBookingStatus("success");
-      } else {
-        const errData = await response.json();
-        console.error("Booking failed:", errData);
-        setBookingStatus("error");
-      }
-    } catch (error) {
-      console.error("Connection error:", error);
-      setBookingStatus("error");
-    }
-  };
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -285,7 +249,7 @@ export default function ContactPage() {
                           disabled={status === "loading"}
                           className="valtero-btn"
                         >
-                          {status === "loading" ? "Processing..." : "Submit Inquiry"}
+                          {status === "loading" ? "Sending..." : "Submit Inquiry"}
                         </button>
                       </div>
                     </form>
@@ -300,162 +264,51 @@ export default function ContactPage() {
       {/* 2. BOOKING SECTION */}
       <section className="fluid-py fluid-px bg-black border-t border-white/5 mx-3 md:mx-6 border-x border-white/5">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row justify-between items-start gap-12 md:gap-20 mb-16 md:mb-24">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-12 md:gap-20 text-center lg:text-left">
             <div className="max-w-2xl">
+               <div className="flex items-center gap-2 mb-6 opacity-40 justify-center lg:justify-start">
+                 <span className="w-8 h-[1px] bg-white"></span>
+                 <span className="text-[10px] tracking-[0.4em] uppercase font-bold">Scheduling</span>
+               </div>
                <h2 className="text-3xl md:text-7xl font-serif italic mb-8 leading-[0.9] tracking-tighter">Secure a <br /> Private Consultation.</h2>
-               <p className="text-white/30 text-base md:text-xl font-light leading-relaxed">
-                 Bypass the queue. Choose a time for a 1:1 strategy session with our lead architects. No friction, just focus.
+               <p className="text-white/30 text-base md:text-xl font-light leading-relaxed mb-8">
+                 Bypass the queue. Synchronize with our lead architects via our secure appointment gateway. 1:1 focus, zero friction.
                </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4 md:gap-6 w-full lg:w-auto">
-               <div className="flex items-center gap-4 p-5 rounded-2xl bg-white/[0.03] border border-white/10 min-w-[240px]">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
-                    <Video size={20} />
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-white/20 mb-1">Method</p>
-                    <p className="text-xs font-medium">Virtual • Google Meet</p>
-                  </div>
+               <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
+                 <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-widest font-bold">
+                    <Video size={14} className="text-blue-400" />
+                    <span>Google Meet</span>
+                 </div>
+                 <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-widest font-bold">
+                    <Calendar size={14} className="text-green-400" />
+                    <span>30-60 Min Session</span>
+                 </div>
                </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
-            {/* Calendar */}
-            <div className="bg-white/[0.02] rounded-[32px] md:rounded-[40px] p-6 md:p-10 border border-white/5">
-              <div className="flex justify-between items-center mb-10">
-                <h3 className="text-lg md:text-xl font-serif italic">Select Date</h3>
-                <div className="text-[9px] uppercase tracking-widest opacity-20">May 2026</div>
-              </div>
-              
-              <div className="grid grid-cols-7 gap-1 sm:gap-4 text-center">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
-                  <div key={d} className="text-[8px] font-bold opacity-20 py-2">{d}</div>
-                ))}
-                {Array.from({ length: 31 }).map((_, i) => {
-                  const day = i + 1;
-                  const dateObj = new Date(2026, 4, day); // May is index 4
-                  const dayOfWeek = dateObj.getDay();
-                  // Enable all days for booking
-                  const isSelectable = true;
-                  const isSelected = bookingData.date === `2026-05-${day.toString().padStart(2, '0')}`;
-                  
-                  return (
-                    <button
-                      key={i}
-                      disabled={!isSelectable}
-                      onClick={() => setBookingData({...bookingData, date: `2026-05-${day.toString().padStart(2, '0')}`})}
-                      className={`
-                        aspect-square rounded-full flex items-center justify-center text-[10px] sm:text-sm transition-all duration-500
-                        ${isSelected ? 'bg-white text-black font-bold scale-110' : ''}
-                        ${!isSelectable ? 'opacity-5 pointer-events-none' : 'hover:bg-white/10 opacity-60'}
-                      `}
-                    >
-                      {day}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Details & Confirmation */}
-            <div className="bg-white/[0.02] rounded-[32px] md:rounded-[40px] p-8 md:p-12 border border-white/5 flex flex-col justify-between">
-              {bookingStatus === "success" ? (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex-grow flex flex-col items-center justify-center text-center space-y-6 py-10"
-                >
-                  <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center text-green-400">
-                    <Check size={28} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl md:text-2xl font-serif italic mb-2">Call Secured</h3>
-                    <p className="text-white/60 text-sm mb-2">{bookingData.date} at {bookingData.time}</p>
-                    <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] mb-6">Mountain Time (Edmonton)</p>
-                    <p className="text-xs text-white/30 max-w-[240px] mx-auto">Confirmation and calendar invitation sent to {bookingData.email}.</p>
-                  </div>
-                  <button 
-                    onClick={() => setBookingStatus("idle")}
-                    className="text-[9px] uppercase tracking-widest font-bold opacity-30 hover:opacity-100 transition-all"
-                  >
-                    Reschedule
-                  </button>
-                </motion.div>
-              ) : (
-                <div className="space-y-10">
-                  <div className="space-y-6">
-                    <h3 className="text-lg md:text-xl font-serif italic">Your Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <input 
-                        type="text" 
-                        placeholder="First Name"
-                        value={bookingData.firstName}
-                        onChange={(e) => setBookingData({...bookingData, firstName: e.target.value})}
-                        className="bg-transparent border-b border-white/10 py-2 text-xs sm:text-sm focus:outline-none focus:border-white transition-all placeholder:opacity-20"
-                      />
-                      <input 
-                        type="text" 
-                        placeholder="Last Name"
-                        value={bookingData.lastName}
-                        onChange={(e) => setBookingData({...bookingData, lastName: e.target.value})}
-                        className="bg-transparent border-b border-white/10 py-2 text-xs sm:text-sm focus:outline-none focus:border-white transition-all placeholder:opacity-20"
-                      />
-                      <input 
-                        type="email" 
-                        placeholder="Email Address"
-                        value={bookingData.email}
-                        onChange={(e) => setBookingData({...bookingData, email: e.target.value})}
-                        className="bg-transparent border-b border-white/10 py-2 text-xs sm:text-sm focus:outline-none focus:border-white transition-all placeholder:opacity-20"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg md:text-xl font-serif italic">Select Slot</h3>
-                      <p className="text-[8px] opacity-20 uppercase tracking-widest">Timezone: Edmonton (MST/MDT)</p>
-                    </div>
-                    
-                    {bookingData.date ? (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
-                        {[
-                          '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', 
-                          '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM'
-                        ].map(t => (
-                          <button
-                            key={t}
-                            onClick={() => setBookingData({...bookingData, time: t})}
-                            className={`
-                              py-3 rounded-xl border text-[10px] font-bold tracking-widest transition-all duration-500
-                              ${bookingData.time === t ? 'bg-white border-white text-black' : 'border-white/10 hover:border-white/30 text-white/40 hover:text-white'}
-                            `}
-                          >
-                            {t}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="h-20 flex items-center justify-center border border-dashed border-white/5 rounded-2xl">
-                        <p className="text-[10px] uppercase tracking-widest opacity-20 italic">Select a date first</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-4">
-                    <button
-                      disabled={!bookingData.date || !bookingData.time || !bookingData.firstName || !bookingData.email || bookingStatus === "loading"}
-                      onClick={handleBookingSubmit}
-                      className="valtero-btn w-full"
-                    >
-                      {bookingStatus === "loading" ? "Confirming..." : "Confirm Booking"}
-                    </button>
-                    {bookingStatus === "error" && (
-                      <p className="text-[9px] text-red-500 mt-4 text-center">Connection failed. Please retry.</p>
-                    )}
-                  </div>
+            <div className="w-full lg:w-auto">
+              <motion.div 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white/[0.02] p-10 md:p-16 rounded-[40px] md:rounded-[60px] border border-white/10 flex flex-col items-center space-y-8"
+              >
+                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center border border-white/10 mb-2">
+                  <Calendar size={32} strokeWidth={1.5} />
                 </div>
-              )}
+                <div className="text-center">
+                  <h3 className="text-xl md:text-2xl font-serif italic mb-2">Live Availability</h3>
+                  <p className="text-white/30 text-xs uppercase tracking-widest">Mountain Time (Edmonton)</p>
+                </div>
+                <a 
+                  href="https://calendar.app.google/ZQNXkk3AFDSdbyReA" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="valtero-btn scale-125 md:scale-150"
+                >
+                  Schedule Strategy Session
+                </a>
+                <p className="text-[9px] text-white/20 uppercase tracking-[0.2em] pt-4">Instant Confirmation Guaranteed</p>
+              </motion.div>
             </div>
           </div>
         </div>
