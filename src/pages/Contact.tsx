@@ -51,6 +51,10 @@ export default function ContactPage() {
     }
   };
 
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const selectedPlan = queryParams.get("plan");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");

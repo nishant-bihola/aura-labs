@@ -8,6 +8,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react
 import Lenis from "lenis";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 // Layout Components
 import Navbar from "./components/Navbar";
@@ -134,6 +135,7 @@ export default function App() {
         {isLoading && <Preloader onComplete={handleLoadingComplete} />}
       </AnimatePresence>
       <ScrollHandler isMenuOpen={isMenuOpen} />
+      <SpeedInsights />
       
       {/* 1. PERSPECTIVE CONTAINER */}
       <div className="relative w-full min-h-screen bg-[#050505] overflow-hidden perspective-1000">

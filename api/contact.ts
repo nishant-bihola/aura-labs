@@ -1,13 +1,23 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { createClient } from "@supabase/supabase-js";
 import { Client as NotionClient } from "@notionhq/client";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// 1. Configure Email Transporter (Nodemailer for Free Tier)
+// Use Gmail with an App Password or another SMTP service
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER || "nishant15bihola@gmail.com",
+    pass: process.env.EMAIL_PASS, // App Password required for Gmail
+  },
+});
+
 const supabase = createClient(
   process.env.SUPABASE_URL || "",
   process.env.SUPABASE_KEY || ""
 );
+
 const notion = new NotionClient({ 
   auth: process.env.NOTION_TOKEN 
 });
@@ -45,6 +55,10 @@ const generateUserThankYouHTML = (name: string) => generateBaseTemplate(`
   <p style="font-size: 17px; line-height: 1.8; color: #a0a0a0; margin-bottom: 40px;">
     Our team is currently reviewing your vision. Expect a detailed response from one of our lead architects within <span style="color: #00F0FF;">24-48 hours</span>.
   </p>
+  <div style="padding: 20px; border-radius: 15px; background: #ffffff10; border: 1px solid #ffffff10;">
+    <p style="margin: 0; font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Status</p>
+    <p style="margin: 5px 0 0; font-weight: 600; color: #00F0FF;">Awaiting Architect Review</p>
+  </div>
 `);
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -55,7 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     // 1. Store in Supabase
-    await supabase.from("contact_submissions").insert([{ 
+    const { error: supabaseError } = await supabase.from("contact_submissions").insert([{ 
       first_name: name.split(' ')[0], 
       last_name: name.split(' ').slice(1).join(' '), 
       email, 
@@ -64,19 +78,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       plan: plan
     }]);
 
+    if (supabaseError) console.error("Supabase Error:", supabaseError);
+
     // 2. Prepare Emails
-    const adminEmailPromise = resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
+    const adminEmailPromise = transporter.sendMail({
+      from: `"Aura Labs Admin" <${process.env.EMAIL_USER || "nishant15bihola@gmail.com"}>`,
       to: process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com",
-      reply_to: email,
+      replyTo: email,
       subject: `NEW ${inquiryType.toUpperCase()} SUBMISSION: ${name}`,
       html: generateBaseTemplate(generateContactEmailHTML(name, email, message, inquiryType, plan)),
     });
 
     let userEmailPromise = Promise.resolve(null);
     if (inquiryType === "Newsletter") {
-      userEmailPromise = resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
+      userEmailPromise = transporter.sendMail({
+        from: `"Aura Labs" <${process.env.EMAIL_USER || "nishant15bihola@gmail.com"}>`,
         to: email,
         subject: "Welcome to The Journal | Aura Labs",
         html: generateBaseTemplate(`
@@ -87,8 +103,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         `)
       });
     } else {
-      userEmailPromise = resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
+      userEmailPromise = transporter.sendMail({
+        from: `"Aura Labs" <${process.env.EMAIL_USER || "nishant15bihola@gmail.com"}>`,
         to: email,
         subject: "Transmission Received | Aura Labs",
         html: generateUserThankYouHTML(name)
@@ -97,7 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // 3. Notion Sync
     let notionPromise = Promise.resolve(null);
-    if (process.env.NOTION_TOKEN && process.env.NOTION_DATABASE_ID) {
+    if (process.env.NOTION_TOKEN && process.env.NOTION_DATABASE_ID && process.env.NOTION_TOKEN !== "placeholder") {
       notionPromise = notion.pages.create({
         parent: { database_id: process.env.NOTION_DATABASE_ID },
         properties: {

@@ -1,8 +1,16 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// 1. Configure Email Transporter (Nodemailer for Free Tier)
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER || "nishant15bihola@gmail.com",
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 const supabase = createClient(
   process.env.SUPABASE_URL || "",
   process.env.SUPABASE_KEY || ""
@@ -38,8 +46,8 @@ const generateUserBookingHTML = (firstName: string, date: string, time: string) 
   <p style="font-size: 17px; line-height: 1.8; color: #a0a0a0; margin-bottom: 40px;">
     Our lead architects are preparing for the deep dive. We'll send a meeting link 15 minutes before the session starts.
   </p>
-  <div style="text-align: center;">
-    <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Consultation+with+Aura+Labs&dates=${date.replace(/-/g, '')}T${time.replace(/:/g, '')}00Z" style="background: #00FF66; color: #000; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block;">Add to Calendar</a>
+  <div style="text-align: center; margin-bottom: 30px;">
+    <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Consultation+with+Aura+Labs&dates=${date.replace(/-/g, '')}T${time.replace(/:/g, '')}00Z" style="background: #00FF66; color: #000; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 12px;">Add to Calendar</a>
   </div>
 `, "#00FF66");
 
@@ -53,16 +61,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await supabase.from("bookings").insert([{ first_name: firstName, last_name: lastName, email, booking_date: date, booking_time: time, time_zone: timeZone }]);
 
     // 2. Parallel Emails
-    const adminEmailPromise = resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
+    const adminEmailPromise = transporter.sendMail({
+      from: `"Aura Labs Admin" <${process.env.EMAIL_USER || "nishant15bihola@gmail.com"}>`,
       to: process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com",
-      reply_to: email,
+      replyTo: email,
       subject: `NEW CONSULTATION: ${firstName} ${lastName}`,
       html: generateBaseTemplate(generateBookingEmailHTML(firstName, lastName, email, date, time, timeZone), "#00FF66"),
     });
 
-    const userEmailPromise = resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
+    const userEmailPromise = transporter.sendMail({
+      from: `"Aura Labs" <${process.env.EMAIL_USER || "nishant15bihola@gmail.com"}>`,
       to: email,
       subject: "Consultation Secured | Aura Labs",
       html: generateUserBookingHTML(firstName, date, time)
