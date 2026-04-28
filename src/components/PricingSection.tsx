@@ -71,8 +71,8 @@ export default function AuraPricing() {
         {
           y: 0,
           opacity: 1,
-          duration: 0.7,
-          ease: "power3.out",
+          duration: 0.4,
+          ease: "power4.out",
           scrollTrigger: {
             trigger: sectionRef.current,
             start: "top 85%",
@@ -88,8 +88,8 @@ export default function AuraPricing() {
           y: 0,
           opacity: 1,
           stagger: 0.05,
-          duration: 0.7,
-          ease: "power3.out",
+          duration: 0.5,
+          ease: "power4.out",
           scrollTrigger: {
             trigger: cardsRef.current,
             start: "top 80%",
@@ -148,7 +148,7 @@ export default function AuraPricing() {
             <p className="text-[9px] md:text-[10px] tracking-[0.3em] uppercase font-valtero-sans">Investment</p>
           </div>
           
-          <h2 className="pricing-title-reveal fluid-h2 font-valtero-serif leading-[0.85] tracking-tight relative inline-block">
+          <h2 className="pricing-title-reveal fluid-h2 font-valtero-serif leading-[1.1] pb-4 tracking-tight relative inline-block">
             <span className="text-outline opacity-20 italic font-valtero-serif">Pricing ©26</span>
             <div className="pricing-title-fill absolute top-0 left-0 overflow-hidden whitespace-nowrap text-white italic font-valtero-serif">
               Pricing ©26
@@ -168,7 +168,7 @@ export default function AuraPricing() {
           {PLANS.map((plan) => (
             <div 
               key={plan.name}
-              className={`pricing-card group relative p-6 md:p-10 lg:p-12 rounded-[24px] md:rounded-[40px] border transition-all duration-400 flex flex-col justify-between overflow-hidden ${
+              className={`pricing-card group relative p-6 md:p-10 lg:p-12 rounded-[24px] md:rounded-[40px] border transition-all duration-200 flex flex-col justify-between overflow-hidden ${
                 plan.highlight 
                 ? "bg-white/[0.03] border-white/20 shadow-2xl shadow-white/[0.01]" 
                 : "bg-transparent border-white/5 hover:border-white/20"
