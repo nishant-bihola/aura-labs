@@ -31,6 +31,7 @@ const generateBaseTemplate = (content: string, accentColor: string = "#00F0FF") 
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
       body { margin: 0; padding: 0; background-color: #000000; }
+      a { color: ${accentColor}; text-decoration: none; font-weight: 600; }
     </style>
   </head>
   <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #000000; padding: 40px 20px;">
@@ -45,7 +46,7 @@ const generateBaseTemplate = (content: string, accentColor: string = "#00F0FF") 
         </div>
         ${content}
         <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
-          <p style="color: rgba(255,255,255,0.2); font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">
+          <p style="color: rgba(255,255,255,0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">
             Transmission Secure • Edmonton, AB • © 2026
           </p>
         </div>
@@ -62,24 +63,24 @@ const generateContactEmailHTML = (name: string, email: string, message: string, 
     
     <div style="background: rgba(255,255,255,0.02); padding: 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px;">
       <div style="margin-bottom: 25px;">
-        <p style="color: rgba(255,255,255,0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px 0;">Identity</p>
+        <p style="color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px 0; font-weight: 700;">Identity</p>
         <p style="color: #ffffff; font-size: 18px; font-weight: 600; margin: 0;">${name}</p>
       </div>
       <div style="margin-bottom: 25px;">
-        <p style="color: rgba(255,255,255,0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px 0;">Connection</p>
-        <p style="color: #00F0FF; font-size: 16px; margin: 0;">${email}</p>
+        <p style="color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px 0; font-weight: 700;">Connection</p>
+        <p style="color: #00F0FF; font-size: 16px; margin: 0; font-weight: 600;">${email}</p>
       </div>
       ${plan ? `
       <div>
-        <p style="color: rgba(255,255,255,0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px 0;">Target Configuration</p>
+        <p style="color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px 0; font-weight: 700;">Target Configuration</p>
         <p style="color: #ffffff; font-size: 16px; margin: 0;">${plan} Plan</p>
       </div>` : ""}
     </div>
 
     <div style="margin-bottom: 40px;">
-      <p style="color: rgba(255,255,255,0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 15px 0;">Intelligence Gathering</p>
+      <p style="color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 15px 0; font-weight: 700;">Intelligence Gathering</p>
       <div style="background: rgba(0,240,255,0.03); padding: 30px; border-radius: 20px; border-left: 4px solid #00F0FF;">
-        <p style="color: #ddd; font-size: 16px; line-height: 1.8; margin: 0; font-style: italic;">"${message}"</p>
+        <p style="color: #ffffff; font-size: 16px; line-height: 1.8; margin: 0; font-style: italic; font-weight: 400;">"${message}"</p>
       </div>
     </div>
 
@@ -93,23 +94,23 @@ const generateUserThankYouHTML = (name: string) => {
   const meetLink = process.env.GOOGLE_MEET_LINK || "https://meet.google.com/aura-labs-consult";
   return generateBaseTemplate(`
     <h2 style="color: #ffffff; font-size: 42px; margin-bottom: 30px; font-weight: 800; letter-spacing: -2px; line-height: 1;">Project <br/>Acknowledged.</h2>
-    <p style="font-size: 18px; line-height: 1.8; color: rgba(255,255,255,0.6); margin-bottom: 40px; font-weight: 400;">
+    <p style="font-size: 18px; line-height: 1.8; color: rgba(255,255,255,0.8); margin-bottom: 40px; font-weight: 400;">
       Greetings, ${name.split(' ')[0]}. Your transmission has been successfully decrypted and routed to our lead architecture team.
     </p>
     
     <div style="background: rgba(255,255,255,0.03); padding: 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px;">
       <div style="display: flex; align-items: center; margin-bottom: 20px;">
-        <div style="width: 10px; hieght: 10px; background: #00F0FF; border-radius: 50%; box-shadow: 0 0 10px #00F0FF; margin-right: 15px;"></div>
+        <div style="width: 10px; height: 10px; background: #00F0FF; border-radius: 50%; box-shadow: 0 0 10px #00F0FF; margin-right: 15px;"></div>
         <p style="color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0;">Status: Analyzing Vision</p>
       </div>
-      <p style="color: rgba(255,255,255,0.4); font-size: 14px; margin: 0; line-height: 1.6;">
+      <p style="color: rgba(255,255,255,0.7); font-size: 14px; margin: 0; line-height: 1.6; font-weight: 400;">
         Expect a direct liaison to establish contact within the next 24 business hours.
       </p>
     </div>
 
     <div style="text-align: center;">
-      <p style="color: rgba(255,255,255,0.3); font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">Urgent Inquiry?</p>
-      <a href="${meetLink}" style="display: inline-block; background: transparent; color: #ffffff; padding: 18px 35px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); font-weight: 700; font-size: 12px; text-decoration: none; text-transform: uppercase; letter-spacing: 2px;">
+      <p style="color: rgba(255,255,255,0.5); font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; font-weight: 700;">Urgent Inquiry?</p>
+      <a href="${meetLink}" style="display: inline-block; background: transparent; color: #ffffff; padding: 18px 35px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.3); font-weight: 700; font-size: 12px; text-decoration: none; text-transform: uppercase; letter-spacing: 2px;">
         Enter Open Boardroom
       </a>
     </div>

@@ -21,49 +21,88 @@ const supabase = createClient(
 
 const GOOGLE_MEET_LINK = process.env.GOOGLE_MEET_LINK || "https://meet.google.com/aura-labs-consult";
 
-const generateBaseTemplate = (content: string, accentColor: string = "#00FF66") => `
-  <div style="font-family: 'Inter', -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background: #000000; color: #ffffff; padding: 60px 40px; border-radius: 30px; border: 1px solid #1a1a1a;">
-    <div style="margin-bottom: 40px; text-align: center;">
-      <span style="background: linear-gradient(90deg, ${accentColor}, #00CC44); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 24px; letter-spacing: 2px;">AURA LABS</span>
+const generateBaseTemplate = (content: string, accentColor: string = "#00F0FF") => `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
+      body { margin: 0; padding: 0; background-color: #000000; }
+      a { color: ${accentColor}; text-decoration: none; font-weight: 600; }
+    </style>
+  </head>
+  <body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #000000; padding: 40px 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background: linear-gradient(180deg, #0a0a0a 0%, #000000 100%); border: 1px solid rgba(255,255,255,0.05); border-radius: 40px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.8);">
+      <div style="padding: 60px 50px;">
+        <div style="margin-bottom: 50px; text-align: center;">
+          <div style="display: inline-block; padding: 2px; background: linear-gradient(90deg, ${accentColor}, #0077FF); border-radius: 10px;">
+            <div style="background: #000; padding: 10px 20px; border-radius: 8px;">
+               <span style="color: #fff; font-weight: 800; font-size: 16px; letter-spacing: 4px; text-transform: uppercase;">AURA LABS</span>
+            </div>
+          </div>
+        </div>
+        ${content}
+        <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
+          <p style="color: rgba(255,255,255,0.3); font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">
+            Transmission Secure • Edmonton, AB • © 2026
+          </p>
+        </div>
+      </div>
     </div>
-    ${content}
-    <div style="padding-top: 40px; border-top: 1px solid #1a1a1a; color: #404040; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; text-align: center; margin-top: 40px;">
-      © 2026 Aura Labs • Edmonton, Alberta • System Transmission
-    </div>
-  </div>
+  </body>
+  </html>
 `;
 
 const generateBookingEmailHTML = (firstName: string, lastName: string, email: string, date: string, time: string, timeZone: string) => `
-  <h2 style="color: #ffffff; font-size: 28px; margin-bottom: 24px; font-weight: 700; letter-spacing: -1px;">New Consultation Booked</h2>
-  <div style="background: #0a0a0a; padding: 30px; border-radius: 20px; border: 1px solid #1a1a1a; margin-bottom: 24px;">
-    <p style="margin: 10px 0;"><strong>Client:</strong> ${firstName} ${lastName}</p>
-    <p style="margin: 10px 0;"><strong>Email:</strong> ${email}</p>
-    <p style="margin: 10px 0;"><strong>Scheduled:</strong> <span style="color: #00FF66;">${date} at ${time}</span></p>
-    <p style="margin: 10px 0;"><strong>Zone:</strong> ${timeZone}</p>
+  <h2 style="color: #ffffff; font-size: 32px; margin-bottom: 30px; font-weight: 800; letter-spacing: -1.5px; line-height: 1;">Strategy Session <br/>Locked In.</h2>
+  
+  <div style="background: rgba(255,255,255,0.02); padding: 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px;">
+    <div style="margin-bottom: 25px;">
+      <p style="color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px 0; font-weight: 700;">Client Architect</p>
+      <p style="color: #ffffff; font-size: 18px; font-weight: 600; margin: 0;">${firstName} ${lastName}</p>
+    </div>
+    <div style="margin-bottom: 25px;">
+      <p style="color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px 0; font-weight: 700;">Scheduled Window</p>
+      <p style="color: #00F0FF; font-size: 16px; margin: 0; font-weight: 600;">${date} @ ${time}</p>
+      <p style="color: rgba(255,255,255,0.4); font-size: 12px; margin: 5px 0 0 0;">Zone: ${timeZone}</p>
+    </div>
+    <div>
+      <p style="color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px 0; font-weight: 700;">Connection</p>
+      <p style="color: #ffffff; font-size: 16px; margin: 0;">${email}</p>
+    </div>
   </div>
-  <div style="text-align: center; margin-top: 30px;">
-    <a href="${GOOGLE_MEET_LINK}" style="background: #00FF66; color: #000; padding: 14px 28px; border-radius: 100px; text-decoration: none; font-weight: 800; display: inline-block; text-transform: uppercase; letter-spacing: 2px; font-size: 10px;">Join Boardroom</a>
-  </div>
+
+  <a href="${GOOGLE_MEET_LINK}" style="display: block; text-align: center; background: #ffffff; color: #000000; padding: 22px; border-radius: 20px; font-weight: 800; font-size: 14px; text-decoration: none; text-transform: uppercase; letter-spacing: 2px;">
+    Enter Strategy Boardroom
+  </a>
 `;
 
 const generateUserBookingHTML = (firstName: string, date: string, time: string) => generateBaseTemplate(`
-  <h2 style="color: #ffffff; font-size: 28px; margin-bottom: 24px; font-weight: 700; letter-spacing: -1px;">Consultation Secured.</h2>
-  <p style="font-size: 17px; line-height: 1.8; color: #a0a0a0; margin-bottom: 20px;">
-    Hello ${firstName}, your strategy session has been locked in for <span style="color: #00FF66;">${date} at ${time}</span>.
-  </p>
-  <p style="font-size: 17px; line-height: 1.8; color: #a0a0a0; margin-bottom: 40px;">
-    Our lead architects are preparing for the deep dive. Use the link below to join the secure boardroom at the scheduled time.
+  <h2 style="color: #ffffff; font-size: 32px; margin-bottom: 30px; font-weight: 800; letter-spacing: -1.5px; line-height: 1;">Consultation <br/>Secured.</h2>
+  <p style="font-size: 18px; line-height: 1.8; color: rgba(255,255,255,0.8); margin-bottom: 40px; font-weight: 400;">
+    Greetings, ${firstName}. Your strategy session has been locked into our core calendar for <span style="color: #00F0FF; font-weight: 700;">${date} at ${time}</span>.
   </p>
   
-  <div style="text-align: center; margin-bottom: 40px; padding: 30px; background: #0a0a0a; border-radius: 20px; border: 1px solid #1a1a1a;">
-    <p style="margin: 0 0 20px 0; font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 2px;">Secure Meeting Link</p>
-    <a href="${GOOGLE_MEET_LINK}" style="background: #ffffff; color: #000; padding: 16px 36px; border-radius: 100px; text-decoration: none; font-weight: 800; display: inline-block; text-transform: uppercase; letter-spacing: 2px; font-size: 11px;">Join Google Meet</a>
+  <div style="background: rgba(255,255,255,0.03); padding: 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px;">
+    <div style="display: flex; align-items: center; margin-bottom: 20px;">
+      <div style="width: 10px; height: 10px; background: #00F0FF; border-radius: 50%; box-shadow: 0 0 10px #00F0FF; margin-right: 15px;"></div>
+      <p style="color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin: 0;">Boardroom Ready</p>
+    </div>
+    <p style="color: rgba(255,255,255,0.7); font-size: 14px; margin: 0; line-height: 1.6; font-weight: 400;">
+      Our lead architects are preparing for the deep dive. Join the secure boardroom link below at the scheduled time.
+    </p>
+  </div>
+
+  <div style="text-align: center; margin-bottom: 30px;">
+    <a href="${GOOGLE_MEET_LINK}" style="display: block; background: #ffffff; color: #000000; padding: 22px; border-radius: 20px; font-weight: 800; font-size: 14px; text-decoration: none; text-transform: uppercase; letter-spacing: 2px;">
+      Enter Secure Boardroom
+    </a>
   </div>
 
   <div style="text-align: center;">
-    <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Consultation+with+Aura+Labs&details=Join+Google+Meet:+${encodeURIComponent(GOOGLE_MEET_LINK)}&dates=${date.replace(/-/g, '')}T${time.replace(/:/g, '')}00Z" style="color: #666; text-decoration: underline; font-size: 12px;">Add to Google Calendar</a>
+    <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Consultation+with+Aura+Labs&details=Join+Google+Meet:+${encodeURIComponent(GOOGLE_MEET_LINK)}&dates=${date.replace(/-/g, '')}T${time.replace(/:/g, '')}00Z" style="color: rgba(255,255,255,0.4); text-decoration: underline; font-size: 12px; font-weight: 600;">Add to Google Calendar</a>
   </div>
-`, "#00FF66");
+`, "#00F0FF");
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
