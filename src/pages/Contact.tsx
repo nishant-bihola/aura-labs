@@ -8,17 +8,18 @@ export default function ContactPage() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const selectedPlan = queryParams.get("plan");
+  const projectName = queryParams.get("name");
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
-    message: "",
+    message: projectName ? `I'm interested in starting a project similar to ${projectName}.` : "",
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const selectedPlan = queryParams.get("plan");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +31,7 @@ export default function ContactPage() {
         email: formData.email,
         message: formData.message,
         plan: selectedPlan || "Custom",
-        serviceType: selectedPlan === "Project" ? "Project Inquiry" : (selectedPlan ? "Pricing Lead" : "Contact"),
+        serviceType: projectName ? `Project: ${projectName}` : (selectedPlan === "Project" ? "Project Inquiry" : (selectedPlan ? "Pricing Lead" : "Contact")),
         timestamp: new Date().toISOString(),
         source: 'Website Form'
       });

@@ -95,12 +95,17 @@
   
   /* Mobile Border Fixes */
   @media (max-width: 768px) {
-    .mx-6 { margin-left: 0.5rem; margin-right: 0.5rem; }
-    .px-12 { padding-left: 1rem; padding-right: 1rem; }
-    .py-24 { padding-top: 4rem; padding-bottom: 4rem; }
+    .mx-6, .mx-4, .mx-3 { margin-left: 1rem; margin-right: 1rem; }
+    .px-12, .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .py-24, .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
     .fluid-px { padding-left: 1rem; padding-right: 1rem; }
-    .fluid-py { padding-top: 4rem; padding-bottom: 4rem; }
-    .fluid-h1 { font-size: clamp(2.2rem, 15vw, 4rem); }
+    .fluid-py { padding-top: 5rem; padding-bottom: 5rem; }
+    .fluid-h1 { font-size: clamp(2.4rem, 14vw, 4rem); }
+    .fluid-h2 { font-size: clamp(1.8rem, 8vw, 3rem); }
+    
+    /* Ensure borders don't look weird on mobile */
+    .border-x { border-left-width: 0px; border-right-width: 0px; }
+    .border-l, .border-r { border-width: 0px; }
   }
 
   /* Ultrawide adjustments */
