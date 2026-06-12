@@ -155,27 +155,22 @@ export default function Hero() {
               char === " " ? (
                 <span key={i} className="w-[3vw]">&nbsp;</span>
               ) : (
-                <motion.span
-                  key={i}
-                  className="inline-block origin-bottom relative drop-shadow-[0_0_15px_rgba(0,240,255,0.2)]"
-                  initial={{ opacity: 0, y: 40, rotateX: -90 }}
-                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                  transition={{ 
-                    duration: 0.8, 
-                    delay: i * 0.05, 
-                    type: "spring", 
-                    damping: 12 
-                  }}
-                  whileHover={{ 
-                    scaleY: 1.2, 
-                    scaleX: 0.9,
-                    y: -15,
-                    color: "#00f0ff",
-                    textShadow: "0 0 30px rgba(0,240,255,0.8)"
-                  }}
-                >
-                  {char}
-                </motion.span>
+                <span key={i} className="relative inline-block group px-[0.5vw]">
+                  <motion.span
+                    className="inline-block origin-bottom relative drop-shadow-[0_0_15px_rgba(0,240,255,0.2)] text-white transition-all duration-300 ease-out group-hover:text-[#00f0ff] group-hover:-translate-y-[15px] group-hover:scale-y-[1.2] group-hover:scale-x-[0.9]"
+                    style={{ textShadow: "0 0 15px rgba(0,240,255,0.2)" }}
+                    initial={{ opacity: 0, y: 40, rotateX: -90 }}
+                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                    transition={{ 
+                      duration: 0.8, 
+                      delay: i * 0.05, 
+                      type: "spring", 
+                      damping: 12 
+                    }}
+                  >
+                    {char}
+                  </motion.span>
+                </span>
               )
             ))}
             
