@@ -33,6 +33,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import ContactPage from "./pages/Contact";
 import Checkout from "./pages/Checkout";
 import AdminDashboard from "./pages/AdminDashboard";
+import SanityStudio from "./pages/SanityStudio";
 
 import WebDevelopment from "./pages/services/WebDevelopment";
 import AIChatbots from "./pages/services/AIChatbots";
@@ -242,6 +243,7 @@ export default function App() {
 
                 {/* ADMIN PAGE */}
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/studio/*" element={<SanityStudio />} />
 
                 {/* CONTACT PAGE */}
                 <Route path="/contact" element={<ContactPage />} />

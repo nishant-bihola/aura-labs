@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { adminAlertHTML, clientConfirmationHTML } from "./_lib/emails.js";
 import { PrismaClient } from "@prisma/client";
 import { CMS_DATA } from "../src/lib/cms.js";
+import { client as sanityClient } from "../src/lib/sanity.js";
 
 const prisma = new PrismaClient();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
@@ -23,9 +24,9 @@ Your core programming is based on the "Superpowers" methodology:
 4. Evidence over claims: Provide structured, logical solutions before declaring success.
 
 --- KNOWLEDGE BASE START ---
-${JSON.stringify(CMS_DATA.services, null, 2)}
+{{SERVICES_CONTEXT}}
 
-${JSON.stringify(CMS_DATA.pricing_plans, null, 2)}
+{{PLANS_CONTEXT}}
 --- KNOWLEDGE BASE END ---
 
 ${CMS_DATA.instructions_for_ai}
@@ -49,6 +50,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ reply: "My AI neural link is currently offline (API Key missing). Please contact us directly at contact@aura-labs.com." });
   }
 
+  // 0. Fetch Live Context from Sanity (Advanced RAG)
+  let liveServices = CMS_DATA.services;
+  let livePlans = CMS_DATA.pricing_plans;
+  
+  try {
+    const fetchedServices = await sanityClient.fetch(`*[_type == "service"]`);
+    const fetchedPlans = await sanityClient.fetch(`*[_type == "pricingPlan"]`);
+    
+    // Only override if Sanity has data
+    if (fetchedServices.length > 0) liveServices = fetchedServices;
+    if (fetchedPlans.length > 0) livePlans = fetchedPlans;
+  } catch (sanityError) {
+    console.error("Sanity RAG Fetch Error:", sanityError);
+  }
+
+  const DYNAMIC_SYSTEM_INSTRUCTION = SYSTEM_INSTRUCTION
+    .replace("{{SERVICES_CONTEXT}}", JSON.stringify(liveServices, null, 2))
+    .replace("{{PLANS_CONTEXT}}", JSON.stringify(livePlans, null, 2));
+
   try {
     // Format messages for Gemini API
     const contents = messages.map(msg => ({
@@ -60,7 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+        systemInstruction: { parts: [{ text: DYNAMIC_SYSTEM_INSTRUCTION }] },
         contents: contents,
         generationConfig: {
           temperature: 0.7,
