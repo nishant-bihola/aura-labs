@@ -260,18 +260,18 @@ export default function AuraPricing() {
               <div className="relative z-10">
                 <button 
                   onClick={() => handleGetStarted(plan.name)}
-                  className={\`relative w-full py-4 md:py-5 rounded-full overflow-hidden group/btn transition-all duration-500 border \${
+                  className={`relative w-full py-4 md:py-5 rounded-full overflow-hidden group/btn transition-all duration-500 border ${
                     plan.highlight 
                     ? "bg-gradient-to-r from-[#00f0ff] to-[#0055ff] border-transparent text-black" 
                     : "bg-white/5 border-white/10 hover:border-white/40 text-white"
-                  }\`}
+                  }`}
                 >
-                  <div className={\`absolute inset-0 translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-500 ease-[0.16,1,0.3,1] \${
+                  <div className={`absolute inset-0 translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-500 ease-[0.16,1,0.3,1] ${
                     plan.highlight ? "bg-white" : "bg-white"
-                  }\`} />
-                  <span className={\`relative z-10 text-[8px] md:text-[10px] tracking-[0.3em] uppercase font-bold transition-colors duration-500 \${
+                  }`} />
+                  <span className={`relative z-10 text-[8px] md:text-[10px] tracking-[0.3em] uppercase font-bold transition-colors duration-500 ${
                     plan.highlight ? "group-hover/btn:text-black" : "group-hover/btn:text-black"
-                  }\`}>
+                  }`}>
                     Get Started
                   </span>
                 </button>

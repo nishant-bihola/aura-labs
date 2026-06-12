@@ -10,24 +10,24 @@ gsap.registerPlugin(ScrollTrigger);
 
 const FAQS = [
   {
-    question: "What exactly do you build?",
-    answer: "We build four things: (1) custom websites and full-stack web apps using React and Node.js, (2) AI chatbots embedded on your site for bookings, lead capture, and 24/7 support, (3) AI-powered motion ads and product images, and (4) complete brand identities — logo, typography, colour system. Whether you need a 5-page marketing site or a full ordering platform with a chatbot, we handle it end to end."
+    question: "What exactly does Aura Labs build?",
+    answer: "We architect enterprise-grade digital systems: full-stack web applications, highly persuasive marketing sites, 24/7 AI-driven chatbots, and high-converting generative AI ad campaigns. We don't just build websites; we build scalable digital infrastructure designed to dominate your market."
   },
   {
-    question: "How much does it cost?",
-    answer: "Marketing websites start at $1,500 and are typically live within 5–10 business days. Full-stack web apps with AI chatbot integration start at $4,500. AI ad content campaigns (motion ads + product images) start at $800 per campaign. Every project is scoped and quoted individually — contact us for a free estimate with no commitment."
+    question: "What is the typical investment?",
+    answer: "Our bespoke marketing sites start at $1,500. Advanced full-stack SaaS applications with AI integration begin at $4,500. For our generative AI motion ad campaigns, the starting investment is $800. Every project is scoped meticulously to ensure maximum ROI."
   },
   {
-    question: "How fast can you deliver?",
-    answer: "Fast. A standard marketing site goes from first call to live in 5–10 business days. Full-stack apps with chatbot integration take 2–4 weeks depending on scope. AI ad campaigns are delivered in 24–48 hours. We move quickly without cutting corners — every deliverable is production-ready."
+    question: "How quickly can we launch?",
+    answer: "We operate with extreme velocity. A high-converting marketing site is typically live in 5–10 business days. Complex full-stack applications take 2–4 weeks. AI ad campaigns are delivered within 48 hours. We prioritize speed to market without ever compromising on elite quality."
   },
   {
-    question: "Do you work with clients outside Edmonton?",
-    answer: "Yes — 100% of the time. We're based in Edmonton, Alberta, but we work with businesses across Canada and worldwide. All consultations happen over Google Meet. We deliver everything digitally. Timezone has never been a barrier — if anything, it means your project is being worked on while you sleep."
+    question: "Do you work with international clients?",
+    answer: "Absolutely. While headquartered in Edmonton, Alberta, our infrastructure and communication pipelines are entirely digital. We collaborate seamlessly with global enterprises across all time zones."
   },
   {
-    question: "What makes Aura Labs different?",
-    answer: "You work directly with the developer building your product — not a sales rep or account manager. We use state-of-the-art AI tooling to give you premium creative output at a fraction of traditional agency cost. We're lean, fast, and focused on one thing: building things that make you money."
+    question: "Why should we choose Aura Labs?",
+    answer: "We are not a traditional agency. You work directly with the senior engineers and architects building your product. We leverage bleeding-edge AI tooling to deliver premium, enterprise-level output at a fraction of the time and cost. We are ruthlessly focused on one metric: your revenue growth."
   }
 ];
 
