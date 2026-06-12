@@ -7,7 +7,11 @@ import { createClient } from "@supabase/supabase-js";
 import { Client as NotionClient } from "@notionhq/client";
 import { adminAlertHTML, clientConfirmationHTML, paymentInstructionsHTML, adminPurchaseAlertHTML } from "./api/_lib/emails.js";
 import * as dotenv from "dotenv";
+import { PrismaClient } from "@prisma/client";
+import { CMS_DATA } from "./src/lib/cms.js";
+import { client as sanityClient } from "./src/lib/sanity.js";
 
+const prisma = new PrismaClient();
 dotenv.config();
 
 // --- CONFIGURATION ---
@@ -280,22 +284,48 @@ async function startServer() {
     }
 
     const SYSTEM_INSTRUCTION = `
-You are Aura AI, the lead digital architect and sales agent for Aura Labs (based in Edmonton, Alberta).
-Your goal is to answer questions about our services and schedule strategy sessions by capturing the user's name and email.
+You are Aura AI, an elite digital architect and highly intelligent technical sales engineer for Aura Labs.
+Our mission: ${CMS_DATA.company.mission}
 
-Our Core Services:
-1. Custom Websites & Web Apps (React, Node.js)
-2. AI Chatbots (like yourself) embedded on client sites for 24/7 lead capture.
-3. AI Ad Content (15-sec motion ads powered by generative AI starting at $800/campaign).
-4. Complete Brand Identities (Logo, typography).
+Your core programming is based on the "Superpowers" methodology:
+1. Systematic over ad-hoc: Do not just spit out prices immediately. Ask sharp, consultative questions to tease out the user's actual business requirements and problems first.
+2. Socratic Brainstorming: Refine their rough ideas through intelligent questioning. Guide them to realize they need scalable architecture.
+3. Project Scoping: Break down their needs into clear, digestible phases (e.g., Design, Development, Launch).
+4. Evidence over claims: Provide structured, logical solutions before declaring success.
 
-Tone: Professional, sleek, slightly futuristic but highly human and empathetic. Be extremely concise.
+--- KNOWLEDGE BASE START ---
+{{SERVICES_CONTEXT}}
 
-CRITICAL INSTRUCTION: When you have successfully convinced the user and they provide their name and email, you MUST respond ONLY with the exact following string:
+{{PLANS_CONTEXT}}
+--- KNOWLEDGE BASE END ---
+
+${CMS_DATA.instructions_for_ai}
+
+Tone: Professional, highly analytical, consultative, and empathetic. Speak like a senior technical founder who values architecture, clean code, and ROI. Do not be overly robotic; be human but brilliant.
+
+CRITICAL INSTRUCTION: Once you have successfully teased out their requirements and convinced them to proceed with a project, you MUST ask for their name and email so a human architect can review the project spec and follow up. When they provide their name and email, you MUST respond ONLY with the exact following string:
 [CAPTURE_LEAD: {"name": "<user_name>", "email": "<user_email>"}]
-Do not add any other text to that specific response.
-If they just ask a question, answer it and gently ask if they'd like to leave their email so a human architect can follow up.
+Do not add any other text or pleasantries to that specific response. Just output the JSON block.
 `;
+
+    // 0. Fetch Live Context from Sanity (Advanced RAG)
+    let liveServices = CMS_DATA.services;
+    let livePlans = CMS_DATA.pricing_plans;
+    
+    try {
+      const fetchedServices = await sanityClient.fetch(`*[_type == "service"]`);
+      const fetchedPlans = await sanityClient.fetch(`*[_type == "pricingPlan"]`);
+      
+      // Only override if Sanity has data
+      if (fetchedServices.length > 0) liveServices = fetchedServices;
+      if (fetchedPlans.length > 0) livePlans = fetchedPlans;
+    } catch (sanityError) {
+      console.error("Sanity RAG Fetch Error:", sanityError);
+    }
+
+    const DYNAMIC_SYSTEM_INSTRUCTION = SYSTEM_INSTRUCTION
+      .replace("{{SERVICES_CONTEXT}}", JSON.stringify(liveServices, null, 2))
+      .replace("{{PLANS_CONTEXT}}", JSON.stringify(livePlans, null, 2));
 
     try {
       const contents = messages.map((msg: any) => ({
@@ -307,7 +337,7 @@ If they just ask a question, answer it and gently ask if they'd like to leave th
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+          systemInstruction: { parts: [{ text: DYNAMIC_SYSTEM_INSTRUCTION }] },
           contents: contents,
           generationConfig: { temperature: 0.7 }
         })
@@ -326,14 +356,24 @@ If they just ask a question, answer it and gently ask if they'd like to leave th
           if (jsonStr) {
             const leadData = JSON.parse(jsonStr);
             
-            if (supabase) {
-              await supabase.from("contact_submissions").insert([{
-                first_name: leadData.name.split(' ')[0],
-                last_name: leadData.name.split(' ').slice(1).join(' '),
-                email: leadData.email,
-                message: "Captured via AI Chatbot",
-                type: "AI Chat Lead"
-              }]);
+            try {
+              await prisma.lead.create({
+                data: {
+                  name: leadData.name,
+                  email: leadData.email,
+                  plan: "AI Chat Lead",
+                  details: "Captured via Advanced RAG AI Chatbot",
+                  addons: null
+                }
+              });
+              await prisma.chatSession.create({
+                data: {
+                  email: leadData.email,
+                  history: JSON.stringify(messages)
+                }
+              });
+            } catch (dbError) {
+              console.error("Prisma Error:", dbError);
             }
 
             if (resend) {
