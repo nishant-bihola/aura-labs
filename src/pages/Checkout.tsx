@@ -30,6 +30,7 @@ export default function CheckoutPage() {
   });
   const [errors, setErrors] = useState<{ email?: string; message?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [includeChatbot, setIncludeChatbot] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -79,7 +80,8 @@ export default function CheckoutPage() {
           name: `${formData.firstName} ${formData.lastName}`,
           email: formData.email,
           plan: planParam,
-          projectDetails: formData.projectDetails
+          projectDetails: formData.projectDetails,
+          addons: includeChatbot ? ["AI Chatbot SaaS ($99/mo)"] : []
         })
       });
 
@@ -140,6 +142,30 @@ export default function CheckoutPage() {
                       <ShieldCheck size={16} className="text-[#00f0ff] shrink-0" /> Encrypted Data Transfer
                     </li>
                   </ul>
+
+                  {/* Upsell Flow */}
+                  {planParam !== "AI Chatbot SaaS" && (
+                    <div className="mt-8 pt-6 border-t border-white/5">
+                      <div 
+                        className={`flex items-start gap-4 p-4 rounded-2xl transition-all border cursor-pointer ${includeChatbot ? 'bg-[#00f0ff]/10 border-[#00f0ff]/30' : 'bg-white/[0.02] border-white/10 hover:border-white/20'}`}
+                        onClick={() => setIncludeChatbot(!includeChatbot)}
+                      >
+                        <div className="pt-1">
+                          <input 
+                            type="checkbox" 
+                            checked={includeChatbot}
+                            onChange={(e) => setIncludeChatbot(e.target.checked)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-4 h-4 accent-[#00f0ff] rounded cursor-pointer"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-bold text-white mb-1">Add 24/7 AI Chatbot <span className="text-[#00f0ff] ml-2">+$99/mo</span></h4>
+                          <p className="text-xs text-white/50 leading-relaxed">Automate your lead generation and customer support instantly.</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
