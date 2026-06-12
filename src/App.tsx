@@ -28,33 +28,16 @@ import GiantTicker from "./components/GiantTicker";
 import { ChatWidget } from "./components/ChatWidget";
 import { Analytics } from "@vercel/analytics/react";
 
-// Lazy Loaded Pages for performance
-const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
-const ContactPage = lazy(() => import("./pages/Contact"));
-const Checkout = lazy(() => import("./pages/Checkout"));
+// Static Imports for instant load
+import ProjectDetail from "./pages/ProjectDetail";
+import ContactPage from "./pages/Contact";
+import Checkout from "./pages/Checkout";
 
-// Lazy load Service Pages
-const WebDevelopment = lazy(() => import("./pages/services/WebDevelopment"));
-const AIChatbots = lazy(() => import("./pages/services/AIChatbots"));
-const AIAds = lazy(() => import("./pages/services/AIAds"));
-const BrandIdentity = lazy(() => import("./pages/services/BrandIdentity"));
+import WebDevelopment from "./pages/services/WebDevelopment";
+import AIChatbots from "./pages/services/AIChatbots";
+import AIAds from "./pages/services/AIAds";
+import BrandIdentity from "./pages/services/BrandIdentity";
 
-/**
- * LOADING INDICATOR (Cinematic)
- */
-function PageLoader() {
-  return (
-    <div className="w-full h-screen flex items-center justify-center bg-black">
-      <motion.div 
-        animate={{ opacity: [0.2, 1, 0.2] }} 
-        transition={{ duration: 1.5, repeat: Infinity }}
-        className="text-[10px] tracking-[0.5em] uppercase font-bold text-white/50"
-      >
-        Architecting...
-      </motion.div>
-    </div>
-  );
-}
 
 /**
  * UTILITY: SCROLL RESET & ANCHOR HANDLING
@@ -225,11 +208,11 @@ export default function App() {
           )}
 
           <div className={`w-full transition-all duration-700 ${isMenuOpen ? 'md:brightness-[0.2] md:saturate-50 opacity-50 md:opacity-100' : ''}`}>
-            <CustomCursor />
-            <CursorTail />
+            <div className="hidden md:block">
+              <CustomCursor />
+              <CursorTail />
+            </div>
             <Navbar isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
-            
-            <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* LANDING PAGE */}
                 <Route path="/" element={
@@ -262,7 +245,6 @@ export default function App() {
                 {/* CHECKOUT PAGE */}
                 <Route path="/checkout" element={<Checkout />} />
               </Routes>
-            </Suspense>
 
             <div id="contact"><ContactFooter /></div>
             

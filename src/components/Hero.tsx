@@ -39,7 +39,7 @@ export default function Hero() {
 
       {/* 2. Interactive Spotlight Gradient */}
       <motion.div
-        className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-500 opacity-50 group-hover:opacity-100"
+        className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-500 opacity-50 group-hover:opacity-100 hidden md:block"
         style={{ background }}
       />
 
