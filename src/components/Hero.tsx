@@ -1,215 +1,205 @@
-import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
-import { ChevronDown, Code, Zap, Globe, Cpu, Database, Layers, ShieldCheck } from "lucide-react";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { ArrowUpRight } from "lucide-react";
+import { heroProgress, heroPointer } from "./canvas/frozen/progress";
+
+/**
+ * HERO — the frozen core.
+ * A real-time WebGL world replaces the old CDN video: a procedural ice
+ * monolith with refraction, orbiting shard debris, GPU snowfall and an
+ * aurora veil. The camera dollies toward the core as the section
+ * scrolls out, and sways with the pointer while idle.
+ */
+const FrozenHeroScene = lazy(() => import("./canvas/frozen/FrozenHeroScene"));
+
+const EASE_EXPO = [0.16, 1, 0.3, 1] as const;
 
 export default function Hero() {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+  const section = useRef<HTMLElement>(null);
+  const content = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
+  // mount the canvas after first paint so the headline lands instantly
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [mouseX, mouseY]);
+    const id = window.setTimeout(() => setMounted(true), 80);
+    return () => window.clearTimeout(id);
+  }, []);
 
-  // Spotlight effect tracking cursor
-  const background = useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, rgba(0, 240, 255, 0.15), transparent 80%)`;
+  // scroll progress (0 → 1 as the hero exits) + content choreography
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      const el = section.current;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const p = Math.min(Math.max(-rect.top / (vh * 0.9), 0), 1);
+        heroProgress.value = p;
+
+        // the DOM layer sinks and dissolves slightly faster than the camera
+        if (content.current) {
+          const fade = Math.min(p * 1.6, 1);
+          content.current.style.opacity = String(1 - fade);
+          content.current.style.transform = `translateY(${p * -90}px)`;
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    const onMove = (e: PointerEvent) => {
+      heroPointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+      heroPointer.y = (e.clientY / window.innerHeight) * 2 - 1;
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("pointermove", onMove);
+    };
+  }, []);
 
   return (
-    <section className="relative h-screen bg-black flex flex-col items-center justify-center overflow-hidden border-x border-white/5 mx-3 md:mx-6 group">
-      
-      {/* 1. Animated Video Background */}
-      <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          className="w-full h-full object-cover opacity-60 mix-blend-screen scale-105"
+    <section
+      ref={section}
+      className="relative h-screen bg-black flex flex-col items-center justify-center overflow-hidden border-x border-white/5 mx-3 md:mx-6"
+    >
+      {/* 1. The frozen world */}
+      {mounted && (
+        <Suspense fallback={null}>
+          <FrozenHeroScene onReady={() => setReady(true)} />
+        </Suspense>
+      )}
+
+      {/* boot veil — lifts once the GL context reports in */}
+      <div
+        className={`absolute inset-0 z-[5] bg-black pointer-events-none transition-opacity duration-[1400ms] ease-out ${
+          ready ? "opacity-0" : "opacity-100"
+        }`}
+      />
+
+      {/* cinematic edge gradients to seat the type */}
+      <div className="absolute inset-0 z-[6] pointer-events-none bg-gradient-to-t from-black/80 via-transparent to-black/60" />
+
+      {/* 2. DOM layer */}
+      <div ref={content} className="relative z-10 flex flex-col items-center text-center px-4 w-full will-change-transform">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="flex items-center gap-3 mb-8"
         >
-          {/* New High-Energy Dribbble Video */}
-          <source src="https://cdn.dribbble.com/userupload/47884462/file/382a205af640e8020710b90fc6415744.mp4" type="video/mp4" />
-        </video>
-        {/* Deep cinematic gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/80" />
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#00f0ff] opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00f0ff]" />
+          </span>
+          <span className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold text-white/60">
+            Systems online — AI that works while you sleep
+          </span>
+        </motion.div>
+
+        <h1 className="fluid-h1 leading-[0.78] font-black uppercase font-display tracking-tighter text-white relative">
+          {/* glowing backdrop */}
+          <span
+            className="absolute inset-0 blur-[44px] text-[#00f0ff]/25 mix-blend-screen pointer-events-none select-none"
+            aria-hidden
+          >
+            AURA LABS
+          </span>
+          {"AURA LABS".split("").map((char, i) =>
+            char === " " ? (
+              <span key={i} className="inline-block w-[3vw]" />
+            ) : (
+              <motion.span
+                key={i}
+                className="inline-block origin-bottom px-[0.3vw] text-white transition-all duration-300 ease-out hover:text-[#00f0ff] hover:-translate-y-[12px] cursor-default"
+                style={{ textShadow: "0 0 18px rgba(0,240,255,0.18)" }}
+                initial={{ opacity: 0, y: 60, rotateX: -90 }}
+                animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                transition={{ duration: 0.9, delay: 0.35 + i * 0.045, ease: EASE_EXPO }}
+              >
+                {char}
+              </motion.span>
+            )
+          )}
+        </h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1, duration: 1, ease: EASE_EXPO }}
+          className="max-w-[300px] md:max-w-xl mt-10 md:mt-12 text-[10px] md:text-xs uppercase font-bold leading-relaxed text-white/50 tracking-[0.3em]"
+        >
+          Architecting the{" "}
+          <span className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
+            digital future
+          </span>{" "}
+          with high-performance SaaS, AI, and enterprise interfaces.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.35, duration: 1, ease: EASE_EXPO }}
+          className="mt-10 flex flex-wrap items-center justify-center gap-4"
+        >
+          <Link
+            to="/contact"
+            className="group inline-flex items-center gap-2 rounded-full bg-white text-black px-7 py-3.5 text-[10px] md:text-[11px] uppercase tracking-[0.25em] font-bold transition-all duration-500 hover:bg-[#00f0ff] hover:shadow-[0_0_40px_rgba(0,240,255,0.35)]"
+          >
+            Book a strategy call
+            <ArrowUpRight size={14} className="transition-transform duration-500 group-hover:rotate-45" />
+          </Link>
+          <Link
+            to="/#work"
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 backdrop-blur-md px-7 py-3.5 text-[10px] md:text-[11px] uppercase tracking-[0.25em] font-bold text-white/80 transition-all duration-500 hover:border-[#00f0ff]/60 hover:text-white"
+          >
+            View work
+          </Link>
+        </motion.div>
       </div>
 
-      {/* 2. Interactive Spotlight Gradient */}
+      {/* 3. Corner HUD */}
       <motion.div
-        className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-500 opacity-50 group-hover:opacity-100 hidden md:block"
-        style={{ background }}
-      />
-
-      {/* 3. Subtle Animated Grain Overlay */}
-      <div 
-        className="absolute inset-0 z-0 opacity-20 pointer-events-none mix-blend-overlay"
-        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}
-      ></div>
-
-      {/* Floating Abstract Tech Orbs */}
-      <motion.div 
-        animate={{ y: [-20, 20, -20], rotate: [0, 10, 0] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-[20%] left-[10%] w-32 h-32 bg-[#00f0ff]/10 rounded-full blur-[60px] pointer-events-none"
-      />
-      <motion.div 
-        animate={{ y: [20, -20, 20], rotate: [0, -10, 0] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-[20%] right-[10%] w-40 h-40 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none"
-      />
-
-      {/* Floating Badges */}
-      <motion.div 
-        initial={{ opacity: 0, x: -50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1, delay: 1 }}
-        className="absolute top-[30%] left-[5%] md:left-[15%] hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.7, duration: 1.2 }}
+        className="absolute bottom-6 left-6 md:left-8 z-10 flex flex-col gap-1 text-[8px] md:text-[10px] uppercase tracking-[0.2em] font-bold opacity-40 md:opacity-60"
       >
-        <Code size={14} className="text-[#00f0ff]" />
-        <span className="text-[10px] uppercase tracking-widest font-bold text-white/80">React & Node</span>
-      </motion.div>
-
-      <motion.div 
-        initial={{ opacity: 0, x: 50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1, delay: 1.2 }}
-        className="absolute top-[40%] right-[5%] md:right-[15%] hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md"
-      >
-        <Zap size={14} className="text-[#00f0ff]" />
-        <span className="text-[10px] uppercase tracking-widest font-bold text-white/80">Generative AI</span>
-      </motion.div>
-
-      <motion.div 
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 1.4 }}
-        className="absolute bottom-[30%] left-[10%] hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md"
-      >
-        <Cpu size={14} className="text-[#00f0ff]" />
-        <span className="text-[10px] uppercase tracking-widest font-bold text-white/80">SaaS Systems</span>
-      </motion.div>
-
-      {/* New Floating Badges */}
-      <motion.div 
-        initial={{ opacity: 0, x: -50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1, delay: 1.6 }}
-        className="absolute bottom-[40%] right-[10%] hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md"
-      >
-        <ShieldCheck size={14} className="text-[#00f0ff]" />
-        <span className="text-[10px] uppercase tracking-widest font-bold text-white/80">Enterprise Security</span>
-      </motion.div>
-
-      <motion.div 
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 1.8 }}
-        className="absolute top-[20%] right-[30%] hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md"
-      >
-        <Database size={14} className="text-[#00f0ff]" />
-        <span className="text-[10px] uppercase tracking-widest font-bold text-white/80">Cloud Architecture</span>
-      </motion.div>
-
-      <motion.div 
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 2.0 }}
-        className="absolute bottom-[20%] left-[25%] hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md"
-      >
-        <Layers size={14} className="text-[#00f0ff]" />
-        <span className="text-[10px] uppercase tracking-widest font-bold text-white/80">Brand Identity</span>
-      </motion.div>
-
-
-      {/* Corner Labels */}
-      <div className="absolute bottom-6 left-6 md:left-8 flex flex-col gap-1 text-[8px] md:text-[10px] uppercase tracking-[0.2em] font-bold opacity-40 md:opacity-60 z-20">
         <span>Web Development</span>
         <span>AI Chatbots</span>
         <span>AI Ad Content</span>
         <span>Web Apps</span>
-      </div>
+      </motion.div>
 
-      <div className="absolute bottom-6 right-6 md:right-8 text-[8px] md:text-[10px] uppercase tracking-[0.2em] font-bold opacity-40 md:opacity-60 z-20">
-        Featured Work /03
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.7, duration: 1.2 }}
+        className="absolute bottom-6 right-6 md:right-8 z-10 text-[8px] md:text-[10px] uppercase tracking-[0.2em] font-bold opacity-40 md:opacity-60"
+      >
+        Core temp −42°C / Live render
+      </motion.div>
 
-      {/* Huge Centered Text */}
-      <div className="relative z-10 flex flex-col items-center text-center px-4 w-full">
-        <motion.div
-           initial={{ opacity: 0, scale: 0.9, y: 20 }}
-           animate={{ opacity: 1, scale: 1, y: 0 }}
-           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-           className="relative w-full"
-        >
-          <h1 className="fluid-h1 leading-[0.75] font-black uppercase font-display tracking-tighter text-white flex flex-wrap items-center justify-center relative">
-            
-            {/* Glowing Backdrop Text */}
-            <span className="absolute inset-0 blur-[40px] text-[#00f0ff]/30 mix-blend-screen pointer-events-none select-none" aria-hidden="true">
-              AURA LABS
-            </span>
-
-            {"AURA LABS".split("").map((char, i) => (
-              char === " " ? (
-                <span key={i} className="w-[3vw]">&nbsp;</span>
-              ) : (
-                <span key={i} className="relative inline-block group px-[0.5vw]">
-                  <motion.span
-                    className="inline-block origin-bottom relative drop-shadow-[0_0_15px_rgba(0,240,255,0.2)] text-white transition-all duration-300 ease-out group-hover:text-[#00f0ff] group-hover:-translate-y-[15px] group-hover:scale-y-[1.2] group-hover:scale-x-[0.9]"
-                    style={{ textShadow: "0 0 15px rgba(0,240,255,0.2)" }}
-                    initial={{ opacity: 0, y: 40, rotateX: -90 }}
-                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                    transition={{ 
-                      duration: 0.8, 
-                      delay: i * 0.05, 
-                      type: "spring", 
-                      damping: 12 
-                    }}
-                  >
-                    {char}
-                  </motion.span>
-                </span>
-              )
-            ))}
-            
-            <motion.span 
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.8, type: "spring", bounce: 0.5 }}
-              className="inline-flex items-center justify-center ml-[2vw] relative group"
-            >
-               <motion.div 
-                 whileHover={{ rotate: 180, scale: 1.1, boxShadow: "0 0 40px rgba(0,240,255,0.4)" }}
-                 transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-                 className="w-[12vw] h-[12vw] md:w-[10vw] md:h-[10vw] border-[0.4vw] border-white/20 rounded-full flex items-center justify-center relative cursor-pointer overflow-hidden backdrop-blur-xl bg-gradient-to-br from-white/10 to-transparent shadow-[inset_0_0_20px_rgba(255,255,255,0.1)]"
-               >
-                  <div className="w-[7vw] h-[7vw] md:w-[6vw] md:h-[6vw] border-[0.2vw] border-[#00f0ff]/50 rounded-full flex items-center justify-center select-none shadow-[0_0_15px_rgba(0,240,255,0.3)]">
-                     <motion.span 
-                        className="text-[3.5vw] md:text-[3vw] leading-none text-[#00f0ff] font-serif italic"
-                        whileHover={{ scale: 1.2 }}
-                     >
-                       <Globe strokeWidth={1.5} className="w-full h-full p-[1vw]" />
-                     </motion.span>
-                  </div>
-               </motion.div>
-            </motion.span>
-          </h1>
-        </motion.div>
-        
-        <div className="max-w-[280px] md:max-w-xl mt-12 md:mt-16">
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2, duration: 1 }}
-              className="text-[10px] md:text-xs uppercase font-bold leading-relaxed text-center text-white/50 tracking-[0.3em]"
-            >
-              Architecting the <span className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">digital future</span> with high-performance <br className="hidden md:block" />
-              SaaS, AI, and enterprise interfaces.
-            </motion.p>
-        </div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2, duration: 1.2 }}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
+      >
+        <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-white/40">
+          Scroll
+        </span>
+        <span className="block h-8 w-px overflow-hidden bg-white/10">
+          <motion.span
+            animate={{ y: [0, 32] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            className="block h-3 w-px bg-[#00f0ff]"
+          />
+        </span>
+      </motion.div>
     </section>
   );
 }
