@@ -45,7 +45,7 @@ export default function AdminDashboard() {
           <div className="bg-white/5 border border-[#00f0ff]/30 rounded-2xl p-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#00f0ff]/10 blur-[40px]" />
             <h3 className="text-[#00f0ff] text-xs uppercase tracking-widest font-bold mb-4 flex items-center gap-2"><Activity size={14}/> DB Status</h3>
-            <p className="text-2xl font-serif">Online (SQLite)</p>
+            <p className="text-2xl font-serif">Online (PostgreSQL)</p>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
             <h3 className="text-white/50 text-xs uppercase tracking-widest font-bold mb-4 flex items-center gap-2"><Code size={14}/> Prisma ORM</h3>
