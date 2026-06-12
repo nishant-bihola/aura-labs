@@ -226,12 +226,12 @@ export default function AuraPricing() {
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
               <div className="relative z-10">
-                <div className="flex justify-between items-start mb-6 md:mb-12">
-                  <div>
-                    <h3 className="text-xl md:text-4xl font-serif mb-1 group-hover:italic transition-all duration-400">{plan.name}</h3>
-                    <p className="text-[9px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 font-sans">{plan.tagline}</p>
+                <div className="flex justify-between items-start mb-6 md:mb-12 gap-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-2xl md:text-4xl font-serif mb-1 group-hover:italic transition-all duration-400 break-words leading-tight">{plan.name}</h3>
+                    <p className="text-[9px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 font-sans mt-2">{plan.tagline}</p>
                   </div>
-                  <div className="w-7 h-7 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black group-hover:border-white transition-all duration-400">
+                  <div className="w-8 h-8 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-white group-hover:text-black group-hover:border-white transition-all duration-400">
                     <ArrowUpRight size={14} className="md:w-[18px] md:h-[18px]" />
                   </div>
                 </div>
