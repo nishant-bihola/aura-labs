@@ -99,13 +99,13 @@ export function ChatWidget() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   key={idx} 
-                  className={\`flex \${msg.role === 'user' ? 'justify-end' : 'justify-start'}\`}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={\`max-w-[85%] rounded-[20px] px-4 py-3 text-sm leading-relaxed \${
+                  <div className={`max-w-[85%] rounded-[20px] px-4 py-3 text-sm leading-relaxed ${
                     msg.role === 'user' 
                       ? 'bg-gradient-to-br from-[#00f0ff] to-[#00aaff] text-black rounded-br-sm shadow-[0_5px_15px_rgba(0,240,255,0.2)] font-medium' 
                       : 'bg-white/5 border border-white/10 text-white/90 rounded-bl-sm font-light'
-                  }\`}>
+                  }`}>
                     {msg.content}
                   </div>
                 </motion.div>
