@@ -24,10 +24,13 @@ import CustomCursor from "./components/CustomCursor";
 import CursorTail from "./components/CursorTail";
 import LogoTicker from "./components/LogoTicker";
 import GiantTicker from "./components/GiantTicker";
+import { ChatWidget } from "./components/ChatWidget";
+import { Analytics } from "@vercel/analytics/react";
 
 // Lazy Loaded Pages for performance
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 const ContactPage = lazy(() => import("./pages/Contact"));
+const Checkout = lazy(() => import("./pages/Checkout"));
 
 /**
  * LOADING INDICATOR (Cinematic)
@@ -129,6 +132,8 @@ export default function App() {
     <Router>
       <ScrollHandler isMenuOpen={isMenuOpen} />
       <SpeedInsights />
+      <Analytics />
+      <ChatWidget />
       
       {/* 1. PERSPECTIVE CONTAINER */}
       <div className="relative w-full min-h-screen bg-[#050505] overflow-hidden perspective-1000">
@@ -239,6 +244,9 @@ export default function App() {
 
                 {/* CONTACT PAGE */}
                 <Route path="/contact" element={<ContactPage />} />
+
+                {/* CHECKOUT PAGE */}
+                <Route path="/checkout" element={<Checkout />} />
               </Routes>
             </Suspense>
 

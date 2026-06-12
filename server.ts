@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import { Client as NotionClient } from "@notionhq/client";
+import { adminAlertHTML, clientConfirmationHTML, paymentInstructionsHTML, adminPurchaseAlertHTML } from "./api/_lib/emails.js";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -215,6 +216,155 @@ async function startServer() {
     } catch (error) {
       console.error("Booking API Error:", error);
       if (!res.headersSent) res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // API Route for Checkout Intent
+  app.post("/api/checkout", async (req, res) => {
+    const { name, email, plan, projectDetails } = req.body;
+    
+    try {
+      if (supabase) {
+        await supabase.from("contact_submissions").insert([{ 
+          first_name: name.split(' ')[0], 
+          last_name: name.split(' ').slice(1).join(' '), 
+          email, 
+          message: projectDetails, 
+          type: "Checkout Intent",
+          plan: plan
+        }]);
+      }
+      res.status(200).json({ success: true });
+
+      (async () => {
+        try {
+          if (resend) {
+            await Promise.allSettled([
+              resend.emails.send({
+                from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
+                to: process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com",
+                replyTo: email,
+                subject: \`💰 CHECKOUT INTENT: \${name} for \${plan}\`,
+                html: adminPurchaseAlertHTML(name, email, plan, projectDetails),
+              }),
+              resend.emails.send({
+                from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
+                to: email,
+                subject: "Payment Instructions | Aura Labs",
+                html: paymentInstructionsHTML(name, plan),
+              })
+            ]);
+          } else {
+            console.warn("Resend not configured, skipping checkout emails");
+          }
+        } catch (err) {
+          console.error("Checkout email tasks failed:", err);
+        }
+      })();
+    } catch (error) {
+      console.error("Checkout API Error:", error);
+      if (!res.headersSent) res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // API Route for AI Chatbot
+  app.post("/api/chat", async (req, res) => {
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "Messages array required" });
+    }
+
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+    if (!GEMINI_API_KEY) {
+      return res.status(500).json({ reply: "My AI neural link is currently offline (API Key missing). Please contact us directly at contact@aura-labs.com." });
+    }
+
+    const SYSTEM_INSTRUCTION = `
+You are Aura AI, the lead digital architect and sales agent for Aura Labs (based in Edmonton, Alberta).
+Your goal is to answer questions about our services and schedule strategy sessions by capturing the user's name and email.
+
+Our Core Services:
+1. Custom Websites & Web Apps (React, Node.js)
+2. AI Chatbots (like yourself) embedded on client sites for 24/7 lead capture.
+3. AI Ad Content (15-sec motion ads powered by generative AI starting at $800/campaign).
+4. Complete Brand Identities (Logo, typography).
+
+Tone: Professional, sleek, slightly futuristic but highly human and empathetic. Be extremely concise.
+
+CRITICAL INSTRUCTION: When you have successfully convinced the user and they provide their name and email, you MUST respond ONLY with the exact following string:
+[CAPTURE_LEAD: {"name": "<user_name>", "email": "<user_email>"}]
+Do not add any other text to that specific response.
+If they just ask a question, answer it and gently ask if they'd like to leave their email so a human architect can follow up.
+`;
+
+    try {
+      const contents = messages.map((msg: any) => ({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.content }]
+      }));
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+          contents: contents,
+          generationConfig: { temperature: 0.7 }
+        })
+      });
+
+      if (!response.ok) {
+        return res.status(500).json({ reply: "I'm experiencing a temporary glitch in my matrix. Please try again later." });
+      }
+
+      const data = await response.json();
+      const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+      if (replyText.includes("[CAPTURE_LEAD:")) {
+        try {
+          const jsonStr = replyText.match(/\[CAPTURE_LEAD:\s*(.*?)\s*\]/)?.[1];
+          if (jsonStr) {
+            const leadData = JSON.parse(jsonStr);
+            
+            if (supabase) {
+              await supabase.from("contact_submissions").insert([{
+                first_name: leadData.name.split(' ')[0],
+                last_name: leadData.name.split(' ').slice(1).join(' '),
+                email: leadData.email,
+                message: "Captured via AI Chatbot",
+                type: "AI Chat Lead"
+              }]);
+            }
+
+            if (resend) {
+              await Promise.allSettled([
+                resend.emails.send({
+                  from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
+                  to: process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com",
+                  replyTo: leadData.email,
+                  subject: `🤖 NEW AI LEAD: ${leadData.name}`,
+                  html: adminAlertHTML(leadData.name, leadData.email, "Captured via AI Chatbot", "AI Chat Lead"),
+                }),
+                resend.emails.send({
+                  from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
+                  to: leadData.email,
+                  subject: "Strategy Session | Aura Labs",
+                  html: clientConfirmationHTML(leadData.name, "Consultation"),
+                })
+              ]);
+            }
+
+            return res.status(200).json({ reply: `Perfect, ${leadData.name}. I've successfully transmitted your details to our team and sent a confirmation to ${leadData.email}. One of our lead architects will reach out shortly!` });
+          }
+        } catch (e) {
+          console.error("Failed to parse lead capture:", e);
+        }
+      }
+
+      return res.status(200).json({ reply: replyText });
+    } catch (error) {
+      console.error("Chat API Error:", error);
+      return res.status(500).json({ reply: "I'm having trouble connecting to my systems right now. Please email us directly." });
     }
   });
 

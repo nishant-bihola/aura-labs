@@ -119,7 +119,7 @@ export default function AuraPricing() {
   const handleGetStarted = (planName: string) => {
     // Explicitly scroll to top before navigation for immediate feedback
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    navigate(`/contact?plan=${encodeURIComponent(planName)}`);
+    navigate(`/checkout?plan=${encodeURIComponent(planName)}`);
   };
 
   return (

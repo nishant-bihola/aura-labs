@@ -194,3 +194,60 @@ export const newsletterWelcomeHTML = (email: string) => shell("AURA LABS", "line
     </td></tr>
   </table>
 `);
+
+// ─── Checkout Payment Instructions ────────────────────────────────────────────
+export const paymentInstructionsHTML = (name: string, plan: string) => {
+  const firstName = name.split(" ")[0] || name;
+  return shell("AURA LABS", "linear-gradient(90deg,#00f0ff,#0055ff)", `
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td style="padding:52px 48px 44px;">
+      <p style="margin:0 0 16px;font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#00f0ff;">Checkout Initiated</p>
+      <h1 style="margin:0 0 20px;font-size:34px;font-weight:300;color:#ffffff;letter-spacing:-1px;line-height:1.2;">Next Steps,<br />${firstName}.</h1>
+      <p style="margin:0 0 36px;font-size:15px;line-height:1.75;color:rgba(255,255,255,0.55);">
+        You've initiated checkout for the <strong style="color:rgba(255,255,255,0.8);font-weight:600;">${plan}</strong> package. To secure your slot and begin the project, please complete the e-Transfer payment.
+      </p>
+
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:36px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.1);border-radius:12px;">
+        <tr><td style="padding:24px;">
+          <p style="margin:0 0 12px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);">Payment Details</p>
+          <p style="margin:0 0 8px;font-size:15px;color:#fff;">Send e-Transfer to:</p>
+          <p style="margin:0;font-size:20px;font-weight:600;color:#00f0ff;">Nishant15bihola@gmail.com</p>
+        </td></tr>
+      </table>
+
+      <p style="margin:0 0 20px;font-size:13px;line-height:1.7;color:rgba(255,255,255,0.45);">Once you've sent the transfer, please book your kickoff strategy session:</p>
+      ${ctaButton(BOOKING_URL, "Book Kickoff Call")}
+    </td></tr>
+  </table>
+`);
+};
+
+// ─── Admin Checkout Alert ───────────────────────────────────────────────────
+export const adminPurchaseAlertHTML = (name: string, email: string, plan: string, projectDetails: string) =>
+  shell("AURA LABS · CHECKOUT ALERT", "linear-gradient(90deg,#00f0ff,#ff9900)", `
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td style="padding:48px 48px 40px;">
+      <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#00f0ff;">Checkout Initiated</p>
+      <h1 style="margin:0 0 32px;font-size:28px;font-weight:300;color:#ffffff;letter-spacing:-0.5px;line-height:1.3;">Incoming Payment</h1>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+        <tr><td style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);">Name</p>
+          <p style="margin:0;font-size:15px;color:#fff;">${name}</p>
+        </td></tr>
+        <tr><td style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);">Email</p>
+          <a href="mailto:${email}" style="margin:0;font-size:15px;color:#00f0ff;text-decoration:none;">${email}</a>
+        </td></tr>
+        <tr><td style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+          <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);">Plan Requested</p>
+          <p style="margin:0;font-size:15px;color:#fff;">${plan}</p>
+        </td></tr>
+        <tr><td style="padding:16px 0;">
+          <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);">Project Details</p>
+          <p style="margin:0;font-size:14px;line-height:1.7;color:rgba(255,255,255,0.6);font-style:italic;">"${projectDetails || "No details provided."}"</p>
+        </td></tr>
+      </table>
+      ${ctaButton(`mailto:${email}`, "Email Client")}
+    </td></tr>
+  </table>
+`);

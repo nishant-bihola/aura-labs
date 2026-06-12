@@ -5,6 +5,20 @@ export default function Hero() {
   return (
     <section className="relative h-screen bg-black flex flex-col items-center justify-center overflow-hidden border-x border-border-soft mx-3 md:mx-6">
       
+      {/* Animated Video Background */}
+      <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="w-full h-full object-cover opacity-60 mix-blend-screen scale-105"
+        >
+          <source src="https://cdn.dribbble.com/userupload/46945696/file/b7efb022f7f707f08f6f06527d761c77.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/80" />
+      </div>
+
       {/* Corner Labels - Hidden on small mobile */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full flex justify-between px-8 pointer-events-none hidden md:flex">
          {/* Desktop overlay text */}
