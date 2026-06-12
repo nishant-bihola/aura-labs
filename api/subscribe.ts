@@ -3,6 +3,7 @@ import nodemailer from 'nodemailer';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Support both VITE_ prefixed (frontend) and plain (serverless) env vars
+import { newsletterWelcomeHTML } from './_lib/emails';
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 // Server-side: prefer service_role key to bypass RLS for inserts
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
@@ -25,93 +26,6 @@ const gmailTransporter = nodemailer.createTransport({
   service: 'gmail',
   auth: { user: GMAIL_USER, pass: GMAIL_PASS },
 });
-
-// Clean, premium email template
-const welcomeEmailHTML = (email: string) => `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to The Journal | Aura Labs</title>
-</head>
-<body style="margin:0;padding:0;background-color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:48px 20px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
-
-          <!-- Logo -->
-          <tr>
-            <td style="padding-bottom:48px;text-align:center;">
-              <span style="font-size:11px;font-weight:700;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,0.3);">AURA LABS</span>
-            </td>
-          </tr>
-
-          <!-- Card -->
-          <tr>
-            <td style="background:#111111;border:1px solid rgba(255,255,255,0.06);border-radius:24px;overflow:hidden;">
-
-              <!-- Header accent bar -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="height:3px;background:linear-gradient(90deg,#00f0ff,#0055ff);"></td>
-                </tr>
-              </table>
-
-              <!-- Body content -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="padding:52px 48px 40px;">
-                    <p style="margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#00f0ff;">The Journal</p>
-                    <h1 style="margin:0 0 24px;font-size:36px;font-weight:300;line-height:1.2;color:#ffffff;letter-spacing:-1px;">You're in.</h1>
-                    <p style="margin:0 0 32px;font-size:15px;line-height:1.75;color:rgba(255,255,255,0.55);font-weight:400;">
-                      Welcome aboard. You'll receive curated insights on design, technology, and the craft behind building exceptional digital products — straight from our studio in Edmonton.
-                    </p>
-
-                    <!-- Divider -->
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
-                      <tr><td style="height:1px;background:rgba(255,255,255,0.06);"></td></tr>
-                    </table>
-
-                    <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);">Subscribed As</p>
-                    <p style="margin:0 0 40px;font-size:14px;color:rgba(255,255,255,0.7);">${email}</p>
-
-                    <!-- CTA -->
-                    <table role="presentation" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="border-radius:100px;background:#ffffff;">
-                          <a href="https://aura-labs-one.vercel.app" style="display:inline-block;padding:14px 36px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#000000;text-decoration:none;">
-                            Explore Our Work
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Footer -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="padding:24px 48px;border-top:1px solid rgba(255,255,255,0.06);">
-                    <p style="margin:0;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase;">
-                      © 2026 Aura Labs · Edmonton, Alberta · <a href="https://aura-labs-one.vercel.app" style="color:rgba(255,255,255,0.2);text-decoration:none;">Unsubscribe</a>
-                    </p>
-                  </td>
-                </tr>
-              </table>
-
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-`;
 
 // ─── Handler ──────────────────────────────────────────────────────────────────
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -158,7 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         from: `"Aura Labs" <${EMAIL_USER}>`,
         to: email,
         subject: 'Welcome to The Journal | Aura Labs',
-        html: welcomeEmailHTML(email),
+        html: newsletterWelcomeHTML(email),
       });
       return true;
     } catch (err: any) {
@@ -169,7 +83,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             from: `"Aura Labs" <${GMAIL_USER}>`,
             to: email,
             subject: 'Welcome to The Journal | Aura Labs',
-            html: welcomeEmailHTML(email),
+            html: newsletterWelcomeHTML(email),
           });
           return true;
         } catch (gerr: any) {

@@ -22,7 +22,7 @@ const SERVICE_DETAILS = [
     id: "03",
     title: "AI Ad Content",
     bgText: "MOTION",
-    desc: "15-second motion ads and product images powered by Claude Fable + Higgsfield AI. Premium creative that used to cost $5,000+ and weeks of work — delivered in 24–48 hours. From $800/campaign.",
+    desc: "15-second motion ads and product images powered by generative AI. Premium creative that used to cost $5,000+ and weeks of work — delivered in 24–48 hours. From $800/campaign.",
     image: "https://images.unsplash.com/photo-1574717024453-354056aafa98?w=900&auto=format&fit=crop&q=80",
     categories: ["Motion Ads", "Product Images", "15-sec Video", "Campaign"]
   },

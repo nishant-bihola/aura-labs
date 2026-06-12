@@ -11,7 +11,7 @@ gsap.registerPlugin(ScrollTrigger);
 const FAQS = [
   {
     question: "What exactly do you build?",
-    answer: "We build four things: (1) custom websites and full-stack web apps using React and Node.js, (2) AI chatbots embedded on your site for bookings, lead capture, and 24/7 support, (3) AI-powered motion ads and product images using Claude Fable + Higgsfield, and (4) complete brand identities — logo, typography, colour system. Whether you need a 5-page marketing site or a full ordering platform with a chatbot, we handle it end to end."
+    answer: "We build four things: (1) custom websites and full-stack web apps using React and Node.js, (2) AI chatbots embedded on your site for bookings, lead capture, and 24/7 support, (3) AI-powered motion ads and product images, and (4) complete brand identities — logo, typography, colour system. Whether you need a 5-page marketing site or a full ordering platform with a chatbot, we handle it end to end."
   },
   {
     question: "How much does it cost?",
@@ -27,7 +27,7 @@ const FAQS = [
   },
   {
     question: "What makes Aura Labs different?",
-    answer: "You work directly with the developer building your product — not a sales rep or account manager. We use AI-powered tools (Claude Fable, Higgsfield) that give you premium creative output at a fraction of traditional agency cost. We're lean, fast, and focused on one thing: building things that make you money."
+    answer: "You work directly with the developer building your product — not a sales rep or account manager. We use state-of-the-art AI tooling to give you premium creative output at a fraction of traditional agency cost. We're lean, fast, and focused on one thing: building things that make you money."
   }
 ];
 

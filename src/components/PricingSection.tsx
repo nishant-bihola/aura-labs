@@ -42,7 +42,7 @@ const PLANS = [
   {
     name: "AI Content",
     tagline: "Motion ads & product images",
-    description: "AI-generated ad creatives powered by Claude Fable + Higgsfield — premium output, hours not weeks.",
+    description: "AI-generated ad creatives — premium output, hours not weeks.",
     price: "$800",
     period: "/campaign",
     features: [
