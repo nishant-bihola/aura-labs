@@ -76,7 +76,7 @@ const PLANS = [
     price: "$99",
     period: "/month",
     features: [
-      "Unlimited Monthly Chats",
+      "Unlimited Monthly Chats (Super responsive)",
       "Monthly Knowledge Base Updates",
       "Lead Capture Integration",
       "Performance Analytics",
@@ -213,14 +213,17 @@ export default function AuraPricing() {
           {PLANS.map((plan) => (
             <div 
               key={plan.name}
-              className={`pricing-card group relative p-6 md:p-10 lg:p-12 rounded-[24px] md:rounded-[40px] border transition-all duration-200 flex flex-col justify-between overflow-hidden ${
+              className={`pricing-card group relative p-6 md:p-10 lg:p-12 rounded-[24px] md:rounded-[40px] border transition-all duration-500 flex flex-col justify-between overflow-hidden ${
                 plan.highlight 
-                ? "bg-white/[0.03] border-white/20 shadow-2xl shadow-white/[0.01]" 
+                ? "bg-[#050505] border-[#00f0ff]/50 shadow-[0_0_50px_rgba(0,240,255,0.15)] scale-[1.02]" 
                 : "bg-transparent border-white/5 hover:border-white/20"
               }`}
             >
+              {plan.highlight && (
+                <div className="absolute inset-0 bg-gradient-to-b from-[#00f0ff]/10 to-transparent pointer-events-none" />
+              )}
               {/* Refined Subtle Glow */}
-              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-6 md:mb-12">
@@ -257,10 +260,18 @@ export default function AuraPricing() {
               <div className="relative z-10">
                 <button 
                   onClick={() => handleGetStarted(plan.name)}
-                  className="relative w-full py-4 md:py-5 rounded-full overflow-hidden group/btn transition-all duration-400 bg-white/5 border border-white/10 hover:border-white/40"
+                  className={\`relative w-full py-4 md:py-5 rounded-full overflow-hidden group/btn transition-all duration-500 border \${
+                    plan.highlight 
+                    ? "bg-gradient-to-r from-[#00f0ff] to-[#0055ff] border-transparent text-black" 
+                    : "bg-white/5 border-white/10 hover:border-white/40 text-white"
+                  }\`}
                 >
-                  <div className="absolute inset-0 bg-white translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-500 ease-[0.16,1,0.3,1]" />
-                  <span className="relative z-10 text-[8px] md:text-[10px] tracking-[0.3em] uppercase font-bold group-hover/btn:text-black transition-colors duration-400">
+                  <div className={\`absolute inset-0 translate-y-[101%] group-hover/btn:translate-y-0 transition-transform duration-500 ease-[0.16,1,0.3,1] \${
+                    plan.highlight ? "bg-white" : "bg-white"
+                  }\`} />
+                  <span className={\`relative z-10 text-[8px] md:text-[10px] tracking-[0.3em] uppercase font-bold transition-colors duration-500 \${
+                    plan.highlight ? "group-hover/btn:text-black" : "group-hover/btn:text-black"
+                  }\`}>
                     Get Started
                   </span>
                 </button>

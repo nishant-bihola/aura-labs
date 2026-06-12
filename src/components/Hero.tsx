@@ -1,5 +1,5 @@
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
-import { ChevronDown, Code, Zap, Globe, Cpu } from "lucide-react";
+import { ChevronDown, Code, Zap, Globe, Cpu, Database, Layers, ShieldCheck } from "lucide-react";
 import { useEffect } from "react";
 
 export default function Hero() {
@@ -92,6 +92,37 @@ export default function Hero() {
         <span className="text-[10px] uppercase tracking-widest font-bold text-white/80">SaaS Systems</span>
       </motion.div>
 
+      {/* New Floating Badges */}
+      <motion.div 
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 1, delay: 1.6 }}
+        className="absolute bottom-[40%] right-[10%] hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md"
+      >
+        <ShieldCheck size={14} className="text-[#00f0ff]" />
+        <span className="text-[10px] uppercase tracking-widest font-bold text-white/80">Enterprise Security</span>
+      </motion.div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 1.8 }}
+        className="absolute top-[20%] right-[30%] hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md"
+      >
+        <Database size={14} className="text-[#00f0ff]" />
+        <span className="text-[10px] uppercase tracking-widest font-bold text-white/80">Cloud Architecture</span>
+      </motion.div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 2.0 }}
+        className="absolute bottom-[20%] left-[25%] hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md"
+      >
+        <Layers size={14} className="text-[#00f0ff]" />
+        <span className="text-[10px] uppercase tracking-widest font-bold text-white/80">Brand Identity</span>
+      </motion.div>
+
 
       {/* Corner Labels */}
       <div className="absolute bottom-6 left-6 md:left-8 flex flex-col gap-1 text-[8px] md:text-[10px] uppercase tracking-[0.2em] font-bold opacity-40 md:opacity-60 z-20">
@@ -103,16 +134,6 @@ export default function Hero() {
 
       <div className="absolute bottom-6 right-6 md:right-8 text-[8px] md:text-[10px] uppercase tracking-[0.2em] font-bold opacity-40 md:opacity-60 z-20">
         Featured Work /03
-      </div>
-
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20">
-        <span className="text-[8px] md:text-[9px] uppercase font-bold tracking-[0.3em] text-[#00f0ff] opacity-80 drop-shadow-[0_0_8px_rgba(0,240,255,0.5)]">Explore</span>
-        <motion.div
-          animate={{ y: [0, 5, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <ChevronDown size={12} className="text-[#00f0ff] opacity-80" />
-        </motion.div>
       </div>
 
       {/* Huge Centered Text */}
