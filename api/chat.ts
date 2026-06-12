@@ -1,8 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { Resend } from "resend";
-import { createClient } from "@supabase/supabase-js";
 import { adminAlertHTML, clientConfirmationHTML } from "./_lib/emails.js";
+import { PrismaClient } from "@prisma/client";
+import { CMS_DATA } from "../src/lib/cms.js";
 
+const prisma = new PrismaClient();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
 const SUPABASE_KEY = process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || "";
@@ -11,8 +13,8 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com";
 
 const SYSTEM_INSTRUCTION = `
-You are Aura AI, an elite digital architect and highly intelligent technical sales engineer for Aura Labs (based in Edmonton, Alberta).
-We build enterprise-grade digital systems that drive explosive revenue growth.
+You are Aura AI, an elite digital architect and highly intelligent technical sales engineer for Aura Labs.
+Our mission: ${CMS_DATA.company.mission}
 
 Your core programming is based on the "Superpowers" methodology:
 1. Systematic over ad-hoc: Do not just spit out prices immediately. Ask sharp, consultative questions to tease out the user's actual business requirements and problems first.
@@ -20,11 +22,13 @@ Your core programming is based on the "Superpowers" methodology:
 3. Project Scoping: Break down their needs into clear, digestible phases (e.g., Design, Development, Launch).
 4. Evidence over claims: Provide structured, logical solutions before declaring success.
 
-Our Core Services:
-1. Custom Websites & Web Apps (React, Node.js) - Starting at $1,500
-2. AI Chatbots (like yourself) embedded on client sites for 24/7 lead capture - $99/mo SaaS
-3. AI Ad Content (15-sec motion ads powered by generative AI) - Starting at $800/campaign
-4. Complete Brand Identities (Logo, typography) - Custom Quotes
+--- KNOWLEDGE BASE START ---
+${JSON.stringify(CMS_DATA.services, null, 2)}
+
+${JSON.stringify(CMS_DATA.pricing_plans, null, 2)}
+--- KNOWLEDGE BASE END ---
+
+${CMS_DATA.instructions_for_ai}
 
 Tone: Professional, highly analytical, consultative, and empathetic. Speak like a senior technical founder who values architecture, clean code, and ROI. Do not be overly robotic; be human but brilliant.
 
@@ -80,15 +84,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (jsonStr) {
           const leadData = JSON.parse(jsonStr);
           
-          // 1. Save to Supabase
-          if (supabase) {
-            await supabase.from("contact_submissions").insert([{
-              first_name: leadData.name.split(' ')[0],
-              last_name: leadData.name.split(' ').slice(1).join(' '),
-              email: leadData.email,
-              message: "Captured via AI Chatbot",
-              type: "AI Chat Lead"
-            }]);
+          // 1. Save to Prisma
+          try {
+            await prisma.lead.create({
+              data: {
+                name: leadData.name,
+                email: leadData.email,
+                plan: "AI Chat Lead",
+                details: "Captured via Advanced RAG AI Chatbot",
+                addons: null
+              }
+            });
+            await prisma.chatSession.create({
+              data: {
+                email: leadData.email,
+                history: JSON.stringify(messages)
+              }
+            });
+          } catch (dbError) {
+            console.error("Prisma Error:", dbError);
           }
 
           // 2. Send Emails
