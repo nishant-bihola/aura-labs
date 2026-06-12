@@ -31,8 +31,6 @@ export default async function handler(req: Request) {
       console.error("Prisma Error:", dbError);
     }
 
-    if (supabase) {
-
     if (resend) {
       await Promise.allSettled([
         resend.emails.send({
