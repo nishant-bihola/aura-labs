@@ -1,8 +1,12 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check } from "lucide-react";
+import { useEffect } from "react";
 
 export default function AIChatbots() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const features = [
     "24/7 Automated Customer Support",
     "Lead Qualification & Data Capture",

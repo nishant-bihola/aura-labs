@@ -1,8 +1,12 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check } from "lucide-react";
+import { useEffect } from "react";
 
 export default function BrandIdentity() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const features = [
     "Primary and Secondary Logo Design",
     "Comprehensive Brand Guidelines",
