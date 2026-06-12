@@ -8,7 +8,8 @@ const SERVICE_DETAILS = [
     bgText: "BUILD",
     desc: "From corporate websites to comprehensive ordering platforms, our web solutions ensure seamless integration and reliable performance. Starting at $1,500.",
     image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=900&auto=format&fit=crop&q=80",
-    categories: ["React", "Node.js", "Web Apps", "E-Commerce", "SEO"]
+    categories: ["React", "Node.js", "Web Apps", "E-Commerce", "SEO"],
+    href: "/services/web-development"
   },
   {
     id: "02",
@@ -16,7 +17,8 @@ const SERVICE_DETAILS = [
     bgText: "SMART",
     desc: "Custom AI chatbots tailored to your business needs. Provide round-the-clock support, streamline bookings, and enhance customer engagement effortlessly. Starting at $800.",
     image: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=900&auto=format&fit=crop&q=80",
-    categories: ["Lead Gen", "Bookings", "24/7 Support", "AI-Powered"]
+    categories: ["Lead Gen", "Bookings", "24/7 Support", "AI-Powered"],
+    href: "/services/ai-chatbots"
   },
   {
     id: "03",
@@ -24,7 +26,8 @@ const SERVICE_DETAILS = [
     bgText: "MOTION",
     desc: "Premium motion ads and product imagery powered by generative AI. Optimize your marketing campaigns with rapid delivery and impactful visuals. From $800/campaign.",
     video: "https://cdn.dribbble.com/userupload/47884462/file/382a205af640e8020710b90fc6415744.mp4",
-    categories: ["Motion Ads", "Product Images", "15-sec Video", "Campaign"]
+    categories: ["Motion Ads", "Product Images", "15-sec Video", "Campaign"],
+    href: "/services/ai-ads"
   },
   {
     id: "04",
@@ -32,7 +35,8 @@ const SERVICE_DETAILS = [
     bgText: "IDENTITY",
     desc: "Comprehensive visual identity systems designed to establish trust and credibility. Ensure your business is recognized as a leader from day one.",
     image: "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=900&auto=format&fit=crop&q=80",
-    categories: ["Logo Design", "Typography", "Brand Guide", "Visual System"]
+    categories: ["Logo Design", "Typography", "Brand Guide", "Visual System"],
+    href: "/services/brand-identity"
   }
 ];
 
@@ -41,7 +45,7 @@ function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
 
   const startProject = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    navigate(`/contact?plan=${encodeURIComponent(service.title)}`);
+    navigate(service.href);
   };
 
   return (

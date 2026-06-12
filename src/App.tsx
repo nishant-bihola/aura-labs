@@ -17,6 +17,7 @@ import WorkSection from "./components/WorkSection";
 import ServicesSection from "./components/ServicesSection";
 import SuccessSection from "./components/SuccessSection";
 import PricingSection from "./components/PricingSection";
+import TestimonialsSection from "./components/TestimonialsSection";
 import FAQSection from "./components/FAQSection";
 import EvolutionSection from "./components/EvolutionSection";
 import ContactFooter from "./components/ContactFooter";
@@ -31,6 +32,12 @@ import { Analytics } from "@vercel/analytics/react";
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
 const ContactPage = lazy(() => import("./pages/Contact"));
 const Checkout = lazy(() => import("./pages/Checkout"));
+
+// Lazy load Service Pages
+const WebDevelopment = lazy(() => import("./pages/services/WebDevelopment"));
+const AIChatbots = lazy(() => import("./pages/services/AIChatbots"));
+const AIAds = lazy(() => import("./pages/services/AIAds"));
+const BrandIdentity = lazy(() => import("./pages/services/BrandIdentity"));
 
 /**
  * LOADING INDICATOR (Cinematic)
@@ -232,6 +239,7 @@ export default function App() {
                     <div id="work"><WorkSection /></div>
                     <GiantTicker />
                     <div id="studio"><ServicesSection /></div>
+                    <TestimonialsSection />
                     <SuccessSection />
                     <div id="pricing"><PricingSection /></div>
                     <FAQSection />
@@ -241,6 +249,12 @@ export default function App() {
 
                 {/* DYNAMIC CASE STUDY PAGE */}
                 <Route path="/work/:slug" element={<ProjectDetail />} />
+
+                {/* SERVICE PAGES */}
+                <Route path="/services/web-development" element={<WebDevelopment />} />
+                <Route path="/services/ai-chatbots" element={<AIChatbots />} />
+                <Route path="/services/ai-ads" element={<AIAds />} />
+                <Route path="/services/brand-identity" element={<BrandIdentity />} />
 
                 {/* CONTACT PAGE */}
                 <Route path="/contact" element={<ContactPage />} />

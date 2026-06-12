@@ -53,6 +53,36 @@ const PLANS = [
       "Ready to publish on any platform"
     ],
     highlight: false
+  },
+  {
+    name: "Maintenance",
+    tagline: "Worry-free operation",
+    description: "Keep your website secure, fast, and up-to-date with our monthly retainer.",
+    price: "$150",
+    period: "/month",
+    features: [
+      "99.9% Uptime Guarantee",
+      "Daily Backups & Security Scans",
+      "Content Updates (up to 2 hrs)",
+      "Premium Plugin Licenses",
+      "Priority Email Support"
+    ],
+    highlight: false
+  },
+  {
+    name: "AI Chatbot SaaS",
+    tagline: "Always-on intelligence",
+    description: "Fully managed AI chatbot hosting, fine-tuning, and performance monitoring.",
+    price: "$99",
+    period: "/month",
+    features: [
+      "Unlimited Monthly Chats",
+      "Monthly Knowledge Base Updates",
+      "Lead Capture Integration",
+      "Performance Analytics",
+      "Dedicated Account Manager"
+    ],
+    highlight: false
   }
 ];
 
