@@ -31,29 +31,9 @@ export default defineConfig(({mode}) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            if (!id.includes('node_modules')) return;
-            const path = id.replace(/\\/g, '/');
-            const pkg = (name: string) => path.includes(`node_modules/${name}/`);
-            // WebGL stack — referenced only by the lazy hero scene, so
-            // splitting it keeps ~1MB of three.js off the first paint.
-            // Everything else stays in one 'vendor' chunk: the previous
-            // substring-based react/framer split produced circular
-            // chunks (see old build warnings) which could break module
-            // evaluation order at runtime.
-            if (
-              pkg('three') ||
-              pkg('three-stdlib') ||
-              pkg('three-mesh-bvh') ||
-              pkg('postprocessing') ||
-              pkg('maath') ||
-              pkg('detect-gpu') ||
-              path.includes('node_modules/@react-three/') ||
-              path.includes('node_modules/@monogrid/') ||
-              path.includes('node_modules/troika-')
-            ) {
-              return 'vendor-three';
+            if (id.includes('node_modules')) {
+              return 'vendor';
             }
-            return 'vendor';
           }
         }
       }

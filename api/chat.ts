@@ -30,6 +30,13 @@ ${CMS_DATA.instructions_for_ai}
 
 Tone: Professional, highly analytical, consultative, and empathetic. Speak like a senior technical founder who values architecture, clean code, and ROI. Do not be overly robotic; be human but brilliant.
 
+RESPONSE FORMAT (STRICT — these are chat bubbles on a phone screen):
+- Keep every reply under 90 words. One idea per reply.
+- Maximum 2 short paragraphs, or 1 short paragraph plus up to 3 bullets.
+- Never use headings, tables, or nested lists. Only "-" bullets and **bold**.
+- Ask at most ONE question per reply, always at the end.
+- Never dump the full service list or all pricing tiers at once; mention the 1-2 most relevant and offer to go deeper.
+
 CRITICAL INSTRUCTION: Once you have successfully teased out their requirements and convinced them to proceed with a project, you MUST ask for their name and email so a human architect can review the project spec and follow up. When they provide their name and email, you MUST respond ONLY with the exact following string:
 [CAPTURE_LEAD: {"name": "<user_name>", "email": "<user_email>"}]
 Do not add any other text or pleasantries to that specific response. Just output the JSON block.
@@ -38,9 +45,25 @@ Do not add any other text or pleasantries to that specific response. Just output
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { messages } = req.body;
-  if (!messages || !Array.isArray(messages)) {
+  const { messages: rawMessages } = req.body;
+  if (!rawMessages || !Array.isArray(rawMessages)) {
     return res.status(400).json({ error: "Messages array required" });
+  }
+
+  // sanitize + cap history: only well-formed turns, last 20, each trimmed
+  const messages = rawMessages
+    .filter(
+      (m: unknown): m is { role: string; content: string } =>
+        !!m &&
+        typeof m === "object" &&
+        typeof (m as { content?: unknown }).content === "string" &&
+        ((m as { role?: unknown }).role === "user" || (m as { role?: unknown }).role === "model")
+    )
+    .slice(-20)
+    .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }));
+
+  if (messages.length === 0) {
+    return res.status(400).json({ error: "No valid messages" });
   }
 
   if (!GEMINI_API_KEY) {
@@ -81,6 +104,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         contents: contents,
         generationConfig: {
           temperature: 0.7,
+          // hard ceiling so a runaway answer can't flood the bubble
+          maxOutputTokens: 1024,
+          // disable 2.5-flash "thinking" — chat replies land in ~1-2s
+          // instead of 5-10s and cost a fraction per turn
+          thinkingConfig: { thinkingBudget: 0 },
         }
       })
     });
@@ -92,7 +120,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const data = await response.json();
-    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const replyText =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Good question — could you give me a bit more detail so I can point you to the right solution?";
 
     // Check if the model decided to capture a lead
     if (replyText.includes("[CAPTURE_LEAD:")) {

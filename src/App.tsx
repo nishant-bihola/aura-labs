@@ -3,7 +3,7 @@
  * Cinematic 3D Perspective + Vibrant Aura Sidebar + Routing
  */
 
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import Lenis from "lenis";
 import { motion, AnimatePresence } from "framer-motion";

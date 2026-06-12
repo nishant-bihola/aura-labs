@@ -76,7 +76,7 @@ function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
                 <img
                   src={service.image}
                   alt={service.title}
-                  loading="lazy"
+                  loading="eager"
                   decoding="async"
                   className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                 />

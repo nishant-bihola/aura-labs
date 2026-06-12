@@ -1,17 +1,9 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import { heroProgress, heroPointer } from "./canvas/frozen/progress";
-
-/**
- * HERO — the frozen core.
- * A real-time WebGL world replaces the old CDN video: a procedural ice
- * monolith with refraction, orbiting shard debris, GPU snowfall and an
- * aurora veil. The camera dollies toward the core as the section
- * scrolls out, and sways with the pointer while idle.
- */
-const FrozenHeroScene = lazy(() => import("./canvas/frozen/FrozenHeroScene"));
+import FrozenHeroScene from "./canvas/frozen/FrozenHeroScene";
 
 const EASE_EXPO = [0.16, 1, 0.3, 1] as const;
 
@@ -68,9 +60,7 @@ export default function Hero() {
     >
       {/* 1. The frozen world */}
       {mounted && (
-        <Suspense fallback={null}>
-          <FrozenHeroScene onReady={() => setReady(true)} />
-        </Suspense>
+        <FrozenHeroScene onReady={() => setReady(true)} />
       )}
 
       {/* boot veil — lifts once the GL context reports in */}

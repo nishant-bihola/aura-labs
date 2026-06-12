@@ -57,7 +57,7 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
           <img
             src={project.thumbImage}
             alt={project.title}
-            loading="lazy"
+            loading="eager"
             decoding="async"
             className="w-full h-full object-cover scale-110"
           />

@@ -133,7 +133,7 @@ export default function ProjectDetail() {
            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
            className="aspect-[4/3] md:aspect-[16/9] lg:aspect-[21/9] w-full rounded-[20px] md:rounded-[40px] lg:rounded-[80px] overflow-hidden shadow-2xl shadow-black/50"
          >
-            <img src={project.mainImage} loading="lazy" decoding="async" className="w-full h-full object-cover" alt={project.title} />
+            <img src={project.mainImage} loading="eager" decoding="async" className="w-full h-full object-cover" alt={project.title} />
          </motion.div>
       </section>
 
@@ -151,7 +151,7 @@ export default function ProjectDetail() {
                    <p className="text-base md:text-xl text-white/50 leading-relaxed font-light text-center lg:text-left">{project.results}</p>
                 </div>
                 <div className="aspect-[4/3] w-full rounded-[20px] md:rounded-[50px] overflow-hidden bg-white/5 shadow-2xl">
-                   <img src={project.galleryImages[0]} loading="lazy" decoding="async" className="w-full h-full object-cover" alt="Gallery 1" />
+                   <img src={project.galleryImages[0]} loading="eager" decoding="async" className="w-full h-full object-cover" alt="Gallery 1" />
                 </div>
              </div>
           </div>
@@ -186,7 +186,7 @@ export default function ProjectDetail() {
                  navigate(`/work/${relatedProject.slug}`);
                }}
              >
-                <img src={relatedProject.thumbImage} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt={relatedProject.title} />
+                <img src={relatedProject.thumbImage} loading="eager" decoding="async" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt={relatedProject.title} />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-700" />
                 <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 text-white z-10 flex items-center gap-3 md:gap-4 group-hover:translate-x-2 transition-transform duration-500">
                    <div className="flex flex-col">

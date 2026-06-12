@@ -248,7 +248,7 @@ async function startServer() {
                 from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
                 to: process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com",
                 replyTo: email,
-                subject: \`💰 CHECKOUT INTENT: \${name} for \${plan}\`,
+                subject: `💰 CHECKOUT INTENT: ${name} for ${plan}`,
                 html: adminPurchaseAlertHTML(name, email, plan, projectDetails),
               }),
               resend.emails.send({
