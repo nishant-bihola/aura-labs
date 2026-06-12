@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer';
 import { createClient } from '@supabase/supabase-js';
 import { Client as NotionClient } from '@notionhq/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { adminAlertHTML, clientConfirmationHTML } from './_lib/emails';
+import { adminAlertHTML, clientConfirmationHTML } from './_lib/emails.js';
 
 // ─── Environment Variables ────────────────────────────────────────────────────
 // Support both VITE_ prefixed and plain variants for Vercel serverless

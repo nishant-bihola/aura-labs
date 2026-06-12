@@ -10,6 +10,17 @@ export default function CheckoutPage() {
   const queryParams = new URLSearchParams(location.search);
   const planParam = queryParams.get("plan") || "Custom Package";
 
+  const PLAN_DETAILS: Record<string, { price: string, features: string[] }> = {
+    "Starter": { price: "$1,500", features: ["Custom React website", "Core SEO setup", "Lead capture form", "Mobile responsive"] },
+    "Growth": { price: "$4,500", features: ["Full-stack web app", "AI chatbot integration", "User auth & database", "Admin dashboard"] },
+    "AI Content": { price: "$800", features: ["3× 15-sec motion ads", "5× product hero images", "Custom scripts", "24-48h Delivery"] },
+    "Brand Identity": { price: "Custom", features: ["Logo & Typography", "Brand Guidelines", "Social Media Kit", "Full rights"] },
+    "Maintenance": { price: "$150/mo", features: ["99.9% Uptime", "Daily Backups", "Content Updates", "Priority Support"] },
+    "AI Chatbot SaaS": { price: "$99/mo", features: ["Unlimited Chats", "Knowledge Updates", "Lead Capture", "Analytics"] }
+  };
+
+  const details = PLAN_DETAILS[planParam] || { price: "Custom", features: ["Tailored Solution", "Dedicated Strategy", "Custom Implementation"] };
+
   const [step, setStep] = useState<1 | 2>(1);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -113,14 +124,16 @@ export default function CheckoutPage() {
                   <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">Order Summary</h3>
                   <div className="flex justify-between items-center pb-6 border-b border-white/5">
                     <span className="text-lg font-serif italic">{planParam}</span>
-                    <span className="text-[#00f0ff] font-bold">—</span>
+                    <span className="text-[#00f0ff] font-bold text-xl">{details.price}</span>
                   </div>
                   <ul className="space-y-4 text-sm text-white/60">
-                    <li className="flex items-center gap-3">
-                      <ShieldCheck size={16} className="text-[#00f0ff]" /> Encrypted Data Transfer
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <Check size={16} className="text-[#00f0ff]" /> Zero Processing Fees
+                    {details.features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-3">
+                        <Check size={16} className="text-[#00f0ff] shrink-0" /> {feature}
+                      </li>
+                    ))}
+                    <li className="flex items-center gap-3 pt-4 border-t border-white/5 mt-4">
+                      <ShieldCheck size={16} className="text-[#00f0ff] shrink-0" /> Encrypted Data Transfer
                     </li>
                   </ul>
                 </div>

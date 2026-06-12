@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
-import { adminAlertHTML, clientConfirmationHTML } from "./_lib/emails";
+import { adminAlertHTML, clientConfirmationHTML } from "./_lib/emails.js";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
