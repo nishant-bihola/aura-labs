@@ -1,9 +1,6 @@
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 import { ChevronDown, Code, Zap, Globe, Cpu, Database, Layers, ShieldCheck } from "lucide-react";
-import { useEffect, Suspense, lazy } from "react";
-import { Canvas } from "@react-three/fiber";
-import { Environment } from "@react-three/drei";
-import { DigitalCore } from "./canvas/DigitalCore";
+import { useEffect } from "react";
 
 export default function Hero() {
   const mouseX = useMotionValue(0);
@@ -24,16 +21,20 @@ export default function Hero() {
   return (
     <section className="relative h-screen bg-black flex flex-col items-center justify-center overflow-hidden border-x border-white/5 mx-3 md:mx-6 group">
       
-      {/* 1. Interactive 3D WebGL Background */}
-      <div className="absolute inset-0 w-full h-full z-0">
-        <Canvas camera={{ position: [0, 0, 8], fov: 45 }} dpr={[1, 2]}>
-          <Suspense fallback={null}>
-            <Environment preset="city" />
-            <DigitalCore />
-          </Suspense>
-        </Canvas>
+      {/* 1. Animated Video Background */}
+      <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="w-full h-full object-cover opacity-60 mix-blend-screen scale-105"
+        >
+          {/* New High-Energy Dribbble Video */}
+          <source src="https://cdn.dribbble.com/userupload/47884462/file/382a205af640e8020710b90fc6415744.mp4" type="video/mp4" />
+        </video>
         {/* Deep cinematic gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/80 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/80" />
       </div>
 
       {/* 2. Interactive Spotlight Gradient */}
