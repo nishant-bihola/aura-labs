@@ -11,14 +11,14 @@ export default function Hero() {
       </div>
 
       <div className="absolute bottom-6 left-6 md:left-8 flex flex-col gap-1 text-[8px] md:text-[10px] uppercase kerning-wide font-bold opacity-40 md:opacity-60">
-        <span>Web Design</span>
-        <span>Social Media</span>
-        <span>Marketing</span>
-        <span>Development</span>
+        <span>Web Development</span>
+        <span>AI Chatbots</span>
+        <span>AI Ad Content</span>
+        <span>Web Apps</span>
       </div>
 
       <div className="absolute bottom-6 right-6 md:right-8 text-[8px] md:text-[10px] uppercase kerning-wide font-bold opacity-40 md:opacity-60">
-        Featured Work /04
+        Featured Work /03
       </div>
 
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
@@ -86,7 +86,7 @@ export default function Hero() {
               transition={{ delay: 0.8 }}
               className="text-[10px] md:text-xs uppercase kerning-wide font-bold leading-relaxed text-center opacity-60 tracking-[0.2em]"
             >
-              We design and build digital experiences through strategy, branding, and technology.
+              We build websites, web apps, AI chatbots, and motion ad content — for businesses ready to grow.
             </motion.p>
         </div>
       </div>

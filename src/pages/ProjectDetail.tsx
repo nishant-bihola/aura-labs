@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
-import { ArrowLeft, ArrowDown, ArrowUpRight } from "lucide-react";
+import { ArrowDown, ArrowUpRight, ExternalLink } from "lucide-react";
 import { PROJECTS } from "../data/projects";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -61,10 +61,23 @@ export default function ProjectDetail() {
             <ArrowDown size={14} className="animate-bounce" />
             <span className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold">Scroll to explore</span>
           </div>
-          <div className="text-center md:text-right">
-             <p className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold opacity-40">
-               Strategy, Concept, <br className="hidden md:block" /> {project.category}
-             </p>
+          <div className="flex items-center gap-6">
+            {project.liveUrl && (
+              <a
+                href={project.liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/20 hover:bg-white hover:text-black transition-all duration-500 text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold"
+              >
+                <span>View Live Site</span>
+                <ExternalLink size={11} className="group-hover:rotate-12 transition-transform duration-300" />
+              </a>
+            )}
+            <div className="text-center md:text-right">
+               <p className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold opacity-40">
+                 Strategy, Concept, <br className="hidden md:block" /> {project.category}
+               </p>
+            </div>
           </div>
         </div>
       </section>
@@ -93,6 +106,20 @@ export default function ProjectDetail() {
               <span className="text-[9px] md:text-[10px] uppercase tracking-widest font-bold opacity-30">Service</span>
               <span className="text-xs md:text-sm font-medium group-hover:opacity-100 opacity-80 transition-opacity text-right max-w-[200px] md:max-w-none">{project.services?.join(", ") || project.category}</span>
             </div>
+            {project.liveUrl && (
+              <div className="flex justify-between items-center group border-t border-white/5 pt-6 md:pt-8">
+                <span className="text-[9px] md:text-[10px] uppercase tracking-widest font-bold opacity-30">Live URL</span>
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs md:text-sm font-medium opacity-60 group-hover:opacity-100 transition-opacity flex items-center gap-2 hover:text-[#00F0FF]"
+                >
+                  <span>Visit Site</span>
+                  <ExternalLink size={11} />
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </section>

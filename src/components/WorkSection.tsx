@@ -54,10 +54,10 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
           }}
           className="absolute left-1/2 top-1/2 w-64 h-80 pointer-events-none hidden lg:block overflow-hidden rounded-xl z-50 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 shadow-2xl"
         >
-          <img 
-            src={project.mainImage} 
-            alt={project.title} 
-            loading="lazy" // Fast load optimization
+          <img
+            src={project.mainImage}
+            alt={project.title}
+            loading="eager"
             className="w-full h-full object-cover scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
@@ -108,11 +108,11 @@ export default function WorkSection() {
                   Selected Portfolio
                 </h2>
              </div>
-              <h3 className="text-xl md:text-4xl font-valtero-serif italic opacity-40 md:ml-12">Featured Work / 2025-26</h3>
+              <h3 className="text-xl md:text-4xl font-valtero-serif italic opacity-40 md:ml-12">Featured Work / 2026</h3>
           </div>
           
           <div className="text-right hidden lg:block opacity-30">
-            <p className="text-[10px] uppercase tracking-[0.3em] font-medium">Berlin • Tokyo • New York</p>
+            <p className="text-[10px] uppercase tracking-[0.3em] font-medium">Edmonton • Remote • Worldwide</p>
           </div>
         </div>
 

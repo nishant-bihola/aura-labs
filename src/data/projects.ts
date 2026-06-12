@@ -10,6 +10,7 @@ export interface Project {
   results: string;
   client: string;
   services: string[];
+  liveUrl?: string;
   mainImage: string;
   galleryImages: string[];
 }
@@ -17,92 +18,59 @@ export interface Project {
 export const PROJECTS: Project[] = [
   {
     id: "01",
-    slug: "zoro-arts",
-    title: "Zoro Arts",
+    slug: "bud-n-buddies",
+    title: "Bud n' Buddies",
     year: "2026",
-    category: "Branding",
-    description: "A premium digital residency for modern art collectors and creators.",
-    overview: "Zoro Arts bridges the gap between traditional fine art and the digital frontier. We created a brand identity that treats web space as a physical gallery, focusing on lighting, texture, and silence.",
-    challenges: "The challenge was to maintain the prestige of high-end art while embracing digital accessibility. We needed a visual language that spoke to both seasoned collectors and digital natives.",
-    results: "A cohesive brand ecosystem that increased collector engagement by 45% and established Zoro Arts as a leader in the digital art space.",
-    client: "Zoro Arts Collective",
-    services: ["Branding", "Web Design", "Digital Strategy"],
-    mainImage: "/projects/zoro_arts_hero_1777230725130.png",
+    category: "Web App",
+    description: "Full-stack cannabis ordering platform with real-time inventory, memberships, and custom product requests.",
+    overview: "Bud n' Buddies is a cannabis shop focused on convenience and value — price-matching within 25km and fulfilling custom product requests beyond standard inventory. We built their full-stack web platform handling online ordering, membership management, and a custom request portal from the ground up.",
+    challenges: "Building a compliant, conversion-ready ordering experience in a regulated industry. We implemented real-time product availability, a price-match tracking system, and a custom request pipeline — all behind a clean, intuitive UI that works seamlessly on mobile.",
+    results: "A live, fully operational platform that handles orders, memberships, and custom product requests — turning the brand's 'convenience and value' promise into a real digital product serving customers in Sherwood Park, AB.",
+    client: "Bud n' Buddies Cannabis",
+    services: ["Full-Stack Development", "React", "Node.js", "E-Commerce"],
+    liveUrl: "https://profound-nourishment-production-0662.up.railway.app/",
+    mainImage: "https://image.thum.io/get/width/1200/crop/800/noanimate/https://profound-nourishment-production-0662.up.railway.app/",
     galleryImages: [
-      "/projects/zoro_arts_gallery_1777230740658.png",
-      "/projects/forma_digital_images_1_1777230411890.png"
+      "https://image.thum.io/get/width/1200/crop/600/noanimate/https://profound-nourishment-production-0662.up.railway.app/",
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop"
     ]
   },
   {
     id: "02",
-    slug: "nero-vision",
-    title: "Nero Vision",
+    slug: "apex-towing",
+    title: "Apex Towing",
     year: "2026",
-    category: "AI Design",
-    description: "Architecting the future of human-machine interface through cinematic UI.",
-    overview: "Nero Vision is an AI research lab focused on neural interfaces. We were tasked with creating a visual dashboard that makes complex neural data feel intuitive, fluid, and high-performance.",
-    challenges: "Visualizing invisible data streams. We utilized custom GLSL shaders and GSAP animations to create a 'living' interface that reacts to user focus and interaction.",
-    results: "A revolutionary UI that reduced data processing friction for researchers by 30% and won the 'Digital Innovation' award for 2026.",
-    client: "Nero Research Group",
-    services: ["UI/UX Design", "Motion Systems", "WebGPU"],
-    mainImage: "/projects/nero_vision_valtero_1777233007709.png",
+    category: "Web Design",
+    description: "High-converting emergency towing service website built for speed, trust, and mobile-first lead generation.",
+    overview: "Apex Towing operates 24/7 and needed a website that converts under pressure — when a driver is stranded, every second of friction costs a booking. We designed and built a mobile-first site with prominent emergency CTAs, instant quote requests, and a service area layout built to capture local search traffic.",
+    challenges: "Emergency service sites have a unique UX constraint: users are stressed, often on mobile, and need one-handed access to a phone number or booking form within seconds. We stripped all friction and made the conversion path unmissable on every screen size.",
+    results: "A live professional web presence that converts emergency traffic into booked jobs, with SEO-ready structure and a design that projects credibility and speed from the first scroll.",
+    client: "Apex Towing",
+    services: ["Web Design", "React", "Lead Generation", "SEO"],
+    liveUrl: "https://apex-towing-final.vercel.app/",
+    mainImage: "https://image.thum.io/get/width/1200/crop/800/noanimate/https://apex-towing-final.vercel.app/",
     galleryImages: [
-      "/projects/forma_digital_images_2_1777230416451.png",
-      "/projects/forma_digital_challenges_results_1777230365161.png"
+      "https://image.thum.io/get/width/1200/crop/600/noanimate/https://apex-towing-final.vercel.app/",
+      "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&auto=format&fit=crop"
     ]
   },
   {
     id: "03",
-    slug: "vantablack",
-    title: "Vantablack",
-    year: "2025",
-    category: "Architecture",
-    description: "Extreme minimalism in digital and physical spatial design.",
-    overview: "Vantablack Studio creates spaces that define the absence of light. Their digital presence needed to be an extension of their architecture—powerful, quiet, and profoundly precise.",
-    challenges: "Creating a dark interface that felt 'deep' rather than empty. We leveraged grain textures, subtle lighting blooms, and ultra-slow scroll transitions.",
-    results: "An immersive portfolio that secured three multi-million dollar contracts within the first month of launch by targeting high-net-worth investors.",
-    client: "Vantablack Architecture",
-    services: ["Creative Direction", "3D Web Design", "Branding"],
-    mainImage: "/projects/vantablack_architecture_1777230771625.png",
-    galleryImages: [
-      "/projects/forma_digital_overview_detail_1777230407453.png",
-      "/projects/forma_digital_overview_challenges_1777230358286.png"
-    ]
-  },
-  {
-    id: "04",
-    slug: "kanso-labs",
-    title: "Kanso Labs",
-    year: "2025",
-    category: "Lifestyle",
-    description: "Japanese-inspired simplicity for modern high-performance living.",
-    overview: "Kanso focuses on 'Simplicity that eliminates clutter.' We developed a visual ecosystem that mirrors this philosophy—using whitespace as a primary design element.",
-    challenges: "Finding the balance between 'minimalist' and 'premium.' We utilized high-end typography and micro-interactions to ensure the site felt luxury, not basic.",
-    results: "A 55% increase in direct-to-consumer sales and a brand presence that redefined minimalist e-commerce design for 2025.",
-    client: "Kanso Lifestyle Inc.",
-    services: ["E-Commerce", "Art Direction", "Content Strategy"],
-    mainImage: "/projects/kanso_labs_valtero_1777233041279.png",
-    galleryImages: [
-      "/projects/kanso_design_hero_1777230786125.png",
-      "/projects/forma_digital_footer_1777230388513.png"
-    ]
-  },
-  {
-    id: "05",
-    slug: "apex-flow",
-    title: "Apex Flow",
+    slug: "bagel-bar",
+    title: "Bagel Bar",
     year: "2026",
-    category: "SaaS",
-    description: "High-performance logistics built on clarity and speed.",
-    overview: "Apex Flow is a supply-chain giant moving into the SaaS space. We built a brand that conveys reliability and forward momentum, focusing on speed and data clarity.",
-    challenges: "Simplifying massive logistics data. We designed custom interactive 3D globes and real-time transit visualizations using Three.js.",
-    results: "Onboarded 12 global shipping partners within 90 days and reduced user onboarding time by 40% through intuitive UI.",
-    client: "Apex Logistics Group",
-    services: ["SaaS Product Design", "3D Visualization", "Development"],
-    mainImage: "/projects/apex_flow_valtero_1777233025583.png",
+    category: "Web Design",
+    description: "Warm, appetite-driven website for a local artisan bagel shop — designed to drive foot traffic and online orders.",
+    overview: "Bagel Bar needed a digital presence that matched the warmth and quality of their product. We built a food-forward website with a custom menu display, online pre-ordering, and location-based SEO — translating the artisan experience into an inviting digital storefront.",
+    challenges: "Translating the sensory experience of a physical food shop into a website that actually makes people hungry. The design needed to feel warm and local, not corporate — using type, layout, and imagery that invited rather than just informed.",
+    results: "A live, beautifully branded website that brings Bagel Bar's personality online, driving both in-store foot traffic and pre-orders through a menu and ordering experience that's as fresh as the product itself.",
+    client: "Bagel Bar",
+    services: ["Web Design", "React", "Menu Integration", "Local SEO"],
+    liveUrl: "https://bagel-bar-v2.vercel.app/",
+    mainImage: "https://image.thum.io/get/width/1200/crop/800/noanimate/https://bagel-bar-v2.vercel.app/",
     galleryImages: [
-      "/projects/apex_digital_hero_1777230758408.png",
-      "/projects/forma_digital_hero_1777230347053.png"
+      "https://image.thum.io/get/width/1200/crop/600/noanimate/https://bagel-bar-v2.vercel.app/",
+      "https://images.unsplash.com/photo-1509722747041-616f39b57569?w=1200&auto=format&fit=crop"
     ]
   }
 ];

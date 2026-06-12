@@ -11,33 +11,48 @@ gsap.registerPlugin(ScrollTrigger);
 const PLANS = [
   {
     name: "Starter",
-    tagline: "Built for early-stage teams",
-    description: "Built for early-stage teams establishing their online presence.",
-    price: "$2,000",
+    tagline: "Marketing site, fast",
+    description: "A clean, conversion-focused website for businesses launching or rebranding online.",
+    price: "$1,500",
     period: "/project",
     features: [
-      "Tailored website layouts",
-      "Core SEO configuration",
+      "Custom React website (up to 5 pages)",
       "Mobile-first responsive design",
-      "Brand-ready UI framework",
-      "Ideal for new launches and rebrands"
+      "Core SEO + meta setup",
+      "Contact form & lead capture",
+      "Deployed on Vercel — live in days"
     ],
     highlight: false
   },
   {
     name: "Growth",
-    tagline: "Designed for businesses",
-    description: "Designed for businesses ready to elevate their digital experience.",
-    price: "$4,000",
+    tagline: "Full-stack + AI chatbot",
+    description: "A complete web application with AI chatbot integration — built to scale.",
+    price: "$4,500",
     period: "/project",
     features: [
-      "High-end design with smooth interactions",
-      "Complete on-site SEO setup",
-      "Adaptive layouts for every screen",
-      "CMS setup for content or case studies",
-      "Performance tuning & optimization"
+      "Full-stack web app (React + Node.js)",
+      "AI chatbot for bookings, FAQs, or leads",
+      "User auth, database & admin dashboard",
+      "E-commerce or ordering system",
+      "Performance tuning & SEO optimization"
     ],
     highlight: true
+  },
+  {
+    name: "AI Content",
+    tagline: "Motion ads & product images",
+    description: "AI-generated ad creatives powered by Claude Fable + Higgsfield — premium output, hours not weeks.",
+    price: "$800",
+    period: "/campaign",
+    features: [
+      "3 × 15-second motion ad videos",
+      "5 × product/hero images",
+      "Script & storyboard included",
+      "Delivered in 24–48 hours",
+      "Ready to publish on any platform"
+    ],
+    highlight: false
   }
 ];
 
@@ -128,13 +143,13 @@ export default function AuraPricing() {
         }
         @media (min-width: 640px) {
           .pricing-grid {
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
           }
         }
         @media (min-width: 1024px) {
           .pricing-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 2rem;
           }
         }
@@ -164,7 +179,7 @@ export default function AuraPricing() {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div ref={cardsRef} className="pricing-grid max-w-5xl">
+        <div ref={cardsRef} className="pricing-grid max-w-7xl">
           {PLANS.map((plan) => (
             <div 
               key={plan.name}
@@ -227,10 +242,10 @@ export default function AuraPricing() {
         {/* Dynamic Footer Link (Valtero Style) */}
         <div className="mt-20 md:mt-40 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
           <p className="text-white/20 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-valtero-sans">
-            Limited spots available for Q1 2026
+            All prices in CAD · Based in Edmonton · Serving clients worldwide
           </p>
           <Link to="/contact" className="group flex items-center gap-3 md:gap-4 text-white/50 hover:text-white transition-colors duration-500">
-            <span className="text-base md:text-lg font-valtero-serif italic">Need a custom enterprise solution?</span>
+            <span className="text-base md:text-lg font-valtero-serif italic">Need a custom quote?</span>
             <div className="w-7 h-7 md:w-8 md:h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:rotate-45 group-hover:border-white transition-all duration-500">
               <ArrowUpRight size={12} md:size={14} />
             </div>

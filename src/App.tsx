@@ -22,7 +22,8 @@ import EvolutionSection from "./components/EvolutionSection";
 import ContactFooter from "./components/ContactFooter";
 import CustomCursor from "./components/CustomCursor";
 import CursorTail from "./components/CursorTail";
-import Preloader from "./components/Preloader";
+import LogoTicker from "./components/LogoTicker";
+import GiantTicker from "./components/GiantTicker";
 
 // Lazy Loaded Pages for performance
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
@@ -82,11 +83,6 @@ function ScrollHandler({ isMenuOpen }: { isMenuOpen: boolean }) {
 
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const handleLoadingComplete = () => {
-    setIsLoading(false);
-  };
 
   useEffect(() => {
     const isMobile = window.matchMedia("(pointer: coarse)").matches;
@@ -131,9 +127,6 @@ export default function App() {
 
   return (
     <Router>
-      <AnimatePresence>
-        {isLoading && <Preloader onComplete={handleLoadingComplete} />}
-      </AnimatePresence>
       <ScrollHandler isMenuOpen={isMenuOpen} />
       <SpeedInsights />
       
@@ -230,7 +223,9 @@ export default function App() {
                 <Route path="/" element={
                   <div className="flex flex-col">
                     <Hero />
+                    <LogoTicker />
                     <div id="work"><WorkSection /></div>
+                    <GiantTicker />
                     <div id="studio"><ServicesSection /></div>
                     <SuccessSection />
                     <div id="pricing"><PricingSection /></div>

@@ -1,47 +1,37 @@
-import { useRef } from "react";
-import { motion, useScroll, useTransform, useSpring } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
 
 const SERVICE_DETAILS = [
   {
     id: "01",
-    title: "Web Design",
-    bgText: "DIGITAL",
-    desc: "Modern, responsive, and user-friendly websites designed to engage visitors and drive conversions.",
-    image: "https://cdn.prod.website-files.com/697344b93b0e03014bb98903/6973f0d15764f9b537dbd3c6_Scene%208.webp",
-    categories: ["Wireframe", "Website", "Dashboard", "Product"]
+    title: "Web Development",
+    bgText: "BUILD",
+    desc: "From 5-page marketing sites to full-stack ordering platforms — we ship production-ready React apps that load fast, rank well, and turn visitors into customers. Starting at $1,500.",
+    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=900&auto=format&fit=crop&q=80",
+    categories: ["React", "Node.js", "Web Apps", "E-Commerce", "SEO"]
   },
   {
     id: "02",
-    title: "Social Media",
-    bgText: "SOCIAL",
-    desc: "We create scroll-stopping social content designed to build brand presence and drive engagement.",
-    image: "https://cdn.prod.website-files.com/697344b93b0e03014bb98903/6973f113340019d414668f48_Scene%2016.webp",
-    categories: ["Content", "Social", "Motion", "Campaign", "Brand"]
+    title: "AI Chatbots",
+    bgText: "SMART",
+    desc: "Custom AI chatbots trained on your business — answering questions, booking appointments, and qualifying leads around the clock while you sleep. Starting at $800.",
+    image: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=900&auto=format&fit=crop&q=80",
+    categories: ["Lead Gen", "Bookings", "24/7 Support", "AI-Powered"]
   },
   {
     id: "03",
-    title: "Marketing",
-    bgText: "GROWTH",
-    desc: "We develop strategic marketing assets that amplify brand reach and support growth.",
-    image: "https://cdn.prod.website-files.com/697344b93b0e03014bb98903/6973f190a35a5530f343d2dc_Scene%20%237.webp",
-    categories: ["Campaign", "Digital Ads", "Branding", "Visual"]
+    title: "AI Ad Content",
+    bgText: "MOTION",
+    desc: "15-second motion ads and product images powered by Claude Fable + Higgsfield AI. Premium creative that used to cost $5,000+ and weeks of work — delivered in 24–48 hours. From $800/campaign.",
+    image: "https://images.unsplash.com/photo-1574717024453-354056aafa98?w=900&auto=format&fit=crop&q=80",
+    categories: ["Motion Ads", "Product Images", "15-sec Video", "Campaign"]
   },
   {
     id: "04",
     title: "Brand Identity",
     bgText: "IDENTITY",
-    desc: "We craft cohesive brand identities that communicate purpose, personality, and credibility.",
-    image: "https://cdn.prod.website-files.com/697344b93b0e03014bb98903/6973f1b043ee0ff6d8a9d40a_Scene%20%234.webp",
-    categories: ["Brand", "Visual", "Logo Design", "Typography"]
-  },
-  {
-    id: "05",
-    title: "Content",
-    bgText: "CREATIVE",
-    desc: "We craft content that communicates clearly, connects emotionally, and performs strategically.",
-    image: "https://cdn.prod.website-files.com/697344b93b0e03014bb98903/6973f1df0da893d7023f53bf_Scene%20%239.webp",
-    categories: ["Copywriting", "Visual", "Motion", "Editorial"]
+    desc: "Complete visual identity systems — logo, typography, colour palette, and brand guide — built to make your business look established, trustworthy, and premium from day one.",
+    image: "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=900&auto=format&fit=crop&q=80",
+    categories: ["Logo Design", "Typography", "Brand Guide", "Visual System"]
   }
 ];
 
@@ -57,17 +47,17 @@ function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
 
       <div className="max-w-7xl mx-auto fluid-px relative z-10">
         <div className="flex flex-col lg:grid lg:grid-cols-[0.8fr_1.5fr_0.7fr] gap-12 lg:gap-20 items-center">
-          
+
           {/* 1. Image Column */}
           <div className="w-full relative">
             <div className="relative aspect-[4/3] rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden bg-[#0A0A0A] border border-white/10 group-hover:border-white/20 transition-all duration-500 shadow-2xl">
-              <img 
-                src={service.image} 
-                alt={service.title} 
+              <img
+                src={service.image}
+                alt={service.title}
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
-              
+
               {/* Floating ID Tag */}
               <div className="absolute top-6 left-6 md:top-8 md:left-8">
                  <div className="bg-white text-black px-4 py-1.5 rounded-full font-black text-[10px] tracking-widest flex items-center gap-2">
@@ -88,8 +78,8 @@ function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
                 {service.desc}
               </p>
             </div>
-            
-            {/* Tags (Desktop: Visible here, Mobile: Stacked) */}
+
+            {/* Tags (Mobile) */}
             <div className="flex flex-wrap gap-2 md:hidden">
               {service.categories.map((c) => (
                 <span key={c} className="text-[9px] bg-white/5 text-white/40 border border-white/10 px-3 py-1 rounded-full uppercase tracking-tighter">
@@ -99,14 +89,14 @@ function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
             </div>
           </div>
 
-          {/* 3. Stats/Categories & Action Column (Desktop Only) */}
+          {/* 3. Categories & Action Column (Desktop) */}
           <div className="hidden lg:flex flex-col items-end gap-12">
             <div className="flex flex-col items-end gap-4">
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-2">Capabilities</span>
               <div className="flex flex-col items-end gap-2">
                 {service.categories.map((c) => (
-                  <span 
-                    key={c} 
+                  <span
+                    key={c}
                     className="text-xs text-white/40 font-medium hover:text-white transition-colors cursor-default whitespace-nowrap"
                   >
                     {c}
@@ -120,7 +110,7 @@ function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
             </div>
           </div>
 
-          {/* Mobile Action Button */}
+          {/* Mobile Action */}
           <div className="lg:hidden flex justify-between items-center w-full pt-4 border-t border-white/5">
             <span className="text-[10px] font-black uppercase tracking-widest text-white/30">View Portfolio</span>
             <ArrowUpRight size={24} className="text-white/50" />
@@ -135,7 +125,6 @@ function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
 export default function ServicesSection() {
   return (
     <section id="services" className="bg-black relative fluid-py overflow-hidden selection:bg-white selection:text-black mx-3 md:mx-6 border-x border-white/5">
-      {/* SECTION HEADER - Subtle but present */}
       <div className="max-w-7xl mx-auto fluid-px mb-20">
          <div className="flex items-center gap-4 opacity-20">
             <div className="h-px w-12 bg-white" />
@@ -151,4 +140,3 @@ export default function ServicesSection() {
     </section>
   );
 }
-

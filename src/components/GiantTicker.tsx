@@ -10,7 +10,7 @@ export default function GiantTicker() {
       >
         {[...Array(10)].map((_, i) => (
           <span key={i} className="text-[18vw] md:text-[12vw] font-black uppercase serif italic opacity-5 leading-none">
-            Aura Labs — Digital Residency — Studio — Berlin —
+            Aura Labs — Web Development — AI Chatbots — Edmonton — AI Content —
           </span>
         ))}
       </motion.div>

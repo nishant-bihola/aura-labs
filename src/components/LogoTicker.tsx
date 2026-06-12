@@ -1,27 +1,42 @@
 import { motion } from "motion/react";
 
-const LOGOS = [
-  "https://cdn.prod.website-files.com/697344b93b0e03014bb98903/6978f21bd47a3ac4cdc061c8_logo-2.webp",
-  "https://cdn.prod.website-files.com/697344b93b0e03014bb98903/6978f2685c21b0c333455273_logo-4.webp",
-  "https://cdn.prod.website-files.com/697344b93b0e03014bb98903/6978f26859ddddd58b3e20ec_logo-1.webp",
-  "https://cdn.prod.website-files.com/697344b93b0e03014bb98903/6978f26707e8506f3fed5637_logo-2.webp",
-  "https://cdn.prod.website-files.com/697344b93b0e03014bb98903/6978f21bb04375536f9d1b1d_logo-1.webp",
-  "https://cdn.prod.website-files.com/697344b93b0e03014bb98903/6978f2678c71a600cbe4b679_logo-3.webp",
+const STACK = [
+  "React",
+  "TypeScript",
+  "Node.js",
+  "Next.js",
+  "Tailwind CSS",
+  "Supabase",
+  "Vercel",
+  "Railway",
+  "Framer Motion",
+  "OpenAI API",
+  "Resend",
+  "Brevo",
 ];
 
+const DOT = <span className="mx-10 opacity-20 text-2xl leading-none">·</span>;
+
 export default function LogoTicker() {
+  const items = [...STACK, ...STACK];
+
   return (
-    <section className="py-20 border-x border-border-soft mx-6 overflow-hidden">
+    <section className="py-16 border-x border-border-soft mx-6 overflow-hidden">
       <div className="flex whitespace-nowrap">
-        <motion.div 
-          animate={{ x: [0, -1000] }}
-          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-          className="flex items-center gap-24 px-12"
+        <motion.div
+          animate={{ x: [0, -1200] }}
+          transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+          className="flex items-center shrink-0"
         >
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex items-center gap-24">
-              {LOGOS.map((logo, idx) => (
-                <img key={idx} src={logo} alt="Client" className="h-8 md:h-12 w-auto opacity-30 grayscale hover:opacity-100 transition-opacity duration-500" />
+          {[...Array(3)].map((_, gi) => (
+            <div key={gi} className="flex items-center">
+              {items.map((name, i) => (
+                <span key={i} className="flex items-center">
+                  <span className="text-[11px] md:text-[13px] font-black uppercase tracking-[0.25em] text-white/25 hover:text-white/60 transition-colors duration-300 cursor-default px-6">
+                    {name}
+                  </span>
+                  {DOT}
+                </span>
               ))}
             </div>
           ))}

@@ -2,12 +2,12 @@ import { motion } from "motion/react";
 import Counter from "./Counter";
 
 const CHAT_MESSAGES = [
-  { text: "Hey hey!", side: "left", delay: 0.5 },
-  { text: "Love the designs 💚", side: "left", delay: 1.2 },
-  { text: "Can we tweak the hero?", side: "left", delay: 2.0 },
-  { text: "Sure", side: "right", delay: 3.0, color: "bg-accent-green" },
-  { text: "We'll update it shortly", side: "right", delay: 3.5, color: "bg-accent-green" },
-  { text: "Perfect!", side: "left", delay: 4.5 },
+  { text: "Site looks incredible 🔥", side: "left", delay: 0.5 },
+  { text: "Orders are coming in!", side: "left", delay: 1.2 },
+  { text: "Can we add an AI chatbot?", side: "left", delay: 2.0 },
+  { text: "On it 👌", side: "right", delay: 3.0 },
+  { text: "Done — live in 2 days", side: "right", delay: 3.5 },
+  { text: "You guys are unreal 🙌", side: "left", delay: 4.5 },
 ];
 
 export default function SuccessSection() {
@@ -27,15 +27,15 @@ export default function SuccessSection() {
                 Built for your success.
               </h2>
               <p className="text-lg md:text-xl font-light text-white/50 max-w-md leading-relaxed">
-                From initial concept to final launch, we move with precision and speed, ensuring every detail aligns with your vision.
+                Based in Edmonton, building for clients worldwide. From first conversation to live launch, we move fast and keep every detail aligned with your vision.
               </p>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-3 gap-10 md:gap-12">
                {[
-                 { val: 67, suffix: "+", label: "Projects completed" },
-                 { val: 42, suffix: "+", label: "Global Clients" },
-                 { val: 12, suffix: "%", label: "Conversion increase" }
+                 { val: 100, suffix: "%", label: "Mobile responsive" },
+                 { val: 3, suffix: "+", label: "Clients launched" },
+                 { val: 24, suffix: "h", label: "Avg response time" }
                ].map((stat, i) => (
                  <div key={i} className="group flex flex-col gap-3">
                     <div className="text-3xl md:text-5xl font-normal font-valtero-serif italic text-white group-hover:text-[#00F0FF] transition-colors duration-500">
@@ -52,10 +52,10 @@ export default function SuccessSection() {
           {/* Right Visual (Image + Chat) */}
           <div className="relative group">
             <div className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 group-hover:border-white/20 transition-all duration-700">
-              <img 
-                src="https://cdn.prod.website-files.com/697344b93b0e03014bb98903/697946b71c91bd8ad83419a1_Group-Discussion-Scene.webp" 
-                alt="Our process" 
-                className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-1000 group-hover:scale-105" 
+              <img
+                src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&auto=format&fit=crop&q=80"
+                alt="Building digital products"
+                className="w-full h-full object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-1000 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60" />
             </div>

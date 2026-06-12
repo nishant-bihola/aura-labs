@@ -10,24 +10,24 @@ gsap.registerPlugin(ScrollTrigger);
 
 const FAQS = [
   {
-    question: "What sets Aura Labs apart from other agencies?",
-    answer: "We operate as a boutique high-performance studio, not a volume-based shop. We focus on the intersection of technical precision and cinematic design, ensuring every project is a unique digital asset designed to dominate its niche."
+    question: "What exactly do you build?",
+    answer: "We build four things: (1) custom websites and full-stack web apps using React and Node.js, (2) AI chatbots embedded on your site for bookings, lead capture, and 24/7 support, (3) AI-powered motion ads and product images using Claude Fable + Higgsfield, and (4) complete brand identities — logo, typography, colour system. Whether you need a 5-page marketing site or a full ordering platform with a chatbot, we handle it end to end."
   },
   {
-    question: "What is the investment for a bespoke digital ecosystem?",
-    answer: "Our projects typically range from $2,000 to $10,000+, depending on the complexity of the motion systems and strategic depth. We provide transparent, value-based pricing that reflects the elite quality of our output."
+    question: "How much does it cost?",
+    answer: "Marketing websites start at $1,500 and are typically live within 5–10 business days. Full-stack web apps with AI chatbot integration start at $4,500. AI ad content campaigns (motion ads + product images) start at $800 per campaign. Every project is scoped and quoted individually — contact us for a free estimate with no commitment."
   },
   {
-    question: "How long is the strategic discovery and design phase?",
-    answer: "A typical engagement spans 4 to 8 weeks. This allows for rigorous strategic alignment, custom design iterations, and precision development. We prioritize architectural excellence over rushed delivery."
+    question: "How fast can you deliver?",
+    answer: "Fast. A standard marketing site goes from first call to live in 5–10 business days. Full-stack apps with chatbot integration take 2–4 weeks depending on scope. AI ad campaigns are delivered in 24–48 hours. We move quickly without cutting corners — every deliverable is production-ready."
   },
   {
-    question: "Do you provide ongoing technical support and optimization?",
-    answer: "Yes. We offer elite post-launch partnerships that include performance monitoring, SEO scaling, and continuous UI/UX refinement to ensure your brand remains at the forefront of the digital landscape."
+    question: "Do you work with clients outside Edmonton?",
+    answer: "Yes — 100% of the time. We're based in Edmonton, Alberta, but we work with businesses across Canada and worldwide. All consultations happen over Google Meet. We deliver everything digitally. Timezone has never been a barrier — if anything, it means your project is being worked on while you sleep."
   },
   {
-    question: "How do we begin a partnership with Aura Labs?",
-    answer: "The process begins with a strategic consultation. We assess your brand's objectives and technical requirements to ensure a mutual fit. From there, we move into a deep discovery phase to architect your digital future."
+    question: "What makes Aura Labs different?",
+    answer: "You work directly with the developer building your product — not a sales rep or account manager. We use AI-powered tools (Claude Fable, Higgsfield) that give you premium creative output at a fraction of traditional agency cost. We're lean, fast, and focused on one thing: building things that make you money."
   }
 ];
 
@@ -105,7 +105,7 @@ export default function FAQSection() {
             </h2>
             
             <p className="faq-reveal text-sm md:text-xl text-white/50 font-valtero-sans leading-relaxed mb-10 md:mb-12 max-w-sm">
-              Exploring the architecture of our process and the strategic foundation of our digital studio.
+              Real answers to the questions every client asks before they hire us.
             </p>
             
             <div className="faq-reveal">

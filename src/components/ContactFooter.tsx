@@ -70,8 +70,8 @@ export default function ContactFooter() {
           <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
             <div className="text-lg md:text-xl font-bold tracking-tighter uppercase font-sans">AURA LABS</div>
             <p className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] opacity-40 leading-relaxed font-bold">
-              Digital Residency Studio<br />
-              Edmonton, Alberta
+              Web Dev · AI Chatbots · Ad Content<br />
+              Edmonton, Alberta · Worldwide
             </p>
           </div>
 

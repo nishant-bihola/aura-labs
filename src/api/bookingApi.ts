@@ -14,38 +14,23 @@ export interface BookingRequest {
   source: 'Website Form' | 'AI Agent' | 'Newsletter';
 }
 
-// Ensure it works locally and in prod
-const BOOKING_URL = import.meta.env.PROD
-  ? '/api/contact'
-  : 'http://localhost:5000/api/contact';
-
-const SUBSCRIBE_URL = import.meta.env.PROD
-  ? '/api/subscribe'
-  : 'http://localhost:5000/api/subscribe';
-
-// Dedicated Notion endpoint — always available on Vercel
+// Relative URLs work in both dev (Express on :3000) and Vercel prod
+const BOOKING_URL = '/api/contact';
+const SUBSCRIBE_URL = '/api/subscribe';
 const NOTION_URL = '/api/notion';
 
 export const submitServiceRequest = async (data: BookingRequest) => {
   console.log(`--- SENDING REQUEST FROM ${data.source} ---`);
 
-  // Fire Notion call immediately in parallel — don't await, don't block form submission
-  if (import.meta.env.PROD) {
-    fetch(NOTION_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-      .then(r => r.json())
-      .then(result => console.log('[Frontend] Notion parallel success:', result))
-      .catch(err => console.error('[Frontend] Notion parallel failed:', err));
-  } else {
-    fetch(NOTION_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    }).catch(() => console.log('Notion parallel skipped in local mode without vercel dev'));
-  }
+  // Fire Notion call in parallel — non-blocking
+  fetch(NOTION_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+    .then(r => r.json())
+    .then(result => console.log('[Frontend] Notion sync:', result))
+    .catch(err => console.warn('[Frontend] Notion sync failed (non-critical):', err));
 
   const endpoint = data.source === 'Newsletter' ? SUBSCRIBE_URL : BOOKING_URL;
   const payload = data.source === 'Newsletter' 
