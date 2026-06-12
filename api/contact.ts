@@ -102,22 +102,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return 'brevo';
   })();
 
-  // 3. User Confirmation (Resend -> Brevo -> Gmail)
+  // 3. User Confirmation (Brevo -> Gmail)
   const userEmailTask = (async () => {
-    if (resend) {
-      try {
-        await resend.emails.send({
-          from: 'Aura Labs <onboarding@resend.dev>',
-          to: email,
-          subject: 'We received your inquiry | Aura Labs',
-          html: clientConfirmationHTML(clientName, plan),
-        });
-        return true;
-      } catch (err: any) {
-        console.warn('[Contact] Resend failed for user email, trying fallback...', err.message);
-      }
-    }
-
     if (!BREVO_PASS && !GMAIL_PASS) return false;
     
     try {

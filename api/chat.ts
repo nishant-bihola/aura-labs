@@ -95,12 +95,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 replyTo: leadData.email,
                 subject: `🤖 NEW AI LEAD: ${leadData.name}`,
                 html: adminAlertHTML(leadData.name, leadData.email, "Captured via AI Chatbot", "AI Chat Lead"),
-              }),
-              resend.emails.send({
-                from: "Aura Labs <onboarding@resend.dev>",
-                to: leadData.email,
-                subject: "Strategy Session | Aura Labs",
-                html: clientConfirmationHTML(leadData.name, "Consultation"),
               })
             ]);
           }
