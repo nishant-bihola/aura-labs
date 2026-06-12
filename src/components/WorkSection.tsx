@@ -55,9 +55,10 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
           className="absolute left-1/2 top-1/2 w-64 h-80 pointer-events-none hidden lg:block overflow-hidden rounded-xl z-50 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 shadow-2xl"
         >
           <img
-            src={project.mainImage}
+            src={project.thumbImage}
             alt={project.title}
-            loading="eager"
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />

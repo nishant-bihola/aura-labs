@@ -14,7 +14,8 @@ export default function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOp
       
       // Setting up the UI with your specific brand colors and namespace
       cal("init", "15min", { origin: "https://app.cal.com" });
-      
+
+      if (!("ns" in cal)) return;
       cal.ns["15min"]("ui", {
         theme: "dark",
         cssVarsPerTheme: {

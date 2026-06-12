@@ -12,6 +12,7 @@ export interface Project {
   services: string[];
   liveUrl?: string;
   mainImage: string;
+  thumbImage: string;
   galleryImages: string[];
 }
 
@@ -29,10 +30,11 @@ export const PROJECTS: Project[] = [
     client: "Bud n' Buddies Cannabis",
     services: ["Full-Stack Development", "React", "Node.js", "E-Commerce"],
     liveUrl: "https://profound-nourishment-production-0662.up.railway.app/",
-    mainImage: "https://image.thum.io/get/width/1200/crop/800/noanimate/https://profound-nourishment-production-0662.up.railway.app/",
+    mainImage: "/projects/bud-n-buddies-hero.jpg",
+    thumbImage: "/projects/bud-n-buddies-thumb.jpg",
     galleryImages: [
-      "https://image.thum.io/get/width/1200/crop/600/noanimate/https://profound-nourishment-production-0662.up.railway.app/",
-      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop"
+      "/projects/bud-n-buddies-detail.jpg",
+      "/projects/bud-n-buddies-hero.jpg"
     ]
   },
   {
@@ -48,10 +50,11 @@ export const PROJECTS: Project[] = [
     client: "Apex Towing",
     services: ["Web Design", "React", "Lead Generation", "SEO"],
     liveUrl: "https://apex-towing-final.vercel.app/",
-    mainImage: "https://image.thum.io/get/width/1200/crop/800/noanimate/https://apex-towing-final.vercel.app/",
+    mainImage: "/projects/apex-towing-hero.jpg",
+    thumbImage: "/projects/apex-towing-thumb.jpg",
     galleryImages: [
-      "https://image.thum.io/get/width/1200/crop/600/noanimate/https://apex-towing-final.vercel.app/",
-      "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&auto=format&fit=crop"
+      "/projects/apex-towing-detail.jpg",
+      "/projects/apex-towing-hero.jpg"
     ]
   },
   {
@@ -67,10 +70,11 @@ export const PROJECTS: Project[] = [
     client: "Bagel Bar",
     services: ["Web Design", "React", "Menu Integration", "Local SEO"],
     liveUrl: "https://bagel-bar-v2.vercel.app/",
-    mainImage: "https://image.thum.io/get/width/1200/crop/800/noanimate/https://bagel-bar-v2.vercel.app/",
+    mainImage: "/projects/bagel-bar-hero.jpg",
+    thumbImage: "/projects/bagel-bar-thumb.jpg",
     galleryImages: [
-      "https://image.thum.io/get/width/1200/crop/600/noanimate/https://bagel-bar-v2.vercel.app/",
-      "https://images.unsplash.com/photo-1509722747041-616f39b57569?w=1200&auto=format&fit=crop"
+      "/projects/bagel-bar-detail.jpg",
+      "/projects/bagel-bar-hero.jpg"
     ]
   }
 ];

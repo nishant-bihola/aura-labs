@@ -18,7 +18,7 @@
 @layer base {
   @font-face {
     font-family: 'Coolvetica';
-    src: url('https://cdn.prod.website-files.com/697344b93b0e03014bb98903/697344b93b0e03014bb98b6f_Coolvetica%20Hv%20Comp.otf') format('opentype');
+    src: url('/fonts/coolvetica-hv-comp.otf') format('opentype');
     font-weight: 900;
     font-style: normal;
     font-display: swap;
@@ -47,7 +47,7 @@
     color: transparent;
   }
   .bg-noise {
-    background-image: url("https://cdn.prod.website-files.com/697344b93b0e03014bb98903/697344b93b0e03014bb98a92_dots.gif");
+    background-image: url("/noise.gif");
     background-repeat: repeat;
   }
   .balance-text {

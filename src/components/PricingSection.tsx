@@ -199,7 +199,7 @@ export default function AuraPricing() {
                     <p className="text-[9px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 font-sans">{plan.tagline}</p>
                   </div>
                   <div className="w-7 h-7 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black group-hover:border-white transition-all duration-400">
-                    <ArrowUpRight size={14} md:size={18} />
+                    <ArrowUpRight size={14} className="md:w-[18px] md:h-[18px]" />
                   </div>
                 </div>
 
@@ -216,7 +216,7 @@ export default function AuraPricing() {
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-3 md:gap-4 text-white/70 group-hover:text-white transition-colors duration-200">
                       <div className="w-3 h-3 md:w-4 md:h-4 mt-0.5 md:mt-1 rounded-full bg-white/5 border border-white/20 flex items-center justify-center shrink-0">
-                        <Check size={6} md:size={8} className="text-white/60" />
+                        <Check size={6} className="md:w-2 md:h-2 text-white/60" />
                       </div>
                       <span className="text-[12px] md:text-sm font-sans leading-snug">{feature}</span>
                     </li>
@@ -247,7 +247,7 @@ export default function AuraPricing() {
           <Link to="/contact" className="group flex items-center gap-3 md:gap-4 text-white/50 hover:text-white transition-colors duration-500">
             <span className="text-base md:text-lg font-valtero-serif italic">Need a custom quote?</span>
             <div className="w-7 h-7 md:w-8 md:h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:rotate-45 group-hover:border-white transition-all duration-500">
-              <ArrowUpRight size={12} md:size={14} />
+              <ArrowUpRight size={12} className="md:w-3.5 md:h-3.5" />
             </div>
           </Link>
         </div>

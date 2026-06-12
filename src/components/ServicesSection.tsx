@@ -1,4 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const SERVICE_DETAILS = [
   {
@@ -36,8 +37,15 @@ const SERVICE_DETAILS = [
 ];
 
 function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
+  const navigate = useNavigate();
+
+  const startProject = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    navigate(`/contact?plan=${encodeURIComponent(service.title)}`);
+  };
+
   return (
-    <div className="group relative py-16 md:py-32 border-b border-white/5 transition-colors hover:bg-white/[0.01] overflow-hidden">
+    <div onClick={startProject} className="group relative py-16 md:py-32 border-b border-white/5 transition-colors hover:bg-white/[0.01] overflow-hidden cursor-pointer">
       {/* Background Watermark */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/4 pointer-events-none opacity-[0.02] select-none transition-transform duration-1000 group-hover:-translate-x-0">
         <span className="text-[15vw] font-black italic tracking-tighter uppercase leading-none">
@@ -54,6 +62,8 @@ function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
               <img
                 src={service.image}
                 alt={service.title}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
@@ -112,7 +122,7 @@ function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
 
           {/* Mobile Action */}
           <div className="lg:hidden flex justify-between items-center w-full pt-4 border-t border-white/5">
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/30">View Portfolio</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Start a Project</span>
             <ArrowUpRight size={24} className="text-white/50" />
           </div>
 
@@ -126,9 +136,17 @@ export default function ServicesSection() {
   return (
     <section id="services" className="bg-black relative fluid-py overflow-hidden selection:bg-white selection:text-black mx-3 md:mx-6 border-x border-white/5">
       <div className="max-w-7xl mx-auto fluid-px mb-20">
-         <div className="flex items-center gap-4 opacity-20">
-            <div className="h-px w-12 bg-white" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em]">Expertise</span>
+         <div className="flex justify-between items-end border-b border-white/10 pb-12">
+            <div className="flex flex-col gap-4">
+               <div className="flex items-center gap-3 opacity-60">
+                  <span className="w-12 h-[1px] bg-white"></span>
+                  <h2 className="text-[10px] md:text-[12px] uppercase tracking-[0.4em] font-medium">Expertise</h2>
+               </div>
+               <h3 className="text-xl md:text-4xl font-valtero-serif italic opacity-40 md:ml-12">What we build / The Studio</h3>
+            </div>
+            <div className="text-right hidden lg:block opacity-30">
+               <p className="text-[10px] uppercase tracking-[0.3em] font-medium">Click a service to start a project</p>
+            </div>
          </div>
       </div>
 

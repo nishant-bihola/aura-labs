@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 
 export default function Preloader({ onComplete }: { onComplete: () => void }) {
   const [progress, setProgress] = useState(0);
@@ -25,16 +25,16 @@ export default function Preloader({ onComplete }: { onComplete: () => void }) {
     return () => clearInterval(timer);
   }, [onComplete]);
 
-  const letterVariants = {
+  const letterVariants: Variants = {
     initial: { rotateY: 90, opacity: 0, y: 20 },
     animate: (i: number) => ({
       rotateY: 0,
       opacity: 1,
       y: 0,
-      transition: { 
-        duration: 0.8, 
-        delay: i * 0.05, 
-        ease: [0.16, 1, 0.3, 1] 
+      transition: {
+        duration: 0.8,
+        delay: i * 0.05,
+        ease: [0.16, 1, 0.3, 1] as [number, number, number, number]
       }
     }),
     exit: { 

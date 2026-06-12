@@ -84,8 +84,15 @@ export default function ContactFooter() {
           </div>
 
           <div className="flex flex-col items-center md:items-end text-center md:text-right space-y-4">
-            <p className="text-[10px] md:text-[11px] uppercase tracking-[0.2em] opacity-40 font-bold">The Journal</p>
-            <NewsletterForm />
+            <button
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'instant' });
+                navigate('/contact#contact');
+              }}
+              className="px-8 py-3 bg-white text-black rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-neutral-200 hover:scale-105 active:scale-95 transition-all"
+            >
+              Start a Project
+            </button>
             <p className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] opacity-20 font-bold mt-2">Local Time: YEG {time}</p>
           </div>
         </div>
@@ -99,53 +106,5 @@ export default function ContactFooter() {
         </div>
       </div>
     </footer>
-  );
-}
-
-function NewsletterForm() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-
-  const subscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus("loading");
-    try {
-      // Must dynamically import or define at top. Since submitServiceRequest is in another file, let's assume it's imported above.
-      const { submitServiceRequest } = await import("../api/bookingApi");
-      await submitServiceRequest({
-        name: "Newsletter Subscriber",
-        email: email,
-        serviceType: "Newsletter",
-        timestamp: new Date().toISOString(),
-        source: 'Newsletter'
-      });
-      
-      setStatus("success");
-      setEmail("");
-    } catch (err) {
-      setStatus("error");
-    }
-  };
-
-  return (
-    <form onSubmit={subscribe} className="relative w-full max-w-[320px] mx-auto md:ml-auto md:mr-0">
-      <input 
-        type="email" 
-        required
-        placeholder="Email Address"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-full bg-white/5 border border-white/10 rounded-full pl-6 pr-24 py-3 text-[11px] md:text-xs focus:outline-none focus:border-white/30 transition-all placeholder:opacity-30 text-white"
-      />
-      <button 
-        type="submit" 
-        disabled={status === "loading"}
-        className="absolute right-1.5 top-1.5 bottom-1.5 px-6 bg-white text-black rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors disabled:opacity-50 flex items-center justify-center"
-      >
-        {status === "loading" ? "..." : (status === "success" ? "✓" : "Join")}
-      </button>
-      {status === "error" && <p className="text-[9px] text-red-500 mt-2 text-center md:text-left absolute -bottom-5 w-full">Error subscribing.</p>}
-      {status === "success" && <p className="text-[9px] text-green-500 mt-2 text-center md:text-left absolute -bottom-5 w-full">Success!</p>}
-    </form>
   );
 }
