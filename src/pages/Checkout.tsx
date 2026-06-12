@@ -158,7 +158,7 @@ export default function CheckoutPage() {
                           setFormData({...formData, email: e.target.value});
                           if (errors.email) setErrors({...errors, email: undefined});
                         }}
-                        className={\`w-full bg-transparent border-b \${errors.email ? 'border-red-500' : 'border-white/10'} py-3 text-sm focus:outline-none focus:border-[#00f0ff] transition-colors placeholder:opacity-20\`}
+                        className={`w-full bg-transparent border-b ${errors.email ? 'border-red-500' : 'border-white/10'} py-3 text-sm focus:outline-none focus:border-[#00f0ff] transition-colors placeholder:opacity-20`}
                       />
                       {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                     </div>
@@ -171,7 +171,7 @@ export default function CheckoutPage() {
                           setFormData({...formData, projectDetails: e.target.value});
                           if (errors.message) setErrors({...errors, message: undefined});
                         }}
-                        className={\`w-full bg-transparent border-b \${errors.message ? 'border-red-500' : 'border-white/10'} py-3 text-sm focus:outline-none focus:border-[#00f0ff] transition-colors resize-none placeholder:opacity-20\`}
+                        className={`w-full bg-transparent border-b ${errors.message ? 'border-red-500' : 'border-white/10'} py-3 text-sm focus:outline-none focus:border-[#00f0ff] transition-colors resize-none placeholder:opacity-20`}
                       />
                       {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
                     </div>

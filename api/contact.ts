@@ -62,14 +62,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const supabaseTask = (async () => {
     if (!SUPABASE_URL || !SUPABASE_KEY) return false;
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { error } = await supabase.from('leads').insert([{
-      name: clientName,
+    const { error } = await supabase.from('contact_submissions').insert([{
+      first_name: clientName.split(' ')[0],
+      last_name: clientName.split(' ').slice(1).join(' '),
       email,
-      phone: phone || null,
       message,
-      service_type: inquiryType,
+      type: inquiryType,
       plan: plan || null,
-      status: 'New',
     }]);
     if (error) throw new Error(`Supabase: ${error.message}`);
     return true;
