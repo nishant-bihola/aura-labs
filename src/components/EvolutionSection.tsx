@@ -56,7 +56,7 @@ export default function EvolutionSection() {
         ref={textRef}
         className="fluid-h1 font-valtero-serif italic text-white/10 text-center leading-[1.05] tracking-tight max-w-6xl"
       >
-        Evolution starts with a conversation.
+        IT solutions for a growing business.
       </h2>
     </section>
   );

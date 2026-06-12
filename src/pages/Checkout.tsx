@@ -105,7 +105,7 @@ export default function CheckoutPage() {
                   <h1 className="text-4xl md:text-5xl font-serif italic mb-4">Secure Checkout.</h1>
                   <p className="text-white/40 text-sm leading-relaxed">
                     You are initiating an e-Transfer checkout for <strong className="text-white">{planParam}</strong>. 
-                    No credit card required. Payment instructions will be securely transmitted upon request.
+                    No credit card required. Payment instructions will be sent directly to your email.
                   </p>
                 </div>
 
@@ -183,7 +183,7 @@ export default function CheckoutPage() {
                       {isSubmitting ? "Processing..." : "Request Payment Instructions"}
                       {!isSubmitting && <ArrowRight size={14} />}
                     </button>
-                    <p className="text-center text-white/30 text-[9px] uppercase tracking-widest mt-4">By proceeding, you agree to our Terms of Service</p>
+                    <p className="text-center text-white/30 text-[9px] uppercase tracking-widest mt-4">By proceeding, you agree to our terms of service.</p>
                   </form>
                 </div>
               </div>
@@ -219,15 +219,11 @@ export default function CheckoutPage() {
                 {/* CAL.COM IFRAME WRAPPER */}
                 <div className="w-full h-[600px] rounded-2xl overflow-hidden bg-black/50">
                   <Cal 
-                    calLink="nishantbihola/15min" 
+                    calLink="nishant-bihola-aura-lab/15min" 
                     style={{width:"100%",height:"100%",overflow:"scroll"}}
                     config={{layout: 'month_view'}}
                   />
                 </div>
-                
-                <p className="text-center text-white/30 text-[10px] mt-8 uppercase tracking-widest px-4">
-                  NOTE: Ensure you replace "nishantbihola/15min" with your actual Cal.com link in src/pages/Checkout.tsx
-                </p>
               </div>
             </motion.div>
           )}

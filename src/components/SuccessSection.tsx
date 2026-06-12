@@ -2,12 +2,12 @@ import { motion } from "motion/react";
 import Counter from "./Counter";
 
 const CHAT_MESSAGES = [
-  { text: "Site looks incredible 🔥", side: "left", delay: 0.5 },
-  { text: "Orders are coming in!", side: "left", delay: 1.2 },
-  { text: "Can we add an AI chatbot?", side: "left", delay: 2.0 },
-  { text: "On it 👌", side: "right", delay: 3.0 },
-  { text: "Done — live in 2 days", side: "right", delay: 3.5 },
-  { text: "You guys are unreal 🙌", side: "left", delay: 4.5 },
+  { text: "Platform looks excellent.", side: "left", delay: 0.5 },
+  { text: "Systems are fully integrated.", side: "left", delay: 1.2 },
+  { text: "Can we add automated workflows?", side: "left", delay: 2.0 },
+  { text: "Yes, we can deploy that.", side: "right", delay: 3.0 },
+  { text: "Live in 48 hours.", side: "right", delay: 3.5 },
+  { text: "Outstanding work.", side: "left", delay: 4.5 },
 ];
 
 export default function SuccessSection() {

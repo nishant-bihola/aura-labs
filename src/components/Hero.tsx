@@ -100,7 +100,7 @@ export default function Hero() {
               transition={{ delay: 0.8 }}
               className="text-[10px] md:text-xs uppercase kerning-wide font-bold leading-relaxed text-center opacity-60 tracking-[0.2em]"
             >
-              We build websites, web apps, AI chatbots, and motion ad content — for businesses ready to grow.
+              Empowering enterprises with innovative technology to stay ahead in the digital age.
             </motion.p>
         </div>
       </div>

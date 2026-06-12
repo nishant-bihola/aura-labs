@@ -132,14 +132,14 @@ export default function ContactPage() {
           </div>
           
           <h1 className="fluid-h1-contact font-serif italic tracking-tighter mb-8 md:mb-12">
-            Let's build <br className="hidden md:block" /> something <br className="md:hidden" />
+            Innovative <br className="hidden md:block" /> solutions for a <br className="md:hidden" />
             <span className="relative inline-block">
-              <span className="text-outline opacity-20 italic">Extraordinary.</span>
+              <span className="text-outline opacity-20 italic">growing business.</span>
               <motion.span 
                 style={{ width: textFillWidth }}
                 className="absolute top-0 left-0 overflow-hidden whitespace-nowrap text-white italic"
               >
-                Extraordinary.
+                growing business.
               </motion.span>
             </span>
           </h1>
@@ -148,7 +148,7 @@ export default function ContactPage() {
             {/* Left Column: Brief & Socials */}
             <div className="lg:col-span-5 space-y-12">
                <p className="text-lg md:text-2xl text-white/40 leading-relaxed font-light max-w-md">
-                 Our studio architects are ready to translate your vision into a digital masterpiece.
+                 Our experts are ready to optimize your operations and empower your business.
                </p>
                <div className="space-y-8">
                   <div className="group">
@@ -179,8 +179,8 @@ export default function ContactPage() {
                         <Check size={32} />
                       </div>
                       <div>
-                        <h3 className="text-2xl md:text-3xl font-serif italic mb-2">Transmission Received</h3>
-                        <p className="opacity-40 text-xs md:text-sm">Check your inbox for a secure confirmation transmission.</p>
+                        <h3 className="text-2xl md:text-3xl font-serif italic mb-2">Inquiry Received</h3>
+                        <p className="opacity-40 text-xs md:text-sm">We will be in touch shortly to discuss your project.</p>
                       </div>
                       <button 
                         onClick={() => setStatus("idle")}
@@ -267,9 +267,9 @@ export default function ContactPage() {
                  <span className="w-8 h-[1px] bg-white"></span>
                  <span className="text-[10px] tracking-[0.4em] uppercase font-bold">Scheduling</span>
                </div>
-               <h2 className="text-3xl md:text-7xl font-serif italic mb-8 leading-[0.9] tracking-tighter">Secure a <br /> Private Consultation.</h2>
+               <h2 className="text-3xl md:text-7xl font-serif italic mb-8 leading-[0.9] tracking-tighter">Schedule a <br /> Consultation.</h2>
                <p className="text-white/30 text-base md:text-xl font-light leading-relaxed mb-8">
-                 Bypass the queue. Synchronize with our lead architects via our secure appointment gateway. 1:1 focus, zero friction.
+                 Discover our range of solutions designed to enhance customer engagement and secure your systems.
                </p>
                <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                  <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-widest font-bold">
@@ -321,7 +321,7 @@ export default function ContactPage() {
             transition={{ duration: 2 }}
             className="fluid-h1 font-serif italic tracking-tighter leading-none max-w-6xl mx-auto"
           >
-            Evolution starts <br className="hidden md:block" /> with a conversation.
+            Empowering enterprises <br className="hidden md:block" /> with innovative technology.
           </motion.p>
       </section>
     </div>

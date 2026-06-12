@@ -18,16 +18,16 @@ const PLANS = [
     features: [
       "Custom React website (up to 5 pages)",
       "Mobile-first responsive design",
-      "Core SEO + meta setup",
-      "Contact form & lead capture",
-      "Deployed on Vercel — live in days"
+      "Core SEO and meta setup",
+      "Contact form and lead capture",
+      "Rapid deployment and seamless integration"
     ],
     highlight: false
   },
   {
     name: "Growth",
-    tagline: "Full-stack + AI chatbot",
-    description: "A complete web application with AI chatbot integration — built to scale.",
+    tagline: "Comprehensive web applications",
+    description: "A complete web application with advanced integration capabilities to scale your business.",
     price: "$4,500",
     period: "/project",
     features: [
@@ -41,15 +41,15 @@ const PLANS = [
   },
   {
     name: "AI Content",
-    tagline: "Motion ads & product images",
-    description: "AI-generated ad creatives — premium output, hours not weeks.",
+    tagline: "Targeted campaigns",
+    description: "High-quality ad creatives and product imagery delivered rapidly.",
     price: "$800",
     period: "/campaign",
     features: [
       "3 × 15-second motion ad videos",
       "5 × product/hero images",
-      "Script & storyboard included",
-      "Delivered in 24–48 hours",
+      "Script and storyboard included",
+      "Delivered within 24 to 48 hours",
       "Ready to publish on any platform"
     ],
     highlight: false
@@ -172,8 +172,8 @@ export default function AuraPricing() {
           
           <div className="mt-6 md:mt-8 max-w-lg">
             <p className="pricing-title-reveal text-sm md:text-xl text-white/50 font-sans leading-relaxed">
-              From launch-ready basics to high-performance <br className="hidden md:block" /> 
-              cinematic driven experiences.
+              Discover our range of products designed to optimize operations <br className="hidden md:block" /> 
+              and enhance your digital presence.
             </p>
           </div>
         </div>

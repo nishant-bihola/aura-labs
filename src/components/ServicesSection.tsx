@@ -6,7 +6,7 @@ const SERVICE_DETAILS = [
     id: "01",
     title: "Web Development",
     bgText: "BUILD",
-    desc: "From 5-page marketing sites to full-stack ordering platforms — we ship production-ready React apps that load fast, rank well, and turn visitors into customers. Starting at $1,500.",
+    desc: "From corporate websites to comprehensive ordering platforms, our web solutions ensure seamless integration and reliable performance. Starting at $1,500.",
     image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=900&auto=format&fit=crop&q=80",
     categories: ["React", "Node.js", "Web Apps", "E-Commerce", "SEO"]
   },
@@ -14,7 +14,7 @@ const SERVICE_DETAILS = [
     id: "02",
     title: "AI Chatbots",
     bgText: "SMART",
-    desc: "Custom AI chatbots trained on your business — answering questions, booking appointments, and qualifying leads around the clock while you sleep. Starting at $800.",
+    desc: "Custom AI chatbots tailored to your business needs. Provide round-the-clock support, streamline bookings, and enhance customer engagement effortlessly. Starting at $800.",
     image: "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=900&auto=format&fit=crop&q=80",
     categories: ["Lead Gen", "Bookings", "24/7 Support", "AI-Powered"]
   },
@@ -22,7 +22,7 @@ const SERVICE_DETAILS = [
     id: "03",
     title: "AI Ad Content",
     bgText: "MOTION",
-    desc: "15-second motion ads and product images powered by generative AI. Premium creative that used to cost $5,000+ and weeks of work — delivered in 24–48 hours. From $800/campaign.",
+    desc: "Premium motion ads and product imagery powered by generative AI. Optimize your marketing campaigns with rapid delivery and impactful visuals. From $800/campaign.",
     video: "https://cdn.dribbble.com/userupload/47884462/file/382a205af640e8020710b90fc6415744.mp4",
     categories: ["Motion Ads", "Product Images", "15-sec Video", "Campaign"]
   },
@@ -30,7 +30,7 @@ const SERVICE_DETAILS = [
     id: "04",
     title: "Brand Identity",
     bgText: "IDENTITY",
-    desc: "Complete visual identity systems — logo, typography, colour palette, and brand guide — built to make your business look established, trustworthy, and premium from day one.",
+    desc: "Comprehensive visual identity systems designed to establish trust and credibility. Ensure your business is recognized as a leader from day one.",
     image: "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=900&auto=format&fit=crop&q=80",
     categories: ["Logo Design", "Typography", "Brand Guide", "Visual System"]
   }
@@ -153,7 +153,7 @@ export default function ServicesSection() {
                   <span className="w-12 h-[1px] bg-white"></span>
                   <h2 className="text-[10px] md:text-[12px] uppercase tracking-[0.4em] font-medium">Expertise</h2>
                </div>
-               <h3 className="text-xl md:text-4xl font-valtero-serif italic opacity-40 md:ml-12">What we build / The Studio</h3>
+               <h3 className="text-xl md:text-4xl font-valtero-serif italic opacity-40 md:ml-12">Innovative Solutions</h3>
             </div>
             <div className="text-right hidden lg:block opacity-30">
                <p className="text-[10px] uppercase tracking-[0.3em] font-medium">Click a service to start a project</p>

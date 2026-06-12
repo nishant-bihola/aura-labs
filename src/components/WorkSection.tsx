@@ -83,7 +83,7 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
             </div>
           </div>
           <p className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-medium opacity-20 group-hover:opacity-40 transition-opacity hidden md:block">
-            Case Study — {project.year}
+            Case Study • {project.year}
           </p>
         </div>
       </motion.div>
