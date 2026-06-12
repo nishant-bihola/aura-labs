@@ -32,6 +32,7 @@ import { Analytics } from "@vercel/analytics/react";
 import ProjectDetail from "./pages/ProjectDetail";
 import ContactPage from "./pages/Contact";
 import Checkout from "./pages/Checkout";
+import AdminDashboard from "./pages/AdminDashboard";
 
 import WebDevelopment from "./pages/services/WebDevelopment";
 import AIChatbots from "./pages/services/AIChatbots";
@@ -238,6 +239,9 @@ export default function App() {
                 <Route path="/services/ai-chatbots" element={<AIChatbots />} />
                 <Route path="/services/ai-ads" element={<AIAds />} />
                 <Route path="/services/brand-identity" element={<BrandIdentity />} />
+
+                {/* ADMIN PAGE */}
+                <Route path="/admin" element={<AdminDashboard />} />
 
                 {/* CONTACT PAGE */}
                 <Route path="/contact" element={<ContactPage />} />

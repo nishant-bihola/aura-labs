@@ -1,0 +1,25 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Lead {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  plan      String
+  details   String
+  addons    String?
+  createdAt DateTime @default(now())
+}
+
+model ChatSession {
+  id        Int      @id @default(autoincrement())
+  email     String?
+  history   String
+  createdAt DateTime @default(now())
+}

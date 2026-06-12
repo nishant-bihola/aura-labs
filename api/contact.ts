@@ -4,6 +4,9 @@ import { createClient } from '@supabase/supabase-js';
 import { Client as NotionClient } from '@notionhq/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { adminAlertHTML, clientConfirmationHTML } from './_lib/emails.js';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 // ─── Environment Variables ────────────────────────────────────────────────────
 // Support both VITE_ prefixed and plain variants for Vercel serverless
@@ -58,20 +61,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ success: false, error: 'Email is required.' });
   }
 
-  // 1. Supabase - Database Insertion (High Priority)
-  const supabaseTask = (async () => {
-    if (!SUPABASE_URL || !SUPABASE_KEY) return false;
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { error } = await supabase.from('contact_submissions').insert([{
-      first_name: clientName.split(' ')[0],
-      last_name: clientName.split(' ').slice(1).join(' '),
-      email,
-      message,
-      type: inquiryType,
-      plan: plan || null,
-    }]);
-    if (error) throw new Error(`Supabase: ${error.message}`);
-    return true;
+  // 1. Prisma - Database Insertion (High Priority)
+  const dbTask = (async () => {
+    try {
+      await prisma.lead.create({
+        data: {
+          name: clientName,
+          email,
+          plan: plan || inquiryType,
+          details: message,
+          addons: phone || null
+        }
+      });
+      return true;
+    } catch (dbError) {
+      console.error("Prisma Error:", dbError);
+      return false;
+    }
   })();
 
   // 2. Admin Notification (Resend with Brevo Fallback)
@@ -158,7 +164,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // EXECUTE ALL IN PARALLEL for maximum speed
   const results = await Promise.allSettled([
-    supabaseTask,
+    dbTask,
     adminEmailTask,
     userEmailTask,
     notionTask

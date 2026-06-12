@@ -1,15 +1,13 @@
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import { adminPurchaseAlertHTML, paymentInstructionsHTML } from "./_lib/emails.js";
+import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
 const supabaseKey = process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_ANON_KEY || "";
 const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
-
-export const config = {
-  runtime: 'edge',
-};
 
 export default async function handler(req: Request) {
   if (req.method !== 'POST') {
@@ -17,18 +15,23 @@ export default async function handler(req: Request) {
   }
 
   try {
-    const { name, email, plan, projectDetails } = await req.json();
+    const { name, email, plan, projectDetails, addons } = await req.json();
+
+    try {
+      await prisma.lead.create({
+        data: {
+          name,
+          email,
+          plan,
+          details: projectDetails,
+          addons: addons ? addons.join(", ") : null
+        }
+      });
+    } catch (dbError) {
+      console.error("Prisma Error:", dbError);
+    }
 
     if (supabase) {
-      await supabase.from("contact_submissions").insert([{ 
-        first_name: name.split(' ')[0], 
-        last_name: name.split(' ').slice(1).join(' '), 
-        email, 
-        message: projectDetails, 
-        type: "Checkout Intent",
-        plan: plan
-      }]);
-    }
 
     if (resend) {
       await Promise.allSettled([
