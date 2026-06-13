@@ -163,9 +163,25 @@ export default function FrozenHeroScene({
           {/* procedural studio — what the ice reflects/refracts */}
           {!isCoarsePointer() && (
             <Environment resolution={256} frames={1}>
-              <Lightformer form="rect" intensity={3} color="#9fe0ff" position={[0, 6, -8]} scale={[12, 6, 1]} />
-              <Lightformer form="rect" intensity={1.6} color="#7a3df0" position={[-8, 1, 3]} rotation={[0, Math.PI / 2.4, 0]} scale={[8, 4, 1]} />
-              <Lightformer form="circle" intensity={2.2} color="#baffe9" position={[7, -3, 4]} scale={3} />
+              {/* Soft sky-blue overhead key light */}
+              <Lightformer form="rect" intensity={3.5} color="#9fe0ff" position={[0, 6, -8]} scale={[12, 6, 1]} />
+              
+              {/* Warm golden light to complete the dispersion colors and add depth */}
+              <Lightformer form="circle" intensity={4.0} color="#ffd48f" position={[-2, -5, -4]} scale={2.5} />
+              
+              {/* Vibrant deep indigo-purple side light */}
+              <Lightformer form="rect" intensity={2.0} color="#7a3df0" position={[-8, 1, 3]} rotation={[0, Math.PI / 2.4, 0]} scale={[8, 4, 1]} />
+              
+              {/* Bright turquoise fill light */}
+              <Lightformer form="circle" intensity={2.5} color="#baffe9" position={[7, -3, 4]} scale={3.5} />
+              
+              {/* High-intensity narrow white strip (the scintillation engine) */}
+              <Lightformer form="rect" intensity={8.0} color="#ffffff" position={[2, 4, 5]} rotation={[0, -Math.PI / 4, 0]} scale={[0.4, 12, 1]} />
+              
+              {/* Saturated cyan edge accent */}
+              <Lightformer form="rect" intensity={3.0} color="#00ffff" position={[5, 2, -3]} rotation={[0, Math.PI / 3, 0]} scale={[4, 2, 1]} />
+              
+              {/* Absorption blocker beneath the crystal */}
               <Lightformer form="rect" intensity={0.8} color="#0c1320" position={[0, -7, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[16, 16, 1]} />
             </Environment>
           )}

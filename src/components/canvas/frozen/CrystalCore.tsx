@@ -46,6 +46,19 @@ function buildDiamond(sides: number) {
     girdle.push(new THREE.Vector3(Math.cos(a) * rGirdle, y, Math.sin(a) * rGirdle));
   }
 
+  // Pavilion middle ring: sides * 2 points alternating in height and radius to produce a faceted zig-zag fire
+  const pav: THREE.Vector3[] = [];
+  const rPavWide = 0.62;
+  const rPavNarrow = 0.48;
+  const yPavHigh = -0.42;
+  const yPavLow = -0.58;
+  for (let j = 0; j < sides * 2; j++) {
+    const a = (j / (sides * 2)) * Math.PI * 2;
+    const r = j % 2 === 0 ? rPavWide : rPavNarrow;
+    const y = j % 2 === 0 ? yPavHigh : yPavLow;
+    pav.push(new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r));
+  }
+
   const verts: number[] = [];
   const tri = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3) => {
     verts.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
@@ -57,6 +70,10 @@ function buildDiamond(sides: number) {
     const g1 = girdle[i * 2 + 1];
     const g2 = girdle[(i * 2 + 2) % (sides * 2)];
 
+    const p0 = pav[i * 2];
+    const p1 = pav[i * 2 + 1];
+    const p2 = pav[(i * 2 + 2) % (sides * 2)];
+
     // table fan
     tri(top, table[i], table[ni]);
     // crown — star facets (table edge down to the star ring)
@@ -66,9 +83,16 @@ function buildDiamond(sides: number) {
     tri(star[i], g0, g1);
     tri(star[i], g1, table[ni]);
     tri(table[ni], g1, g2);
-    // pavilion — facets converging on the culet
-    tri(g0, culet, g1);
-    tri(g1, culet, g2);
+
+    // pavilion — two-tier brilliant facets
+    // upper pavilion facets (connecting girdle to pavilion ring)
+    tri(g0, p0, p1);
+    tri(g0, p1, g1);
+    tri(g1, p1, p2);
+    tri(g1, p2, g2);
+    // lower pavilion facets (connecting pavilion ring to culet)
+    tri(p0, culet, p1);
+    tri(p1, culet, p2);
   }
 
   const geo = new THREE.BufferGeometry();
@@ -116,24 +140,25 @@ export default function CrystalCore() {
       <mesh geometry={diamond}>
         {transmission ? (
           <MeshTransmissionMaterial
+            transmission={1.0}
             samples={6}
             resolution={256}
-            thickness={0.8}
+            thickness={1.1}
             ior={2.417}
-            chromaticAberration={1.4}
-            anisotropicBlur={0.05}
+            chromaticAberration={1.1}
+            anisotropicBlur={0.01}
             roughness={0}
             clearcoat={1}
             clearcoatRoughness={0}
-            distortion={0.15}
-            distortionScale={0.4}
-            temporalDistortion={0.02}
+            distortion={0.0}
+            distortionScale={0.0}
+            temporalDistortion={0.0}
             attenuationDistance={3}
-            attenuationColor="#dff2ff"
+            attenuationColor="#eef7ff"
             color="#ffffff"
-            envMapIntensity={3.2}
-            iridescence={0.8}
-            iridescenceIOR={1.6}
+            envMapIntensity={4.8}
+            iridescence={0.35}
+            iridescenceIOR={1.8}
           />
         ) : (
           <shaderMaterial
