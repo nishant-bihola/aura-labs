@@ -137,6 +137,7 @@ export function ChatWidget() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -150,6 +151,56 @@ export function ChatWidget() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading, scrollToBottom]);
+
+  // Lock body scroll on mobile when chat is open to prevent page repositioning/jumping on focus
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const isMobile = window.matchMedia('(pointer: coarse)').matches;
+    if (!isMobile) return;
+
+    const originalPosition = document.body.style.position;
+    const originalTop = document.body.style.top;
+    const originalWidth = document.body.style.width;
+    const originalOverflow = document.body.style.overflow;
+    const scrollY = window.scrollY;
+
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.position = originalPosition;
+      document.body.style.top = originalTop;
+      document.body.style.width = originalWidth;
+      document.body.style.overflow = originalOverflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
+
+  // Track virtual keyboard height using the Visual Viewport API
+  useEffect(() => {
+    if (!window.visualViewport) return;
+
+    const handleResize = () => {
+      const vv = window.visualViewport;
+      if (!vv) return;
+
+      const isMobile = window.matchMedia('(pointer: coarse)').matches;
+      if (!isMobile) return;
+
+      const offset = window.innerHeight - vv.height;
+      setKeyboardHeight(offset > 50 ? offset : 0);
+    };
+
+    window.visualViewport.addEventListener('resize', handleResize);
+    window.visualViewport.addEventListener('scroll', handleResize);
+    return () => {
+      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('scroll', handleResize);
+    };
+  }, []);
 
   // focus the input when opening (desktop only — avoid popping the
   // mobile keyboard over the freshly opened panel)
@@ -212,7 +263,12 @@ export function ChatWidget() {
   );
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] flex flex-col items-end">
+    <div 
+      className="fixed right-4 sm:bottom-6 sm:right-6 z-[9999] flex flex-col items-end transition-[bottom] duration-150 ease-out"
+      style={{
+        bottom: keyboardHeight > 0 ? `calc(${keyboardHeight}px + 1rem)` : '1rem'
+      }}
+    >
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
@@ -221,7 +277,12 @@ export function ChatWidget() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: 'spring', stiffness: 250, damping: 25 }}
-            className="bg-[#050505]/95 backdrop-blur-xl border border-white/10 rounded-2xl w-[calc(100vw-2rem)] sm:w-[400px] h-[620px] max-h-[calc(100dvh-7rem)] mb-4 flex flex-col overflow-hidden shadow-[0_0_50px_rgba(0,240,255,0.1)] origin-bottom-right"
+            className="bg-[#050505]/95 backdrop-blur-xl border border-white/10 rounded-2xl w-[calc(100vw-2rem)] sm:w-[400px] h-[620px] mb-4 flex flex-col overflow-hidden shadow-[0_0_50px_rgba(0,240,255,0.1)] origin-bottom-right"
+            style={{
+              maxHeight: keyboardHeight > 0 
+                ? `calc(${window.innerHeight - keyboardHeight}px - 7rem)` 
+                : 'calc(100dvh - 7rem)'
+            }}
           >
             {/* Header */}
             <div className="p-4 border-b border-white/10 bg-white/[0.02] flex items-center justify-between relative overflow-hidden">
