@@ -122,24 +122,24 @@ export default function CrystalCore() {
       <mesh geometry={diamond}>
         {transmission ? (
           <MeshTransmissionMaterial
-            samples={10}
-            resolution={512}
-            thickness={0.8}
+            samples={6}
+            resolution={256}
+            thickness={0.9}
             ior={2.42}
             chromaticAberration={1.2}
-            anisotropicBlur={0.08}
+            anisotropicBlur={0.06}
             roughness={0}
             clearcoat={1}
             clearcoatRoughness={0}
-            distortion={0.06}
-            distortionScale={0.3}
+            distortion={0.05}
+            distortionScale={0.2}
             temporalDistortion={0.02}
-            attenuationDistance={4}
+            attenuationDistance={3}
             attenuationColor="#dff2ff"
             color="#ffffff"
-            envMapIntensity={2.8}
-            iridescence={0.8}
-            iridescenceIOR={1.6}
+            envMapIntensity={2.5}
+            iridescence={0.7}
+            iridescenceIOR={1.5}
           />
         ) : (
           <shaderMaterial
@@ -163,7 +163,6 @@ export default function CrystalCore() {
               transparent
               opacity={0.35}
               blending={THREE.AdditiveBlending}
-              toneMapped={false}
             />
           </mesh>
           {/* Glowing central singularity */}
@@ -172,9 +171,8 @@ export default function CrystalCore() {
             <meshBasicMaterial
               color="#bd00ff"
               transparent
-              opacity={0.8}
+              opacity={0.85}
               blending={THREE.AdditiveBlending}
-              toneMapped={false}
             />
           </mesh>
         </>
