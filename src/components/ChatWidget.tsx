@@ -94,8 +94,10 @@ function TypewriterText({ content, onType, onComplete }: TypewriterTextProps) {
     if (timer.current) clearInterval(timer.current);
 
     timer.current = setInterval(() => {
-      if (currentIndex.current < words.current.length) {
-        setDisplayText((prev) => (prev ? prev + ' ' : '') + words.current[currentIndex.current]);
+      const idx = currentIndex.current;
+      if (idx < words.current.length) {
+        const word = words.current[idx];
+        setDisplayText((prev) => (prev ? prev + ' ' : '') + word);
         currentIndex.current += 1;
         onType();
       } else {
