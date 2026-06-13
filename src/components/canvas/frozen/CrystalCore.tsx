@@ -7,40 +7,47 @@ import { heroProgress, isCoarsePointer, prefersReducedMotion } from "./progress"
 
 /**
  * The Aura Core: a faceted brilliant-cut diamond.
- * Geometry is built by hand — a flat octagonal table, a zig-zag crown of
- * star/bezel facets, and a pavilion of triangles tapering to the culet.
- * De-indexed + flat normals so every facet catches light hard.
- * Desktop renders real refraction (transmission); mobile/reduced-motion
+ * Geometry is hand-built — a flat octagonal table, a two-tier crown of
+ * star + bezel facets, and a deep pavilion of facets tapering to the culet.
+ * De-indexed with flat normals so every facet catches light hard, which is
+ * what gives a real gem its sparkle and fire.
+ * Desktop renders true refraction (transmission); mobile / reduced-motion
  * fall back to the cheap fresnel-ice shader.
  */
 function buildDiamond(sides: number) {
-  const yTop = 0.46; // table height
-  const rTable = 0.6; // table (flat top) radius
+  const rTable = 0.58; // flat top radius
+  const yTable = 0.62; // crown height (shallow, like a real cut)
+  const rStar = 0.82; // mid crown ring (creates the star facets)
+  const yStar = 0.34;
   const rGirdle = 1.0; // widest ring
-  const yGirdleHigh = 0.16;
-  const yGirdleLow = 0.06; // alternating ring → scalloped sparkle
-  const yCulet = -1.05; // bottom point
-  const yScale = 1.18; // gentle vertical elongation
+  const yGirdleHigh = 0.1;
+  const yGirdleLow = 0.02; // alternating ring → scalloped sparkle
+  const yCulet = -1.18; // deep pointed pavilion
 
-  const top = new THREE.Vector3(0, yTop * yScale, 0);
-  const culet = new THREE.Vector3(0, yCulet * yScale, 0);
+  const top = new THREE.Vector3(0, yTable, 0);
+  const culet = new THREE.Vector3(0, yCulet, 0);
 
-  const table: THREE.Vector3[] = [];
-  for (let i = 0; i < sides; i++) {
-    const a = (i / sides) * Math.PI * 2;
-    table.push(new THREE.Vector3(Math.cos(a) * rTable, yTop * yScale, Math.sin(a) * rTable));
-  }
+  const ring = (n: number, r: number, y: number, offset = 0) => {
+    const out: THREE.Vector3[] = [];
+    for (let i = 0; i < n; i++) {
+      const a = ((i + offset) / n) * Math.PI * 2;
+      out.push(new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r));
+    }
+    return out;
+  };
 
-  // 2 girdle points per table edge → zig-zag brilliant facets
+  const table = ring(sides, rTable, yTable);
+  const star = ring(sides, rStar, yStar, 0.5); // rotated half-step
+  // 2 girdle points per side → zig-zag brilliant girdle
   const girdle: THREE.Vector3[] = [];
   for (let j = 0; j < sides * 2; j++) {
     const a = (j / (sides * 2)) * Math.PI * 2;
-    const y = (j % 2 === 0 ? yGirdleHigh : yGirdleLow) * yScale;
+    const y = j % 2 === 0 ? yGirdleHigh : yGirdleLow;
     girdle.push(new THREE.Vector3(Math.cos(a) * rGirdle, y, Math.sin(a) * rGirdle));
   }
 
   const verts: number[] = [];
-  const push = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3) => {
+  const tri = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3) => {
     verts.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
   };
 
@@ -50,15 +57,18 @@ function buildDiamond(sides: number) {
     const g1 = girdle[i * 2 + 1];
     const g2 = girdle[(i * 2 + 2) % (sides * 2)];
 
-    // table top fan
-    push(top, table[i], table[ni]);
-    // crown — star + bezel facets
-    push(table[i], g0, g1);
-    push(table[i], g1, table[ni]);
-    push(table[ni], g1, g2);
-    // pavilion — facets to the culet
-    push(g0, culet, g1);
-    push(g1, culet, g2);
+    // table fan
+    tri(top, table[i], table[ni]);
+    // crown — star facets (table edge down to the star ring)
+    tri(table[i], star[i], table[ni]);
+    // crown — bezel/kite facets (star ring down to the girdle zig-zag)
+    tri(table[i], g0, star[i]);
+    tri(star[i], g0, g1);
+    tri(star[i], g1, table[ni]);
+    tri(table[ni], g1, g2);
+    // pavilion — facets converging on the culet
+    tri(g0, culet, g1);
+    tri(g1, culet, g2);
   }
 
   const geo = new THREE.BufferGeometry();
@@ -69,7 +79,6 @@ function buildDiamond(sides: number) {
 
 export default function CrystalCore() {
   const group = useRef<THREE.Group>(null);
-  const inner = useRef<THREE.Mesh>(null);
   const mat = useRef<THREE.ShaderMaterial>(null);
 
   const mobile = isCoarsePointer();
@@ -79,9 +88,9 @@ export default function CrystalCore() {
   const iceUniforms = useMemo(
     () => ({
       uTime: { value: 0 },
-      uColorDeep: { value: new THREE.Color("#081420") },
-      uColorIce: { value: new THREE.Color("#8fd9ff") },
-      uColorRim: { value: new THREE.Color("#c9f4ff") },
+      uColorDeep: { value: new THREE.Color("#0a1826") },
+      uColorIce: { value: new THREE.Color("#bfeaff") },
+      uColorRim: { value: new THREE.Color("#eaffff") },
     }),
     []
   );
@@ -91,22 +100,11 @@ export default function CrystalCore() {
     const p = heroProgress.value;
 
     if (group.current) {
-      // steady turn so every facet sweeps the light
-      group.current.rotation.y = t * 0.28 + p * Math.PI * 1.1;
-      group.current.rotation.z = Math.sin(t * 0.3) * 0.03;
+      // steady turn so every facet sweeps the light, with a gentle tilt
+      group.current.rotation.y = t * 0.32 + p * Math.PI * 1.1;
+      group.current.rotation.z = Math.sin(t * 0.3) * 0.04;
+      group.current.rotation.x = -0.12 + Math.sin(t * 0.23) * 0.03;
       group.current.position.y = Math.sin(t * 0.4) * 0.06;
-    }
-    if (inner.current) {
-      // the light enthroned within — heartbeat that pulses harder near the
-      // macro shot (p ≈ 0.8), driving the bloom pass
-      const macro = 1 - Math.min(Math.abs(p - 0.8) * 5, 1);
-      const beat = Math.sin(t * 2.1);
-      const flicker = Math.sin(t * 7.3) * 0.04;
-      const pulse = 1 + beat * 0.12 + flicker + macro * 0.5;
-      inner.current.scale.setScalar(0.3 * pulse);
-      inner.current.position.y = -0.1 + Math.sin(t * 0.8) * 0.05;
-      const m = inner.current.material as THREE.MeshBasicMaterial;
-      m.opacity = 0.7 + beat * 0.15 + macro * 0.25;
     }
     if (mat.current) mat.current.uniforms.uTime.value = t;
   });
@@ -114,27 +112,28 @@ export default function CrystalCore() {
   const transmission = !mobile && !prefersReducedMotion();
 
   return (
-    <group ref={group}>
-      {/* the diamond */}
+    <group ref={group} scale={1.15}>
       <mesh geometry={diamond}>
         {transmission ? (
           <MeshTransmissionMaterial
-            samples={4}
+            samples={6}
             resolution={256}
-            thickness={1.1}
-            ior={2.4}
-            chromaticAberration={0.9}
-            anisotropicBlur={0.1}
-            roughness={0.0}
-            distortion={0.1}
-            distortionScale={0.3}
+            thickness={0.9}
+            ior={2.42}
+            chromaticAberration={1.1}
+            anisotropicBlur={0.06}
+            roughness={0}
+            clearcoat={1}
+            clearcoatRoughness={0}
+            distortion={0.05}
+            distortionScale={0.2}
             temporalDistortion={0.02}
-            attenuationDistance={2.4}
-            attenuationColor="#bfe6ff"
-            color="#eaf6ff"
-            envMapIntensity={1.6}
-            iridescence={0.7}
-            iridescenceIOR={1.4}
+            attenuationDistance={3}
+            attenuationColor="#dff2ff"
+            color="#ffffff"
+            envMapIntensity={2.2}
+            iridescence={0.6}
+            iridescenceIOR={1.5}
           />
         ) : (
           <shaderMaterial
@@ -145,12 +144,6 @@ export default function CrystalCore() {
             transparent
           />
         )}
-      </mesh>
-
-      {/* the burning intelligence inside — feeds the bloom pass */}
-      <mesh ref={inner}>
-        <icosahedronGeometry args={[1, 2]} />
-        <meshBasicMaterial color="#aef2ff" transparent toneMapped={false} />
       </mesh>
     </group>
   );

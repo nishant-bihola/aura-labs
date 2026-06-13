@@ -89,21 +89,39 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
           </h3>
         </div>
 
-        {/* Inline preview — touch devices, where there is no cursor-follow */}
+        {/* Inline preview — the touch equivalent of the desktop cursor-follow
+            card. Expands into a premium showcase when the card is centred. */}
         <div
-          className={`lg:hidden w-full overflow-hidden rounded-xl transition-all duration-500 ease-expo ${
-            active ? "max-h-72 opacity-100 mt-2" : "max-h-0 opacity-0"
+          className={`lg:hidden w-full overflow-hidden transition-all duration-700 ease-expo ${
+            active ? "max-h-[420px] opacity-100 mt-4" : "max-h-0 opacity-0"
           }`}
         >
-          <div className="relative w-full h-56 overflow-hidden rounded-xl">
+          <div
+            className={`relative w-full h-72 overflow-hidden rounded-2xl border border-white/10 shadow-2xl transition-transform duration-700 ease-expo ${
+              active ? "scale-100" : "scale-95"
+            }`}
+          >
             <img
               src={project.thumbImage}
               alt={project.title}
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-cover scale-105"
+              className="w-full h-full object-cover scale-110"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-5 flex items-end justify-between">
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-white/60">
+                  {project.category} • {project.year}
+                </span>
+                <span className="text-base font-valtero-serif italic text-white">
+                  View case study
+                </span>
+              </div>
+              <div className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center shrink-0">
+                <ArrowUpRight size={20} />
+              </div>
+            </div>
           </div>
         </div>
 
