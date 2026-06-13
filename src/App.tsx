@@ -6,7 +6,7 @@
 import { useEffect, useState, lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from "react-router-dom";
 import Lenis from "lenis";
-import { motion, AnimatePresence } from "framer-motion";
+import { LazyMotion, domAnimation, m, AnimatePresence } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 
@@ -31,8 +31,12 @@ import { Analytics } from "@vercel/analytics/react";
 // Route-level code splitting: nothing below the landing page touches the
 // first paint. Each of these only downloads when its route is visited, which
 // keeps the eager bundle (and time-to-interactive on "/") as small as possible.
-const SanityStudio = lazy(() => import("./pages/SanityStudio"));
+// Gate /studio out of production build to reduce bundle sizes
+const SanityStudio = !import.meta.env.PROD
+  ? lazy(() => import("./pages/SanityStudio"))
+  : lazy(() => import("./pages/NotFound"));
 const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 const ContactPage = lazy(() => import("./pages/Contact"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -147,86 +151,85 @@ export default function App() {
   ];
 
   return (
-    <Router>
-      <ScrollHandler isMenuOpen={isMenuOpen} />
-      <SpeedInsights />
-      <Analytics />
-      <ChatWidget />
-      
-      {/* 1. PERSPECTIVE CONTAINER */}
-      <div className="relative w-full min-h-screen bg-[#050505] overflow-hidden perspective-1000">
+    <LazyMotion features={domAnimation}>
+      <Router>
+        <ScrollHandler isMenuOpen={isMenuOpen} />
+        <SpeedInsights />
+        <Analytics />
+        <ChatWidget />
         
-        {/* 2. VIBRANT SIDEBAR AURA (Background Layer) - Hidden on mobile for performance */}
-        <div className={`fixed inset-0 z-0 transition-opacity duration-1000 ${isMenuOpen ? 'opacity-100' : 'opacity-0'} hidden md:block`}>
-          <motion.div 
-            animate={{ scale: [1, 1.2, 1], x: [0, 30, 0], y: [0, -20, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-[-10%] right-[-10%] w-full h-full bg-[#00F0FF]/10 rounded-full blur-[120px] will-change-transform" 
-          />
-          <motion.div 
-            animate={{ scale: [1, 1.3, 1], x: [0, -30, 0], y: [0, 40, 0] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-[-10%] left-[-10%] w-full h-full bg-[#BD00FF]/10 rounded-full blur-[120px] will-change-transform" 
-          />
-        </div>
-
-        {/* 3. SIDEBAR NAVIGATION CONTENT */}
-        <div className="fixed inset-0 flex items-center justify-end z-0">
-          <div className="w-[85%] md:w-[50%] pl-8 md:pl-24">
-            <nav className="flex flex-col gap-1 md:gap-4">
-              <AnimatePresence>
-                {isMenuOpen && navLinks.map((link, i) => (
-                  <motion.div
-                    key={link.name}
-                    initial={{ x: 100, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: 50, opacity: 0 }}
-                    transition={{ delay: 0.1 + (i * 0.05), duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <MenuLink link={link} closeMenu={() => setIsMenuOpen(false)} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </nav>
+        {/* 1. PERSPECTIVE CONTAINER */}
+        <div className="relative w-full min-h-screen bg-[#050505] overflow-hidden perspective-1000">
+          
+          {/* 2. VIBRANT SIDEBAR AURA (Background Layer) - Hidden on mobile for performance */}
+          <div className={`fixed inset-0 z-0 transition-opacity duration-1000 ${isMenuOpen ? 'opacity-100' : 'opacity-0'} hidden md:block`}>
+            <m.div 
+              animate={{ scale: [1, 1.2, 1], x: [0, 30, 0], y: [0, -20, 0] }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-[-10%] right-[-10%] w-full h-full bg-[#00F0FF]/10 rounded-full blur-[120px] will-change-transform" 
+            />
+            <m.div 
+              animate={{ scale: [1, 1.3, 1], x: [0, -30, 0], y: [0, 40, 0] }}
+              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute bottom-[-10%] left-[-10%] w-full h-full bg-[#BD00FF]/10 rounded-full blur-[120px] will-change-transform" 
+            />
           </div>
-        </div>
 
-        {/* 4. CLOSE BUTTON (Attached to Canvas Edge) */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0, rotate: -90 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              exit={{ opacity: 0, scale: 0, rotate: 90 }}
-              onClick={() => setIsMenuOpen(false)}
-              className="fixed top-1/2 left-[5%] md:left-[45%] -translate-y-1/2 z-[200] w-16 h-16 md:w-24 md:h-24 bg-white rounded-full flex items-center justify-center text-black cursor-pointer shadow-2xl hover:scale-110 transition-transform duration-500"
-            >
-              <div className="relative w-full h-full flex items-center justify-center">
-                <div className="absolute w-6 md:w-8 h-[2px] bg-black rotate-45" />
-                <div className="absolute w-6 md:w-8 h-[2px] bg-black -rotate-45" />
-              </div>
-            </motion.button>
-          )}
-        </AnimatePresence>
- 
-        {/* 5. MAIN CONTENT CANVAS (The 3D Element) */}
-        <motion.main 
-          animate={{ 
-            scale: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0.94 : 0.85) : 1, 
-            x: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? "-75%" : "-40%") : "0%",
-            rotateY: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 10) : 0, 
-            rotateX: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 2) : 0, 
-            borderRadius: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? "20px" : "40px") : "0px",
-          }}
-          transition={{ 
-            duration: 0.4, 
-            ease: [0.22, 1, 0.36, 1],
-            // Use layout: "position" for smoother scaling if needed, 
-            // but here we want fast transforms.
-          }}
-          style={{ transformOrigin: "left center" }}
-          className="relative min-h-screen bg-black w-full z-10 shadow-[0_100px_200px_rgba(0,0,0,1)] overflow-hidden border border-white/5 will-change-transform"
-        >
+          {/* 3. SIDEBAR NAVIGATION CONTENT */}
+          <div className="fixed inset-0 flex items-center justify-end z-0">
+            <div className="w-[85%] md:w-[50%] pl-8 md:pl-24">
+              <nav className="flex flex-col gap-1 md:gap-4">
+                <AnimatePresence>
+                  {isMenuOpen && navLinks.map((link, i) => (
+                    <m.div
+                      key={link.name}
+                      initial={{ x: 100, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: 50, opacity: 0 }}
+                      transition={{ delay: 0.1 + (i * 0.05), duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <MenuLink link={link} closeMenu={() => setIsMenuOpen(false)} />
+                    </m.div>
+                  ))}
+                </AnimatePresence>
+              </nav>
+            </div>
+          </div>
+
+          {/* 4. CLOSE BUTTON (Attached to Canvas Edge) */}
+          <AnimatePresence>
+            {isMenuOpen && (
+              <m.button
+                initial={{ opacity: 0, scale: 0, rotate: -90 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={{ opacity: 0, scale: 0, rotate: 90 }}
+                onClick={() => setIsMenuOpen(false)}
+                className="fixed top-1/2 left-[5%] md:left-[45%] -translate-y-1/2 z-[200] w-16 h-16 md:w-24 md:h-24 bg-white rounded-full flex items-center justify-center text-black cursor-pointer shadow-2xl hover:scale-110 transition-transform duration-500"
+              >
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <div className="absolute w-6 md:w-8 h-[2px] bg-black rotate-45" />
+                  <div className="absolute w-6 md:w-8 h-[2px] bg-black -rotate-45" />
+                </div>
+              </m.button>
+            )}
+          </AnimatePresence>
+   
+          {/* 5. MAIN CONTENT CANVAS (The 3D Element) */}
+          <m.main 
+            animate={{ 
+              scale: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0.94 : 0.85) : 1, 
+              x: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? "-75%" : "-40%") : "0%",
+              rotateY: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 10) : 0, 
+              rotateX: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 2) : 0, 
+              borderRadius: isMenuOpen ? (typeof window !== 'undefined' && window.innerWidth < 768 ? "20px" : "40px") : "0px",
+            }}
+            transition={{ 
+              duration: 0.4, 
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            style={{ transformOrigin: "left center" }}
+            className="relative min-h-screen bg-black w-full z-10 shadow-[0_100px_200px_rgba(0,0,0,1)] overflow-hidden border border-white/5 will-change-transform"
+          >
           {/* Interaction blocker - Click site to close menu */}
           {isMenuOpen && (
             <div 
@@ -285,6 +288,9 @@ export default function App() {
 
                 {/* CHECKOUT PAGE */}
                 <Route path="/checkout" element={<Checkout />} />
+
+                {/* CATCH-ALL 404 ROUTE */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
               </Suspense>
 
@@ -293,9 +299,10 @@ export default function App() {
             {/* NOISE OVERLAY - Hidden on mobile */}
             <div className="fixed inset-0 pointer-events-none z-[150] bg-noise opacity-[0.02] mix-blend-overlay hidden md:block" />
           </div>
-        </motion.main>
+        </m.main>
       </div>
     </Router>
+    </LazyMotion>
   );
 }
 

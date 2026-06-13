@@ -33,6 +33,48 @@
 
     <!-- Theme -->
     <meta name="theme-color" content="#000000" />
+
+    <!-- JSON-LD LocalBusiness Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Aura Labs",
+      "image": "https://aura-labs-one.vercel.app/og-image.png",
+      "@id": "https://aura-labs-one.vercel.app/#organization",
+      "url": "https://aura-labs-one.vercel.app/",
+      "telephone": "+1-780-000-0000",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "",
+        "addressLocality": "Edmonton",
+        "addressRegion": "AB",
+        "postalCode": "",
+        "addressCountry": "CA"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 53.5461,
+        "longitude": -113.4938
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday"
+        ],
+        "opens": "09:00",
+        "closes": "17:00"
+      },
+      "sameAs": [
+        "https://github.com/nishant-bihola/aura-labs"
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

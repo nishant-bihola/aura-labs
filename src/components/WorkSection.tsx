@@ -5,6 +5,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PROJECTS } from "../data/projects";
 import { useState, useRef, useEffect } from "react";
+import Img from "./Img";
 
 function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -67,13 +68,9 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
           }}
           className="absolute left-1/2 top-1/2 w-64 h-80 pointer-events-none hidden lg:block overflow-hidden rounded-xl z-50 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 shadow-2xl"
         >
-          <img
-            src={project.thumbImage}
-            alt={project.title}
-            loading="eager"
-            decoding="async"
-            className="w-full h-full object-cover scale-110"
-          />
+          {isHovered && (
+            <Img src={project.thumbImage} alt={project.title} className="w-full h-full" imgClassName="scale-110" width={256} height={320} />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         </motion.div>
 
@@ -101,13 +98,9 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
               active ? "scale-100" : "scale-95"
             }`}
           >
-            <img
-              src={project.thumbImage}
-              alt={project.title}
-              loading="lazy"
-              decoding="async"
-              className="w-full h-full object-cover scale-110"
-            />
+            {active && (
+              <Img src={project.thumbImage} alt={project.title} className="w-full h-full" imgClassName="scale-110" width={400} height={300} />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 p-5 flex items-end justify-between">
               <div className="flex flex-col gap-1">

@@ -5,6 +5,12 @@ import { useEffect } from "react";
 
 export default function BrandIdentity() {
   useEffect(() => {
+    document.title = "Brand Identity & Design Systems | Professional Assets | Aura Labs";
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) {
+      desc.setAttribute("content", "Establish a premium brand identity. We design logos, custom typography, social media assets, and comprehensive style guides tailored for enterprise growth.");
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     const timer = setTimeout(() => {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });

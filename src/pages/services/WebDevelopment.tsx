@@ -5,6 +5,12 @@ import { useEffect } from "react";
 
 export default function WebDevelopment() {
   useEffect(() => {
+    document.title = "Web Development | Custom React & Node.js Solutions | Aura Labs";
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) {
+      desc.setAttribute("content", "Get custom, high-performance web development and scalable React/Node.js applications. Fast load speeds, SEO optimization, and premium design by Aura Labs.");
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     const timer = setTimeout(() => {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });

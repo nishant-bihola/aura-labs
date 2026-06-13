@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Check, ArrowUpRight } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
+import { track } from "@vercel/analytics";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -147,6 +148,11 @@ export default function AuraPricing() {
   }, []);
 
   const handleGetStarted = (planName: string) => {
+    try {
+      track("Pricing CTA Clicked", { plan: planName });
+    } catch (err) {
+      console.warn("Analytics tracking failed:", err);
+    }
     // Explicitly scroll to top before navigation for immediate feedback
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     navigate(`/checkout?plan=${encodeURIComponent(planName)}`);
@@ -260,7 +266,7 @@ export default function AuraPricing() {
               <div className="relative z-10">
                 <button 
                   onClick={() => handleGetStarted(plan.name)}
-                  className={`relative w-full py-4 md:py-5 rounded-full overflow-hidden group/btn transition-all duration-500 border ${
+                  className={`relative w-full py-4 md:py-5 rounded-full overflow-hidden group/btn transition-all duration-500 border focus-visible:ring-2 focus-visible:ring-[#00f0ff] focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none ${
                     plan.highlight 
                     ? "bg-gradient-to-r from-[#00f0ff] to-[#0055ff] border-transparent text-black" 
                     : "bg-white/5 border-white/10 hover:border-white/40 text-white"

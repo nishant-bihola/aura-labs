@@ -5,6 +5,12 @@ import { useEffect } from "react";
 
 export default function AIChatbots() {
   useEffect(() => {
+    document.title = "AI Chatbots | Automated 24/7 Lead Capture & Support | Aura Labs";
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) {
+      desc.setAttribute("content", "Enhance your customer support and automate lead generation with custom AI chatbots trained on your business data. Seamless CRM & calendar integrations.");
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     const timer = setTimeout(() => {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });

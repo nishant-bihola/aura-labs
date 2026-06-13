@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { ArrowUpRight, Calendar, Mail, Check, Video } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { submitServiceRequest } from "../api/bookingApi";
+import { track } from "@vercel/analytics";
 
 export default function ContactPage() {
   useEffect(() => {
@@ -37,6 +38,11 @@ export default function ContactPage() {
       });
 
       setStatus("success");
+      try {
+        track("Contact Form Submitted", { plan: selectedPlan || "Custom" });
+      } catch (err) {
+        console.warn("Analytics tracking failed:", err);
+      }
       setFormData({ firstName: "", lastName: "", email: "", message: "" });
       // Scroll to top after successful submission
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -244,7 +250,7 @@ export default function ContactPage() {
                         <button 
                           type="submit"
                           disabled={status === "loading"}
-                          className="valtero-btn"
+                          className="valtero-btn focus-visible:ring-2 focus-visible:ring-[#00f0ff] focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none"
                         >
                           {status === "loading" ? "Sending..." : "Submit Inquiry"}
                         </button>

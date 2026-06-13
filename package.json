@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "prisma generate && vite build",
+    "build": "node scripts/optimize-images.js && prisma generate && vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
+    "images": "node scripts/optimize-images.mjs",
     "lint": "tsc --noEmit",
     "start": "tsx server.ts"
   },
@@ -58,6 +59,7 @@
     "autoprefixer": "^10.4.21",
     "playwright": "^1.60.0",
     "prisma": "^6.4.1",
+    "sharp": "^0.35.1",
     "tailwindcss": "^4.1.14",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"

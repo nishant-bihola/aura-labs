@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, ArrowRight, ShieldCheck, Mail, ArrowLeft } from "lucide-react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import Cal, { getCalApi } from "@calcom/embed-react";
+import { track } from "@vercel/analytics";
 
 export default function CheckoutPage() {
   const location = useLocation();
@@ -88,6 +89,11 @@ export default function CheckoutPage() {
       if (!response.ok) throw new Error("Checkout failed");
       
       setStep(2);
+      try {
+        track("Checkout Initiated", { plan: planParam, addOnChatbot: includeChatbot });
+      } catch (err) {
+        console.warn("Analytics tracking failed:", err);
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       console.error("Checkout error:", error);
@@ -221,7 +227,7 @@ export default function CheckoutPage() {
 
                     <button 
                       type="submit" disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-[#00f0ff] to-[#0055ff] text-white py-4 rounded-full text-[11px] uppercase tracking-[0.2em] font-bold hover:scale-[1.02] transition-transform disabled:opacity-50 mt-4 flex items-center justify-center gap-2"
+                      className="w-full bg-gradient-to-r from-[#00f0ff] to-[#0055ff] text-white py-4 rounded-full text-[11px] uppercase tracking-[0.2em] font-bold hover:scale-[1.02] transition-transform disabled:opacity-50 mt-4 flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-[#00f0ff] focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none"
                     >
                       {isSubmitting ? "Processing..." : "Request Payment Instructions"}
                       {!isSubmitting && <ArrowRight size={14} />}

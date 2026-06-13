@@ -5,6 +5,12 @@ import { useEffect } from "react";
 
 export default function AIAds() {
   useEffect(() => {
+    document.title = "AI Motion Ads & Creative Content | High-Converting Video | Aura Labs";
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) {
+      desc.setAttribute("content", "Supercharge your marketing campaigns with premium motion ads, product hero images, and optimized video scripts powered by generative AI. Fast 24-48h delivery.");
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     const timer = setTimeout(() => {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
