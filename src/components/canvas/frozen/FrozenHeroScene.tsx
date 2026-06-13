@@ -60,9 +60,11 @@ function CameraRig() {
     const d = Math.min(delta, 1 / 30);
     const mobile = isCoarsePointer();
 
+    // mobile drives parallax from touch, with a gentler throw than the mouse
+    const sway = mobile ? 0.6 : 1;
     smooth.t = THREE.MathUtils.damp(smooth.t, heroProgress.value, 3.2, d);
-    smooth.px = THREE.MathUtils.damp(smooth.px, mobile ? 0 : heroPointer.x, 2.6, d);
-    smooth.py = THREE.MathUtils.damp(smooth.py, mobile ? 0 : heroPointer.y, 2.6, d);
+    smooth.px = THREE.MathUtils.damp(smooth.px, heroPointer.x * sway, 2.6, d);
+    smooth.py = THREE.MathUtils.damp(smooth.py, heroPointer.y * sway, 2.6, d);
 
     posCurve.getPoint(smooth.t, pos);
     targetCurve.getPoint(smooth.t, target);

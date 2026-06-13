@@ -42,15 +42,24 @@ export default function Hero() {
     };
     raf = requestAnimationFrame(tick);
 
-    const onMove = (e: PointerEvent) => {
-      heroPointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-      heroPointer.y = (e.clientY / window.innerHeight) * 2 - 1;
+    const setPointer = (clientX: number, clientY: number) => {
+      heroPointer.x = (clientX / window.innerWidth) * 2 - 1;
+      heroPointer.y = (clientY / window.innerHeight) * 2 - 1;
+    };
+    const onMove = (e: PointerEvent) => setPointer(e.clientX, e.clientY);
+    const onTouch = (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (t) setPointer(t.clientX, t.clientY);
     };
     window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("touchmove", onTouch, { passive: true });
+    window.addEventListener("touchstart", onTouch, { passive: true });
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("touchmove", onTouch);
+      window.removeEventListener("touchstart", onTouch);
     };
   }, []);
 
@@ -66,7 +75,7 @@ export default function Hero() {
 
       {/* boot veil — lifts once the GL context reports in */}
       <div
-        className={`absolute inset-0 z-[5] bg-black pointer-events-none transition-opacity duration-[1400ms] ease-out ${
+        className={`absolute inset-0 z-[5] bg-black pointer-events-none transition-opacity duration-[700ms] ease-out ${
           ready ? "opacity-0" : "opacity-100"
         }`}
       />
@@ -76,21 +85,6 @@ export default function Hero() {
 
       {/* 2. DOM layer */}
       <div ref={content} className="relative z-10 flex flex-col items-center text-center px-4 w-full will-change-transform">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="flex items-center gap-3 mb-8"
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#00f0ff] opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#00f0ff]" />
-          </span>
-          <span className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-bold text-white/60">
-            Systems online — AI that works while you sleep
-          </span>
-        </motion.div>
-
         <h1 className="fluid-h1 leading-[0.78] font-black uppercase font-display tracking-tighter text-white relative">
           {/* glowing backdrop */}
           <span
@@ -121,7 +115,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.1, duration: 1, ease: EASE_EXPO }}
-          className="max-w-[300px] md:max-w-xl mt-10 md:mt-12 text-[10px] md:text-xs uppercase font-bold leading-relaxed text-white/50 tracking-[0.3em]"
+          className="max-w-[300px] md:max-w-xl mt-10 md:mt-12 text-[10px] md:text-xs uppercase font-bold leading-relaxed text-white/85 md:text-white/55 tracking-[0.3em]"
         >
           Architecting the{" "}
           <span className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
@@ -165,32 +159,6 @@ export default function Hero() {
         <span>Web Apps</span>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.7, duration: 1.2 }}
-        className="absolute bottom-6 right-6 md:right-8 z-10 text-[8px] md:text-[10px] uppercase tracking-[0.2em] font-bold opacity-40 md:opacity-60"
-      >
-        Core temp −42°C / Live render
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2, duration: 1.2 }}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2"
-      >
-        <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-white/40">
-          Scroll
-        </span>
-        <span className="block h-8 w-px overflow-hidden bg-white/10">
-          <motion.span
-            animate={{ y: [0, 32] }}
-            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-            className="block h-3 w-px bg-[#00f0ff]"
-          />
-        </span>
-      </motion.div>
     </section>
   );
 }

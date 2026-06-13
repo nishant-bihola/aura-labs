@@ -32,7 +32,7 @@ export default function LogoTicker() {
             <div key={gi} className="flex items-center">
               {items.map((name, i) => (
                 <span key={i} className="flex items-center">
-                  <span className="text-[11px] md:text-[13px] font-black uppercase tracking-[0.25em] text-white/25 hover:text-white/60 transition-colors duration-300 cursor-default px-6">
+                  <span className="text-[11px] md:text-[13px] font-black uppercase tracking-[0.25em] text-white/60 md:text-white/35 hover:text-white/80 transition-colors duration-300 cursor-default px-6">
                     {name}
                   </span>
                   {DOT}

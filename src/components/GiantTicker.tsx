@@ -9,7 +9,7 @@ export default function GiantTicker() {
         className="flex whitespace-nowrap gap-24 items-center"
       >
         {[...Array(10)].map((_, i) => (
-          <span key={i} className="text-[18vw] md:text-[12vw] font-black uppercase serif italic opacity-5 leading-none">
+          <span key={i} className="text-[18vw] md:text-[12vw] font-black uppercase serif italic opacity-[0.14] md:opacity-[0.08] leading-none">
             Aura Labs — Web Development — AI Chatbots — Edmonton — AI Content —
           </span>
         ))}

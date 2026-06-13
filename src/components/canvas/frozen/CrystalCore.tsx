@@ -2,97 +2,69 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
-import { mergeBufferGeometries } from "three-stdlib";
-import { createNoise3D } from "./noise";
 import { iceVertex, iceFragment } from "./shaders";
 import { heroProgress, isCoarsePointer, prefersReducedMotion } from "./progress";
 
 /**
- * The Aura Crown: a procedurally carved ice crown — a faceted base band,
- * a rim, and a circle of alternating tall/short spikes, all displaced by
- * seeded 3D noise and de-indexed for hard flat-shaded facets.
- * Desktop renders real refraction (transmission); mobile falls back to a
- * custom fresnel-ice shader. The orbiting fragments + inner glow remain.
+ * The Aura Core: a faceted brilliant-cut diamond.
+ * Geometry is built by hand — a flat octagonal table, a zig-zag crown of
+ * star/bezel facets, and a pavilion of triangles tapering to the culet.
+ * De-indexed + flat normals so every facet catches light hard.
+ * Desktop renders real refraction (transmission); mobile/reduced-motion
+ * fall back to the cheap fresnel-ice shader.
  */
-function buildMonolith(seed: number, detail: number) {
-  const noise = createNoise3D(seed);
-  const geo = new THREE.IcosahedronGeometry(1, detail);
-  const p = geo.attributes.position as THREE.BufferAttribute;
-  const v = new THREE.Vector3();
+function buildDiamond(sides: number) {
+  const yTop = 0.46; // table height
+  const rTable = 0.6; // table (flat top) radius
+  const rGirdle = 1.0; // widest ring
+  const yGirdleHigh = 0.16;
+  const yGirdleLow = 0.06; // alternating ring → scalloped sparkle
+  const yCulet = -1.05; // bottom point
+  const yScale = 1.18; // gentle vertical elongation
 
-  for (let i = 0; i < p.count; i++) {
-    v.fromBufferAttribute(p, i);
-    const n =
-      noise(v.x * 1.1, v.y * 1.1, v.z * 1.1) * 0.32 +
-      noise(v.x * 3.5, v.y * 3.5, v.z * 3.5) * 0.1;
-    v.normalize().multiplyScalar(1 + n);
-    p.setXYZ(i, v.x, v.y * 1.9, v.z); // vertical stretch → shard
+  const top = new THREE.Vector3(0, yTop * yScale, 0);
+  const culet = new THREE.Vector3(0, yCulet * yScale, 0);
+
+  const table: THREE.Vector3[] = [];
+  for (let i = 0; i < sides; i++) {
+    const a = (i / sides) * Math.PI * 2;
+    table.push(new THREE.Vector3(Math.cos(a) * rTable, yTop * yScale, Math.sin(a) * rTable));
   }
 
-  const flat = geo.toNonIndexed();
-  flat.computeVertexNormals();
-  geo.dispose();
-  return flat;
-}
-
-/** A regal ice crown: flared band + rim + radial spikes, carved by noise. */
-function buildCrown(seed: number, segments: number) {
-  const noise = createNoise3D(seed);
-  const points = 10; // crown points (alternating tall/short)
-  const ringRadius = 0.95;
-  const parts: THREE.BufferGeometry[] = [];
-
-  // Flared base band (open-ended faceted cylinder).
-  const band = new THREE.CylinderGeometry(
-    ringRadius * 1.08,
-    ringRadius * 0.94,
-    0.62,
-    segments,
-    2,
-    true
-  );
-  band.translate(0, -0.72, 0);
-  parts.push(band);
-
-  // Rim that caps the band where the spikes spring from.
-  const rim = new THREE.TorusGeometry(ringRadius * 1.04, 0.075, 8, segments);
-  rim.rotateX(Math.PI / 2);
-  rim.translate(0, -0.42, 0);
-  parts.push(rim);
-
-  // Radial spikes — alternating heights, faceted cones.
-  for (let i = 0; i < points; i++) {
-    const a = (i / points) * Math.PI * 2;
-    const tall = i % 2 === 0 ? 1.7 : 1.05;
-    const rad = i % 2 === 0 ? 0.17 : 0.13;
-    const spike = new THREE.ConeGeometry(rad, tall, 5, 1);
-    spike.translate(0, tall / 2 - 0.42, 0);
-    spike.translate(Math.cos(a) * ringRadius, 0, Math.sin(a) * ringRadius);
-    parts.push(spike);
+  // 2 girdle points per table edge → zig-zag brilliant facets
+  const girdle: THREE.Vector3[] = [];
+  for (let j = 0; j < sides * 2; j++) {
+    const a = (j / (sides * 2)) * Math.PI * 2;
+    const y = (j % 2 === 0 ? yGirdleHigh : yGirdleLow) * yScale;
+    girdle.push(new THREE.Vector3(Math.cos(a) * rGirdle, y, Math.sin(a) * rGirdle));
   }
 
-  const merged = mergeBufferGeometries(parts, false) as THREE.BufferGeometry;
-  parts.forEach((g) => g.dispose());
+  const verts: number[] = [];
+  const push = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3) => {
+    verts.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+  };
 
-  // Carve icy irregularity along the surface normals.
-  const p = merged.attributes.position as THREE.BufferAttribute;
-  const norm = merged.attributes.normal as THREE.BufferAttribute;
-  const v = new THREE.Vector3();
-  const nrm = new THREE.Vector3();
-  for (let i = 0; i < p.count; i++) {
-    v.fromBufferAttribute(p, i);
-    nrm.fromBufferAttribute(norm, i);
-    const n =
-      noise(v.x * 1.7, v.y * 1.7, v.z * 1.7) * 0.05 +
-      noise(v.x * 5.2, v.y * 5.2, v.z * 5.2) * 0.018;
-    v.addScaledVector(nrm, n);
-    p.setXYZ(i, v.x, v.y, v.z);
+  for (let i = 0; i < sides; i++) {
+    const ni = (i + 1) % sides;
+    const g0 = girdle[i * 2];
+    const g1 = girdle[i * 2 + 1];
+    const g2 = girdle[(i * 2 + 2) % (sides * 2)];
+
+    // table top fan
+    push(top, table[i], table[ni]);
+    // crown — star + bezel facets
+    push(table[i], g0, g1);
+    push(table[i], g1, table[ni]);
+    push(table[ni], g1, g2);
+    // pavilion — facets to the culet
+    push(g0, culet, g1);
+    push(g1, culet, g2);
   }
 
-  const flat = merged.toNonIndexed();
-  flat.computeVertexNormals();
-  merged.dispose();
-  return flat;
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
+  geo.computeVertexNormals();
+  return geo;
 }
 
 export default function CrystalCore() {
@@ -102,16 +74,7 @@ export default function CrystalCore() {
 
   const mobile = isCoarsePointer();
 
-  const crown = useMemo(() => buildCrown(7, mobile ? 20 : 36), [mobile]);
-  const fragments = useMemo(
-    () => [
-      { geo: buildMonolith(13, 7), pos: [1.9, -0.7, 0.4] as const, s: 0.34, spin: 0.21 },
-      { geo: buildMonolith(29, 7), pos: [-1.75, 0.9, -0.5] as const, s: 0.27, spin: -0.16 },
-      { geo: buildMonolith(41, 7), pos: [0.7, 1.9, 0.9] as const, s: 0.2, spin: 0.27 },
-      { geo: buildMonolith(53, 7), pos: [-0.9, -1.8, 0.8] as const, s: 0.24, spin: -0.23 },
-    ],
-    []
-  );
+  const diamond = useMemo(() => buildDiamond(8), []);
 
   const iceUniforms = useMemo(
     () => ({
@@ -123,67 +86,55 @@ export default function CrystalCore() {
     []
   );
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     const t = state.clock.elapsedTime;
     const p = heroProgress.value;
 
     if (group.current) {
-      // slow majestic spin + scroll-driven reveal, with a gentle floating tilt
-      group.current.rotation.y = t * 0.05 + p * Math.PI * 1.1;
-      group.current.rotation.z = Math.sin(t * 0.3) * 0.035;
-      group.current.rotation.x = Math.sin(t * 0.23) * 0.025;
-      group.current.position.y = Math.sin(t * 0.4) * 0.08;
+      // steady turn so every facet sweeps the light
+      group.current.rotation.y = t * 0.28 + p * Math.PI * 1.1;
+      group.current.rotation.z = Math.sin(t * 0.3) * 0.03;
+      group.current.position.y = Math.sin(t * 0.4) * 0.06;
     }
     if (inner.current) {
-      // the light enthroned within the crown — heartbeat that pulses harder
-      // near the macro shot (p ≈ 0.8), driving the bloom pass
+      // the light enthroned within — heartbeat that pulses harder near the
+      // macro shot (p ≈ 0.8), driving the bloom pass
       const macro = 1 - Math.min(Math.abs(p - 0.8) * 5, 1);
       const beat = Math.sin(t * 2.1);
       const flicker = Math.sin(t * 7.3) * 0.04;
-      const pulse = 1 + beat * 0.14 + flicker + macro * 0.55;
-      inner.current.scale.setScalar(0.4 * pulse);
-      inner.current.position.y = -0.15 + Math.sin(t * 0.8) * 0.05;
+      const pulse = 1 + beat * 0.12 + flicker + macro * 0.5;
+      inner.current.scale.setScalar(0.3 * pulse);
+      inner.current.position.y = -0.1 + Math.sin(t * 0.8) * 0.05;
       const m = inner.current.material as THREE.MeshBasicMaterial;
-      m.opacity = 0.7 + beat * 0.18 + macro * 0.3;
+      m.opacity = 0.7 + beat * 0.15 + macro * 0.25;
     }
     if (mat.current) mat.current.uniforms.uTime.value = t;
-
-    fragments.forEach((f, i) => {
-      const mesh = group.current?.children[i + 2] as THREE.Mesh | undefined;
-      if (!mesh) return;
-      mesh.rotation.y += delta * f.spin;
-      mesh.rotation.x += delta * f.spin * 0.6;
-      const angle = t * 0.1 * (i % 2 ? 1 : -1) + i * 1.7;
-      mesh.position.x = f.pos[0] * Math.cos(angle * 0.3);
-      mesh.position.z = f.pos[2] + Math.sin(angle * 0.3) * 0.8;
-      mesh.position.y = f.pos[1] + Math.sin(t * 0.5 + i * 2) * 0.15;
-    });
   });
 
   const transmission = !mobile && !prefersReducedMotion();
 
   return (
     <group ref={group}>
-      {/* the ice crown */}
-      <mesh geometry={crown}>
+      {/* the diamond */}
+      <mesh geometry={diamond}>
         {transmission ? (
           <MeshTransmissionMaterial
-            samples={6}
-            resolution={384}
-            thickness={1.6}
-            ior={1.31}
-            chromaticAberration={0.5}
-            anisotropicBlur={0.25}
-            roughness={0.08}
-            distortion={0.25}
-            distortionScale={0.4}
-            temporalDistortion={0.06}
-            attenuationDistance={1.8}
-            attenuationColor="#7fc8ff"
-            color="#c9eaff"
-            envMapIntensity={1.2}
-            iridescence={0.85}
-            iridescenceIOR={1.3}
+            samples={4}
+            resolution={256}
+            thickness={1.1}
+            ior={2.4}
+            chromaticAberration={0.9}
+            anisotropicBlur={0.1}
+            roughness={0.0}
+            distortion={0.1}
+            distortionScale={0.3}
+            temporalDistortion={0.02}
+            attenuationDistance={2.4}
+            attenuationColor="#bfe6ff"
+            color="#eaf6ff"
+            envMapIntensity={1.6}
+            iridescence={0.7}
+            iridescenceIOR={1.4}
           />
         ) : (
           <shaderMaterial
@@ -201,22 +152,6 @@ export default function CrystalCore() {
         <icosahedronGeometry args={[1, 2]} />
         <meshBasicMaterial color="#aef2ff" transparent toneMapped={false} />
       </mesh>
-
-      {/* orbiting fracture fragments */}
-      {fragments.map((f, i) => (
-        <mesh key={i} geometry={f.geo} position={[...f.pos]} scale={f.s}>
-          <meshStandardMaterial
-            color="#0a1726"
-            emissive="#2f6da8"
-            emissiveIntensity={0.22}
-            roughness={0.18}
-            metalness={0.15}
-            flatShading
-            transparent
-            opacity={0.85}
-          />
-        </mesh>
-      ))}
     </group>
   );
 }

@@ -1,15 +1,27 @@
 "use client";
 
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, useInView } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PROJECTS } from "../data/projects";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
   const [isHovered, setIsHovered] = useState(false);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+
+  // On touch devices there is no hover — drive the same active state from
+  // the card scrolling to the centre of the viewport instead.
+  const [isTouch, setIsTouch] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(cardRef, { amount: 0.7 });
+
+  useEffect(() => {
+    setIsTouch(window.matchMedia("(hover: none)").matches);
+  }, []);
+
+  const active = isHovered || (isTouch && inView);
 
   // Smooth springs for the cursor follow effect
   const springConfig = { damping: 25, stiffness: 150 };
@@ -28,25 +40,26 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
   };
 
   return (
-    <Link 
-      to={`/work/${project.slug}`} 
+    <Link
+      to={`/work/${project.slug}`}
       className="group block no-underline border-b border-white/10"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onMouseMove={handleMouseMove}
     >
       <motion.div
+        ref={cardRef}
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10%" }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative py-10 md:py-24 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 cursor-none transition-colors hover:bg-white/[0.01] px-0 md:px-8 overflow-visible"
+        className="relative py-10 md:py-24 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 lg:cursor-none transition-colors hover:bg-white/[0.01] px-0 md:px-8 overflow-visible"
       >
-        {/* Floating Preview Image (Cinematic Follow) */}
-        <motion.div 
-          style={{ 
-            x: xOffset, 
-            y: yOffset, 
+        {/* Floating Preview Image (Cinematic Follow) — desktop pointer only */}
+        <motion.div
+          style={{
+            x: xOffset,
+            y: yOffset,
             rotate,
             opacity: isHovered ? 1 : 0,
             scale: isHovered ? 1 : 0.8,
@@ -67,22 +80,48 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
         {/* Project ID and Title */}
         <div className="flex items-center gap-6 md:gap-20 relative z-20 w-full md:w-auto">
           <span className="text-[10px] md:text-sm font-medium opacity-20 serif italic min-w-[3ch]">{project.id}</span>
-          <h3 className="text-3xl md:text-6xl lg:text-[7vw] font-normal font-valtero-serif italic tracking-tighter group-hover:translate-x-6 transition-transform duration-700 ease-expo leading-tight md:leading-none">
+          <h3
+            className={`text-3xl md:text-6xl lg:text-[7vw] font-normal font-valtero-serif italic tracking-tighter transition-transform duration-700 ease-expo leading-tight md:leading-none ${
+              active ? "translate-x-6" : ""
+            }`}
+          >
             {project.title}
           </h3>
+        </div>
+
+        {/* Inline preview — touch devices, where there is no cursor-follow */}
+        <div
+          className={`lg:hidden w-full overflow-hidden rounded-xl transition-all duration-500 ease-expo ${
+            active ? "max-h-72 opacity-100 mt-2" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="relative w-full h-56 overflow-hidden rounded-xl">
+            <img
+              src={project.thumbImage}
+              alt={project.title}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+          </div>
         </div>
 
         {/* Category, Year, and Icon */}
         <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start w-full md:w-auto gap-4 md:gap-2 relative z-20 pt-2 md:pt-0">
           <div className="flex items-center gap-4">
-            <p className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold opacity-60 group-hover:opacity-100 transition-opacity">
+            <p className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold transition-opacity ${active ? "opacity-100" : "opacity-60"}`}>
               {project.category}
             </p>
-            <div className="w-10 h-10 md:w-14 md:h-14 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500 transform group-hover:scale-110 shrink-0">
-                <ArrowUpRight size={18} className="md:w-6 md:h-6 group-hover:rotate-45 transition-transform duration-500" />
+            <div
+              className={`w-10 h-10 md:w-14 md:h-14 rounded-full border border-white/10 flex items-center justify-center transition-all duration-500 transform shrink-0 ${
+                active ? "bg-white text-black scale-110" : ""
+              }`}
+            >
+                <ArrowUpRight size={18} className={`md:w-6 md:h-6 transition-transform duration-500 ${active ? "rotate-45" : ""}`} />
             </div>
           </div>
-          <p className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-medium opacity-20 group-hover:opacity-40 transition-opacity hidden md:block">
+          <p className={`text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-medium transition-opacity hidden md:block ${active ? "opacity-40" : "opacity-20"}`}>
             Case Study • {project.year}
           </p>
         </div>
