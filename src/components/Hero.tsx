@@ -14,8 +14,12 @@ export default function Hero() {
   const [ready, setReady] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // mount the canvas after first paint so the headline lands instantly
+  // mount the canvas after first paint so the headline lands instantly.
+  // Start fetching the (lazy) 3D scene chunk right away in parallel, so it is
+  // already downloading by the time the canvas mounts — the diamond appears
+  // noticeably sooner, especially on mobile.
   useEffect(() => {
+    import("./canvas/frozen/FrozenHeroScene");
     const id = window.setTimeout(() => setMounted(true), 80);
     return () => window.clearTimeout(id);
   }, []);

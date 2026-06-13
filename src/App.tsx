@@ -80,6 +80,31 @@ function ScrollHandler({ isMenuOpen }: { isMenuOpen: boolean }) {
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Once the homepage is painted and the browser goes idle, quietly warm the
+  // chunks for the routes a visitor is most likely to open next. The homepage
+  // still ships the smallest possible bundle (fast first paint), but by the
+  // time someone taps a link the code is already cached — so navigation is
+  // instant instead of showing the Suspense fallback. This is what removes the
+  // "lazy feels slow" flash without bloating the initial load.
+  useEffect(() => {
+    const warm = () => {
+      import("./pages/ProjectDetail");
+      import("./pages/Contact");
+      import("./pages/Checkout");
+      import("./pages/services/WebDevelopment");
+      import("./pages/services/AIChatbots");
+      import("./pages/services/AIAds");
+      import("./pages/services/BrandIdentity");
+    };
+    const ric =
+      (window as any).requestIdleCallback ||
+      ((cb: () => void) => window.setTimeout(cb, 1500));
+    const cancel =
+      (window as any).cancelIdleCallback || window.clearTimeout;
+    const id = ric(warm, { timeout: 4000 });
+    return () => cancel(id);
+  }, []);
+
   useEffect(() => {
     const isMobile = window.matchMedia("(pointer: coarse)").matches;
     let lenis: Lenis | null = null;
