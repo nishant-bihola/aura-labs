@@ -1,62 +1,107 @@
-import { Resend } from "resend";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
 import { adminPurchaseAlertHTML, paymentInstructionsHTML } from "./_lib/emails.js";
+import { sendEmail } from "./_lib/emailSender.js";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
-const supabaseKey = process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_ANON_KEY || "";
+const supabaseKey = process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "";
 const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com";
 
-export default async function handler(req: Request) {
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
-  }
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { name, email, plan, projectDetails, addons } = await req.json();
+    const { name, email, plan, projectDetails, addons } = req.body;
 
-    try {
-      await prisma.lead.create({
-        data: {
-          name,
-          email,
-          plan,
-          details: projectDetails,
-          addons: addons ? addons.join(", ") : null
-        }
-      });
-    } catch (dbError) {
-      console.error("Prisma Error:", dbError);
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
     }
 
-    if (resend) {
-      await Promise.allSettled([
-        resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
-          to: process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com",
-          replyTo: email,
-          subject: `💰 CHECKOUT INTENT: ${name} for ${plan}`,
-          html: adminPurchaseAlertHTML(name, email, plan, projectDetails),
-        }),
-        resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
-          to: email,
-          subject: "Payment Instructions | Aura Labs",
-          html: paymentInstructionsHTML(name, plan),
-        })
-      ]);
-    } else {
-      console.warn("Resend not configured, skipping checkout emails");
-    }
+    // 1. prisma database sync
+    const dbTask = (async () => {
+      try {
+        await prisma.lead.create({
+          data: {
+            name,
+            email,
+            plan,
+            details: projectDetails || "",
+            addons: addons ? addons.join(", ") : null
+          }
+        });
+        return true;
+      } catch (dbError) {
+        console.error("Prisma Error in checkout:", dbError);
+        return false;
+      }
+    })();
 
-    return new Response(JSON.stringify({ success: true }), { 
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    // 2. Supabase Fallback Sync (traditional)
+    const supabaseTask = (async () => {
+      if (!supabase) return false;
+      try {
+        await supabase.from("contact_submissions").insert([{ 
+          first_name: name.split(' ')[0] || name, 
+          last_name: name.split(' ').slice(1).join(' ') || "", 
+          email, 
+          message: projectDetails || "", 
+          type: "Checkout Intent",
+          plan: plan
+        }]);
+        return true;
+      } catch (sbError) {
+        console.error("Supabase Error in checkout:", sbError);
+        return false;
+      }
+    })();
+
+    // 3. Admin Purchase Alert
+    const adminEmailTask = sendEmail({
+      to: ADMIN_EMAIL,
+      subject: `💰 CHECKOUT INTENT: ${name} for ${plan}`,
+      html: adminPurchaseAlertHTML(name, email, plan, projectDetails),
+      replyTo: email,
+    });
+
+    // 4. Client Confirmation Payment Instructions
+    const clientEmailTask = sendEmail({
+      to: email,
+      subject: "Payment Instructions | Aura Labs",
+      html: paymentInstructionsHTML(name, plan),
+    });
+
+    // Run parallel tasks
+    const results = await Promise.allSettled([
+      dbTask,
+      supabaseTask,
+      adminEmailTask,
+      clientEmailTask
+    ]);
+
+    const [dbRes, sbRes, adminRes, clientRes] = results;
+
+    console.log('[Checkout] Performance Results:', {
+      database: dbRes.status,
+      supabase: sbRes.status,
+      adminEmail: adminRes.status,
+      clientEmail: clientRes.status
+    });
+
+    return res.status(200).json({ 
+      success: true,
+      delivered: clientRes.status === 'fulfilled' && (clientRes as PromiseFulfilledResult<any>).value?.success
     });
   } catch (error) {
     console.error("Checkout API Error:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }

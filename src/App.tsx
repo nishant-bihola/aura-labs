@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from "react-router-dom";
 import Lenis from "lenis";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
@@ -240,6 +240,10 @@ export default function App() {
                 <Route path="/services/ai-chatbots" element={<AIChatbots />} />
                 <Route path="/services/ai-ads" element={<AIAds />} />
                 <Route path="/services/brand-identity" element={<BrandIdentity />} />
+
+                {/* REDIRECTS FOR SERVICES DIRECTORY */}
+                <Route path="/services" element={<Navigate to="/" replace />} />
+                <Route path="/services/" element={<Navigate to="/" replace />} />
 
                 {/* ADMIN PAGE */}
                 <Route path="/admin" element={<AdminDashboard />} />

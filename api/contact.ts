@@ -1,47 +1,18 @@
-import { Resend } from 'resend';
-import nodemailer from 'nodemailer';
 import { createClient } from '@supabase/supabase-js';
 import { Client as NotionClient } from '@notionhq/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { adminAlertHTML, clientConfirmationHTML } from './_lib/emails.js';
+import { sendEmail } from './_lib/emailSender.js';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 // ─── Environment Variables ────────────────────────────────────────────────────
-// Support both VITE_ prefixed and plain variants for Vercel serverless
-const RESEND_KEY = process.env.RESEND_API_KEY || '';
-const BREVO_USER = process.env.BREVO_USER || 'nishant15bihola@gmail.com';
-const BREVO_PASS = (process.env.BREVO_SMTP_KEY || '').replace(/\s+/g, '');
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-// Server-side: use service_role key to bypass RLS for inserts
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 const NOTION_TOKEN = process.env.NOTION_TOKEN || process.env.VITE_NOTION_TOKEN || '';
 const NOTION_DB_ID = process.env.NOTION_DATABASE_ID || process.env.VITE_NOTION_DATABASE_ID || '';
-const OWNER_EMAIL = 'nishant15bihola@gmail.com';
-
-// ─── Service Clients ─────────────────────────────────────────────────────────
-const resend = RESEND_KEY ? new Resend(RESEND_KEY) : null;
-
-// Primary: Brevo
-const brevo = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  secure: false,
-  auth: { user: BREVO_USER, pass: BREVO_PASS },
-});
-
-// Fallback: Gmail (Direct)
-const GMAIL_USER = process.env.EMAIL_USER || OWNER_EMAIL;
-const GMAIL_PASS = process.env.EMAIL_PASS || '';
-const gmail = nodemailer.createTransport({
-  service: 'gmail',
-  auth: { user: GMAIL_USER, pass: GMAIL_PASS },
-});
-
-// Inline templates removed in favor of _lib/emails
-
-// User template removed
+const OWNER_EMAIL = process.env.ADMIN_EMAIL || 'nishant15bihola@gmail.com';
 
 // ─── Handler ──────────────────────────────────────────────────────────────────
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -69,97 +40,55 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           name: clientName,
           email,
           plan: plan || inquiryType,
-          details: message,
+          details: message || "",
           addons: phone || null
         }
       });
       return true;
     } catch (dbError) {
-      console.error("Prisma Error:", dbError);
+      console.error("Prisma Error in contact:", dbError);
       return false;
     }
   })();
 
-  // 2. Admin Notification (Resend with Brevo Fallback)
-  const adminEmailTask = (async () => {
-    if (resend) {
-      try {
-        await resend.emails.send({
-          from: 'Aura Labs <onboarding@resend.dev>',
-          to: OWNER_EMAIL,
-          replyTo: email,
-          subject: `⚡ NEW ${inquiryType.toUpperCase()} — ${clientName}`,
-          html: adminAlertHTML(clientName, email, message, inquiryType, plan),
-        });
-        return 'resend';
-      } catch (err: any) {
-        console.warn('[Contact] Admin Resend failed, falling back to Brevo:', err.message);
-      }
-    }
-    
-    // Fallback: admin via Brevo
-    await brevo.sendMail({
-      from: `"Aura Labs Alert" <${BREVO_USER}>`,
-      to: OWNER_EMAIL,
-      replyTo: email,
-      subject: `⚡ NEW ${inquiryType.toUpperCase()} — ${clientName}`,
-      html: adminAlertHTML(clientName, email, message, inquiryType, plan),
-    });
-    return 'brevo';
-  })();
+  // 2. Admin Notification Email
+  const adminEmailTask = sendEmail({
+    to: OWNER_EMAIL,
+    subject: `⚡ NEW ${inquiryType.toUpperCase()} — ${clientName}`,
+    html: adminAlertHTML(clientName, email, message, inquiryType, plan),
+    replyTo: email,
+  });
 
-  // 3. User Confirmation (Brevo -> Gmail)
-  const userEmailTask = (async () => {
-    if (!BREVO_PASS && !GMAIL_PASS) return false;
-    
-    try {
-      // Try Brevo first
-      await brevo.sendMail({
-        from: `"Aura Labs" <${BREVO_USER}>`,
-        to: email,
-        subject: 'We received your inquiry | Aura Labs',
-        html: clientConfirmationHTML(clientName, plan),
-      });
-      return true;
-    } catch (err: any) {
-      console.warn('[Contact] Brevo failed for user email, trying Gmail fallback...', err.message);
-      
-      if (GMAIL_PASS) {
-        try {
-          await gmail.sendMail({
-            from: `"Aura Labs" <${GMAIL_USER}>`,
-            to: email,
-            subject: 'We received your inquiry | Aura Labs',
-            html: clientConfirmationHTML(clientName, plan),
-          });
-          return true;
-        } catch (gerr: any) {
-          console.error('[Contact] Gmail fallback also failed:', gerr.message);
-          throw gerr;
-        }
-      }
-      throw err;
-    }
-  })();
+  // 3. User Confirmation Email
+  const userEmailTask = sendEmail({
+    to: email,
+    subject: 'We received your inquiry | Aura Labs',
+    html: clientConfirmationHTML(clientName, plan),
+  });
 
   // 4. Notion CRM
   const notionTask = (async () => {
     if (!NOTION_TOKEN || !NOTION_DB_ID) return false;
-    const notion = new NotionClient({ auth: NOTION_TOKEN });
-    await notion.pages.create({
-      parent: { database_id: NOTION_DB_ID },
-      properties: {
-        Name: { title: [{ text: { content: clientName } }] },
-        Email: { email },
-        Phone: { phone_number: phone || '' },
-        Message: { rich_text: [{ text: { content: message || 'No message' } }] },
-        Type: { select: { name: inquiryType } },
-        ...(plan && { Plan: { select: { name: plan } } }),
-        Date: { date: { start: new Date().toISOString() } },
-        Status: { status: { name: 'Not started' } },
-      },
-    });
-    return true;
+    try {
+      const notion = new NotionClient({ auth: NOTION_TOKEN });
+      await notion.pages.create({
+        parent: { database_id: NOTION_DB_ID },
+        properties: {
+          Name: { title: [{ text: { content: clientName } }] },
+          Email: { email },
+          Phone: { phone_number: phone || '' },
+          Message: { rich_text: [{ text: { content: message || 'No message' } }] },
+          Type: { select: { name: inquiryType } },
+          ...(plan && { Plan: { select: { name: plan } } }),
+          Date: { date: { start: new Date().toISOString() } },
+          Status: { status: { name: 'Not started' } },
+        },
+      });
+      return true;
+    } catch (notionError) {
+      console.error("Notion Error in contact:", notionError);
+      return false;
+    }
   })();
 
   // EXECUTE ALL IN PARALLEL for maximum speed
@@ -179,10 +108,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     notion: notionRes.status
   });
 
-  // Always return 200 if the database task succeeded (or at least one of them)
-  // This ensures the user sees a success screen immediately
+  const emailSent = userRes.status === 'fulfilled' && (userRes as PromiseFulfilledResult<any>).value?.success;
+
   return res.status(200).json({ 
     success: true, 
-    delivered: userRes.status === 'fulfilled'
+    delivered: emailSent
   });
 }

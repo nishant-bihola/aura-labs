@@ -1,8 +1,10 @@
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { getCalApi } from "@calcom/embed-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (val: boolean) => void }) {
+  const navigate = useNavigate();
   
   // Custom vibrant color variable
   const vibrantColor = "#0055FF"; // Vibrant Electric Blue
@@ -65,7 +67,7 @@ export default function Navbar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOp
         {/* Cal.com Trigger Button */}
         <button 
           onClick={() => {
-            window.location.href = '/contact#contact';
+            navigate('/contact#contact');
           }}
           className="group relative bg-white text-black px-4 md:px-6 py-2 rounded-full text-[9px] md:text-[11px] uppercase kerning-wide font-bold overflow-hidden h-8 md:h-9 flex items-center justify-center transition-all duration-300 hover:scale-105 hover:bg-[#0055FF] hover:text-white"
         >

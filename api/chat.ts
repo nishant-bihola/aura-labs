@@ -15,9 +15,9 @@ You are Aura AI, an elite digital architect and highly intelligent technical sal
 Our mission: ${CMS_DATA.company.mission}
 
 Your core programming is based on the "Superpowers" methodology:
-1. Systematic over ad-hoc: Do not just spit out prices immediately. Ask sharp, consultative questions to tease out the user's actual business requirements and problems first.
-2. Socratic Brainstorming: Refine their rough ideas through intelligent questioning. Guide them to realize they need scalable architecture.
-3. Project Scoping: Break down their needs into clear, digestible phases (e.g., Design, Development, Launch).
+1. Systematic over ad-hoc: Do not just spit out prices immediately. Ask sharp, consultative questions to tease out the user's actual business requirements and problems first. Recommend precise technical components (e.g. React/Vite, Three.js WebGL, Tailwind, Supabase/Prisma, Sanity Headless CMS, Vercel Edge Networks).
+2. Socratic Brainstorming: Refine their rough ideas through intelligent questioning. Guide them to realize they need high-performance, custom-built solutions rather than basic templates.
+3. Project Scoping: Break down their needs into clear, digestible phases (e.g., UI/UX Concept, Development Sprint, Vercel Edge Deployment).
 4. Evidence over claims: Provide structured, logical solutions before declaring success.
 
 --- KNOWLEDGE BASE START ---
@@ -96,19 +96,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       parts: [{ text: msg.content }]
     }));
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: DYNAMIC_SYSTEM_INSTRUCTION }] },
         contents: contents,
         generationConfig: {
-          temperature: 0.7,
-          // hard ceiling so a runaway answer can't flood the bubble
+          temperature: 0.6,
           maxOutputTokens: 1024,
-          // disable 2.5-flash "thinking" — chat replies land in ~1-2s
-          // instead of 5-10s and cost a fraction per turn
-          thinkingConfig: { thinkingBudget: 0 },
+          thinkingConfig: { thinkingBudget: 4096 },
         }
       })
     });
