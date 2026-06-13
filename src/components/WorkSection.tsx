@@ -52,7 +52,8 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
   return (
     <Link
       to={`/work/${project.slug}`}
-      className="group block no-underline border-b border-white/10"
+      className="group block no-underline border-b border-white/10 relative"
+      style={{ zIndex: active ? 30 : 10 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onMouseMove={handleMouseMove}
@@ -77,13 +78,13 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
             x: xOffset,
             y: yOffset,
             rotate,
-            opacity: active ? 1 : 0,
-            scale: active ? 1 : 0.8,
+            opacity: isHovered ? 1 : 0,
+            scale: isHovered ? 1 : 0.8,
             willChange: "transform, opacity" // Performance optimization
           }}
           className="absolute left-1/2 top-1/2 w-48 h-60 md:w-64 md:h-80 pointer-events-none block overflow-hidden rounded-xl z-50 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 shadow-2xl"
         >
-          {active && (
+          {isHovered && (
             <Img src={project.thumbImage} alt={project.title} className="w-full h-full" imgClassName="scale-110" width={256} height={320} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
