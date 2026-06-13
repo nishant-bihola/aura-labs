@@ -174,7 +174,7 @@ export default function App() {
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
               exit={{ opacity: 0, scale: 0, rotate: 90 }}
               onClick={() => setIsMenuOpen(false)}
-              className="fixed top-1/2 left-[5%] md:left-[45%] -translate-y-1/2 z-[200] w-16 h-16 md:w-24 md:h-24 bg-white rounded-full hidden md:flex items-center justify-center text-black cursor-pointer shadow-2xl hover:scale-110 transition-transform duration-500"
+              className="fixed top-1/2 left-[5%] md:left-[45%] -translate-y-1/2 z-[200] w-16 h-16 md:w-24 md:h-24 bg-white rounded-full flex items-center justify-center text-black cursor-pointer shadow-2xl hover:scale-110 transition-transform duration-500"
             >
               <div className="relative w-full h-full flex items-center justify-center">
                 <div className="absolute w-6 md:w-8 h-[2px] bg-black rotate-45" />
