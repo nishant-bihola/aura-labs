@@ -103,7 +103,7 @@ export default function Hero() {
                 style={{ textShadow: "0 0 18px rgba(0,240,255,0.18)" }}
                 initial={{ opacity: 0, y: 60, rotateX: -90 }}
                 animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                transition={{ duration: 0.9, delay: 0.35 + i * 0.045, ease: EASE_EXPO }}
+                transition={{ duration: 0.6, delay: 0.08 + i * 0.028, ease: EASE_EXPO }}
               >
                 {char}
               </motion.span>
@@ -114,7 +114,7 @@ export default function Hero() {
         <motion.p
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1, duration: 1, ease: EASE_EXPO }}
+          transition={{ delay: 0.45, duration: 0.6, ease: EASE_EXPO }}
           className="max-w-[300px] md:max-w-xl mt-10 md:mt-12 text-[10px] md:text-xs uppercase font-bold leading-relaxed text-white/85 md:text-white/55 tracking-[0.3em]"
         >
           Architecting the{" "}
@@ -127,7 +127,7 @@ export default function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.35, duration: 1, ease: EASE_EXPO }}
+          transition={{ delay: 0.6, duration: 0.6, ease: EASE_EXPO }}
           className="mt-10 flex flex-wrap items-center justify-center gap-4"
         >
           <Link
@@ -150,7 +150,7 @@ export default function Hero() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.7, duration: 1.2 }}
+        transition={{ delay: 0.8, duration: 0.8 }}
         className="absolute bottom-6 left-6 md:left-8 z-10 flex flex-col gap-1 text-[8px] md:text-[10px] uppercase tracking-[0.2em] font-bold opacity-40 md:opacity-60"
       >
         <span>Web Development</span>

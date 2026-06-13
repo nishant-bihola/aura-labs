@@ -28,18 +28,18 @@ import GiantTicker from "./components/GiantTicker";
 import { ChatWidget } from "./components/ChatWidget";
 import { Analytics } from "@vercel/analytics/react";
 
-// Static Imports for instant load
-import ProjectDetail from "./pages/ProjectDetail";
-import ContactPage from "./pages/Contact";
-import Checkout from "./pages/Checkout";
-import AdminDashboard from "./pages/AdminDashboard";
-
+// Route-level code splitting: nothing below the landing page touches the
+// first paint. Each of these only downloads when its route is visited, which
+// keeps the eager bundle (and time-to-interactive on "/") as small as possible.
 const SanityStudio = lazy(() => import("./pages/SanityStudio"));
-
-import WebDevelopment from "./pages/services/WebDevelopment";
-import AIChatbots from "./pages/services/AIChatbots";
-import AIAds from "./pages/services/AIAds";
-import BrandIdentity from "./pages/services/BrandIdentity";
+const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
+const ContactPage = lazy(() => import("./pages/Contact"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const WebDevelopment = lazy(() => import("./pages/services/WebDevelopment"));
+const AIChatbots = lazy(() => import("./pages/services/AIChatbots"));
+const AIAds = lazy(() => import("./pages/services/AIAds"));
+const BrandIdentity = lazy(() => import("./pages/services/BrandIdentity"));
 
 
 /**
@@ -216,6 +216,7 @@ export default function App() {
               <CursorTail />
             </div>
             <Navbar isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
+              <Suspense fallback={<div className="h-screen w-full bg-black" />}>
               <Routes>
                 {/* LANDING PAGE */}
                 <Route path="/" element={
@@ -260,6 +261,7 @@ export default function App() {
                 {/* CHECKOUT PAGE */}
                 <Route path="/checkout" element={<Checkout />} />
               </Routes>
+              </Suspense>
 
             <div id="contact"><ContactFooter /></div>
             
