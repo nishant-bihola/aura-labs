@@ -72,34 +72,65 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="relative py-10 md:py-24 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 lg:cursor-none transition-colors hover:bg-white/[0.01] px-0 md:px-8 overflow-visible"
       >
-        {/* Floating Preview Image (Cinematic Follow) — unified desktop & mobile */}
-        <motion.div
-          style={{
-            x: xOffset,
-            y: yOffset,
-            rotate,
-            opacity: isHovered ? 1 : 0,
-            scale: isHovered ? 1 : 0.8,
-            willChange: "transform, opacity" // Performance optimization
-          }}
-          className="absolute left-1/2 top-1/2 w-48 h-60 md:w-64 md:h-80 pointer-events-none block overflow-hidden rounded-xl z-50 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 shadow-2xl"
-        >
-          {isHovered && (
-            <Img src={project.thumbImage} alt={project.title} className="w-full h-full" imgClassName="scale-110" width={256} height={320} />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        </motion.div>
-
-        {/* Project ID and Title */}
-        <div className="flex items-center gap-6 md:gap-20 relative z-20 w-full md:w-auto">
-          <span className="text-[10px] md:text-sm font-medium opacity-20 serif italic min-w-[3ch]">{project.id}</span>
-          <h3
-            className={`text-3xl md:text-6xl lg:text-[7vw] font-normal font-valtero-serif italic tracking-tighter transition-transform duration-700 ease-expo leading-tight md:leading-none ${
-              active ? "translate-x-6" : ""
-            }`}
+        {/* Floating Preview Image (Cinematic Follow) — desktop pointer only */}
+        {!isTouch && (
+          <motion.div
+            style={{
+              x: xOffset,
+              y: yOffset,
+              rotate,
+              opacity: isHovered ? 1 : 0,
+              scale: isHovered ? 1 : 0.8,
+              willChange: "transform, opacity" // Performance optimization
+            }}
+            className="absolute left-1/2 top-1/2 w-64 h-80 pointer-events-none hidden lg:block overflow-hidden rounded-xl z-50 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 shadow-2xl"
           >
-            {project.title}
-          </h3>
+            {isHovered && (
+              <Img src={project.thumbImage} alt={project.title} className="w-full h-full" imgClassName="scale-110" width={256} height={320} />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          </motion.div>
+        )}
+
+        {/* Project ID, Title & Inline Mobile Image Preview */}
+        <div className="flex flex-col gap-2 relative z-20 w-full md:w-auto">
+          <div className="flex items-center gap-6 md:gap-20">
+            <span className="text-[10px] md:text-sm font-medium opacity-20 serif italic min-w-[3ch]">{project.id}</span>
+            <h3
+              className={`text-3xl md:text-6xl lg:text-[7vw] font-normal font-valtero-serif italic tracking-tighter transition-transform duration-700 ease-expo leading-tight md:leading-none ${
+                active ? "translate-x-6" : ""
+              }`}
+            >
+              {project.title}
+            </h3>
+          </div>
+
+          {/* Inline Mobile/Tablet Image — always visible on touch/mobile to prevent layout shifts, with active scale & glow */}
+          {isTouch && (
+            <div className="lg:hidden w-full mt-3 overflow-hidden rounded-xl border border-white/10 shadow-2xl">
+              <div className="relative w-full h-52 overflow-hidden bg-white/5">
+                <Img
+                  src={project.thumbImage}
+                  alt={project.title}
+                  className="w-full h-full"
+                  imgClassName={`transition-transform duration-[800ms] ease-out ${active ? "scale-105" : "scale-100"}`}
+                  width={400}
+                  height={220}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-50" />
+                
+                {/* Elegant overlay info */}
+                <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between">
+                  <span className="text-[9px] uppercase tracking-[0.25em] font-bold text-white/70">
+                    {project.category} • {project.year}
+                  </span>
+                  <span className={`text-[9px] uppercase tracking-[0.2em] font-bold text-[#00f0ff] transition-opacity duration-500 ${active ? "opacity-100" : "opacity-0"}`}>
+                    Active Focus
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Category, Year, and Icon */}
