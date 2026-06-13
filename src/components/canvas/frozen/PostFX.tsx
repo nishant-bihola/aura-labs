@@ -29,7 +29,7 @@ export default function PostFX() {
     ca.offset.set(base + v, (base + v) * 0.6);
   });
 
-  if (prefersReducedMotion()) return null;
+  if (prefersReducedMotion() || isCoarsePointer()) return null;
 
   return (
     <EffectComposer multisampling={0} enableNormalPass={false}>

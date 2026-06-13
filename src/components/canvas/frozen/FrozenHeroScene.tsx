@@ -93,7 +93,7 @@ function CameraRig() {
 }
 
 export default function FrozenHeroScene({ onReady }: { onReady?: () => void }) {
-  const [dpr, setDpr] = useState<[number, number] | number>([1, 1.8]);
+  const [dpr, setDpr] = useState<[number, number] | number>(isCoarsePointer() ? 1 : [1, 1.8]);
 
   return (
     <div className="absolute inset-0 pointer-events-none" aria-hidden>
@@ -116,7 +116,7 @@ export default function FrozenHeroScene({ onReady }: { onReady?: () => void }) {
       >
         <PerformanceMonitor
           onDecline={() => setDpr(1)}
-          onIncline={() => setDpr([1, 1.8])}
+          onIncline={() => setDpr(isCoarsePointer() ? 1 : [1, 1.8])}
         />
 
         <Suspense fallback={null}>

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
+import { heroProgress, heroPointer } from "./canvas/frozen/progress";
+import FrozenHeroScene from "./canvas/frozen/FrozenHeroScene";
 
 
 const EASE_EXPO = [0.16, 1, 0.3, 1] as const;
@@ -9,6 +11,7 @@ const EASE_EXPO = [0.16, 1, 0.3, 1] as const;
 export default function Hero() {
   const section = useRef<HTMLElement>(null);
   const content = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   // mount the canvas after first paint so the headline lands instantly
@@ -26,6 +29,7 @@ export default function Hero() {
         const rect = el.getBoundingClientRect();
         const vh = window.innerHeight;
         const p = Math.min(Math.max(-rect.top / (vh * 0.9), 0), 1);
+        heroProgress.value = p;
 
         // the DOM layer sinks and dissolves slightly faster than the camera
         if (content.current) {
@@ -38,8 +42,15 @@ export default function Hero() {
     };
     raf = requestAnimationFrame(tick);
 
+    const onMove = (e: PointerEvent) => {
+      heroPointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+      heroPointer.y = (e.clientY / window.innerHeight) * 2 - 1;
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+
     return () => {
       cancelAnimationFrame(raf);
+      window.removeEventListener("pointermove", onMove);
     };
   }, []);
 
@@ -48,19 +59,17 @@ export default function Hero() {
       ref={section}
       className="relative h-screen bg-black flex flex-col items-center justify-center overflow-hidden border-x border-white/5 mx-3 md:mx-6"
     >
-      {/* 1. Animated Video Background */}
-      <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          className="w-full h-full object-cover opacity-60 mix-blend-screen scale-105"
-        >
-          <source src="https://cdn.dribbble.com/userupload/47884462/file/382a205af640e8020710b90fc6415744.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/80" />
-      </div>
+      {/* 1. The frozen world */}
+      {mounted && (
+        <FrozenHeroScene onReady={() => setReady(true)} />
+      )}
+
+      {/* boot veil — lifts once the GL context reports in */}
+      <div
+        className={`absolute inset-0 z-[5] bg-black pointer-events-none transition-opacity duration-[1400ms] ease-out ${
+          ready ? "opacity-0" : "opacity-100"
+        }`}
+      />
 
       {/* cinematic edge gradients to seat the type */}
       <div className="absolute inset-0 z-[6] pointer-events-none bg-gradient-to-t from-black/80 via-transparent to-black/60" />
