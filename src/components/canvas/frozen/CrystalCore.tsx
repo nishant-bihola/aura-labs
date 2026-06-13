@@ -79,11 +79,12 @@ function buildDiamond(sides: number) {
 
 export default function CrystalCore() {
   const group = useRef<THREE.Group>(null);
+  const innerRef = useRef<THREE.Mesh>(null);
   const mat = useRef<THREE.ShaderMaterial>(null);
 
   const mobile = isCoarsePointer();
 
-  const diamond = useMemo(() => buildDiamond(8), []);
+  const diamond = useMemo(() => buildDiamond(12), []);
 
   const iceUniforms = useMemo(
     () => ({
@@ -106,6 +107,11 @@ export default function CrystalCore() {
       group.current.rotation.x = -0.12 + Math.sin(t * 0.23) * 0.03;
       group.current.position.y = Math.sin(t * 0.4) * 0.06;
     }
+    if (innerRef.current) {
+      // Rotate the inner cage in the opposite direction for contrast
+      innerRef.current.rotation.y = -t * 0.50;
+      innerRef.current.rotation.x = t * 0.30;
+    }
     if (mat.current) mat.current.uniforms.uTime.value = t;
   });
 
@@ -116,24 +122,24 @@ export default function CrystalCore() {
       <mesh geometry={diamond}>
         {transmission ? (
           <MeshTransmissionMaterial
-            samples={6}
-            resolution={256}
-            thickness={0.9}
+            samples={10}
+            resolution={512}
+            thickness={0.8}
             ior={2.42}
-            chromaticAberration={1.1}
-            anisotropicBlur={0.06}
+            chromaticAberration={1.2}
+            anisotropicBlur={0.08}
             roughness={0}
             clearcoat={1}
             clearcoatRoughness={0}
-            distortion={0.05}
-            distortionScale={0.2}
+            distortion={0.06}
+            distortionScale={0.3}
             temporalDistortion={0.02}
-            attenuationDistance={3}
+            attenuationDistance={4}
             attenuationColor="#dff2ff"
             color="#ffffff"
-            envMapIntensity={2.2}
-            iridescence={0.6}
-            iridescenceIOR={1.5}
+            envMapIntensity={2.8}
+            iridescence={0.8}
+            iridescenceIOR={1.6}
           />
         ) : (
           <shaderMaterial
@@ -145,6 +151,34 @@ export default function CrystalCore() {
           />
         )}
       </mesh>
+
+      {/* Internal Quantum Energy Core (Refracts through the outer gem) */}
+      {transmission && (
+        <>
+          {/* Rotating Neon Wireframe Cage */}
+          <mesh ref={innerRef} geometry={diamond} scale={0.45}>
+            <meshBasicMaterial
+              color="#00f0ff"
+              wireframe
+              transparent
+              opacity={0.35}
+              blending={THREE.AdditiveBlending}
+              toneMapped={false}
+            />
+          </mesh>
+          {/* Glowing central singularity */}
+          <mesh scale={0.12}>
+            <sphereGeometry args={[1, 16, 16]} />
+            <meshBasicMaterial
+              color="#bd00ff"
+              transparent
+              opacity={0.8}
+              blending={THREE.AdditiveBlending}
+              toneMapped={false}
+            />
+          </mesh>
+        </>
+      )}
     </group>
   );
 }
