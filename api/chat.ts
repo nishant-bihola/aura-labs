@@ -81,12 +81,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let livePlans = CMS_DATA.pricing_plans;
   
   try {
-    const fetchedServices = await sanityClient.fetch(`*[_type == "service"]`);
-    const fetchedPlans = await sanityClient.fetch(`*[_type == "pricingPlan"]`);
-    
+    // Cap the RAG fetch so a slow/misconfigured CMS can never stall the chat.
+    const withTimeout = <T,>(p: Promise<T>, ms: number) =>
+      Promise.race([
+        p,
+        new Promise<T>((_, reject) => setTimeout(() => reject(new Error("Sanity timeout")), ms)),
+      ]);
+
+    const [fetchedServices, fetchedPlans] = await Promise.all([
+      withTimeout(sanityClient.fetch(`*[_type == "service"]`), 2500),
+      withTimeout(sanityClient.fetch(`*[_type == "pricingPlan"]`), 2500),
+    ]);
+
     // Only override if Sanity has data
-    if (fetchedServices.length > 0) liveServices = fetchedServices;
-    if (fetchedPlans.length > 0) livePlans = fetchedPlans;
+    if (Array.isArray(fetchedServices) && fetchedServices.length > 0) liveServices = fetchedServices;
+    if (Array.isArray(fetchedPlans) && fetchedPlans.length > 0) livePlans = fetchedPlans;
   } catch (sanityError) {
     console.error("Sanity RAG Fetch Error:", sanityError);
   }
@@ -102,30 +111,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       parts: [{ text: msg.content }]
     }));
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: DYNAMIC_SYSTEM_INSTRUCTION }] },
-        contents: contents,
-        generationConfig: {
-          temperature: 0.6,
-          maxOutputTokens: 1024,
-          thinkingConfig: { thinkingBudget: 2048 },
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("Gemini API Error:", err);
-      return res.status(500).json({ reply: "I'm experiencing a temporary glitch in my matrix. Please try again later." });
-    }
-
-    const data = await response.json();
-    const replyText =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Good question — could you give me a bit more detail so I can point you to the right solution?";
+    const replyText = await generateReply(contents, DYNAMIC_SYSTEM_INSTRUCTION, GEMINI_API_KEY);
 
     // Check if the model decided to capture a lead
     if (replyText.includes("[CAPTURE_LEAD:")) {
@@ -231,6 +217,90 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ reply: replyText });
   } catch (error) {
     console.error("Chat handler error:", error);
-    return res.status(500).json({ reply: "I'm having trouble connecting to my systems right now. Please email us directly." });
+    // Never surface a raw failure to the visitor. Give a useful, on-brand reply
+    // that keeps the sales conversation alive and routes them to a human.
+    return res.status(200).json({ reply: GRACEFUL_FALLBACK });
   }
+}
+
+const GRACEFUL_FALLBACK =
+  "I'm getting a lot of requests right now, so let me keep this simple. " +
+  "Aura Labs builds high-performance websites, web apps, AI chatbots, and AI ad content — projects start at $1,500. " +
+  "Tell me what you're building and I'll point you to the right fit, or email **contact@aura-labs.com** and a human architect will jump in.";
+
+/**
+ * Calls Gemini with built-in resilience so the visitor never sees a raw error:
+ *  - thinking disabled (faster + cheaper + no token-budget contradiction)
+ *  - per-request timeout via AbortController
+ *  - exponential-backoff retries on transient 429/5xx
+ *  - a secondary model as a final fallback
+ * Throws only if every attempt fails (handler then serves GRACEFUL_FALLBACK).
+ */
+async function generateReply(
+  contents: Array<{ role: string; parts: Array<{ text: string }> }>,
+  systemInstruction: string,
+  apiKey: string
+): Promise<string> {
+  const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"];
+  const MAX_ATTEMPTS = 2; // per model
+
+  const body = JSON.stringify({
+    systemInstruction: { parts: [{ text: systemInstruction }] },
+    contents,
+    generationConfig: {
+      temperature: 0.6,
+      maxOutputTokens: 800,
+      // Disable "thinking": a concise sales bot doesn't need it, and on 2.5
+      // thinking tokens eat the output budget — the root cause of empty/cut
+      // replies and the "matrix glitch" the business kept seeing.
+      thinkingConfig: { thinkingBudget: 0 },
+    },
+  });
+
+  let lastErr: unknown = null;
+
+  for (const model of MODELS) {
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body,
+            signal: controller.signal,
+          }
+        );
+        clearTimeout(timeout);
+
+        if (response.ok) {
+          const data = await response.json();
+          const text: string =
+            data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+          if (text) return text;
+          // Empty body (safety block / truncation) — try again, then fall back.
+          lastErr = new Error("Empty Gemini response");
+        } else {
+          const errText = await response.text().catch(() => "");
+          lastErr = new Error(`Gemini ${response.status}: ${errText.slice(0, 200)}`);
+          // 4xx other than 429 won't fix on retry — break to next model.
+          if (response.status !== 429 && response.status < 500) break;
+        }
+      } catch (e) {
+        clearTimeout(timeout);
+        lastErr = e;
+      }
+
+      // backoff before the next attempt (250ms, 500ms …)
+      if (attempt < MAX_ATTEMPTS - 1) {
+        await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
+      }
+    }
+  }
+
+  console.error("Gemini exhausted all retries:", lastErr);
+  // Soft fallback rather than throwing — keeps the conversation flowing.
+  return GRACEFUL_FALLBACK;
 }

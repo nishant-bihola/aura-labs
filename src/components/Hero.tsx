@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import { heroProgress, heroPointer } from "./canvas/frozen/progress";
-import FrozenHeroScene from "./canvas/frozen/FrozenHeroScene";
+import HeroBackground from "./canvas/HeroBackground";
 
 
 const EASE_EXPO = [0.16, 1, 0.3, 1] as const;
@@ -59,9 +59,9 @@ export default function Hero() {
       ref={section}
       className="relative h-screen bg-black flex flex-col items-center justify-center overflow-hidden border-x border-white/5 mx-3 md:mx-6"
     >
-      {/* 1. The frozen world */}
+      {/* 1. The frozen world (lazy WebGL, with a graceful CSS aurora fallback) */}
       {mounted && (
-        <FrozenHeroScene onReady={() => setReady(true)} />
+        <HeroBackground onReady={() => setReady(true)} />
       )}
 
       {/* boot veil — lifts once the GL context reports in */}

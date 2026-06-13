@@ -213,7 +213,7 @@ export default function AuraPricing() {
           {PLANS.map((plan) => (
             <div 
               key={plan.name}
-              className={`pricing-card group relative p-6 md:p-10 lg:p-12 rounded-[24px] md:rounded-[40px] border transition-all duration-500 flex flex-col justify-between overflow-hidden ${
+              className={`pricing-card group relative p-6 sm:p-8 lg:p-10 rounded-[24px] md:rounded-[40px] border transition-all duration-500 flex flex-col justify-between overflow-hidden ${
                 plan.highlight 
                 ? "bg-[#050505] border-[#00f0ff]/50 shadow-[0_0_50px_rgba(0,240,255,0.15)] scale-[1.02]" 
                 : "bg-transparent border-white/5 hover:border-white/20"
@@ -228,7 +228,7 @@ export default function AuraPricing() {
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-6 md:mb-12 gap-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-2xl md:text-4xl font-serif mb-1 group-hover:italic transition-all duration-400 break-words leading-tight">{plan.name}</h3>
+                    <h3 className="text-2xl md:text-3xl font-serif mb-1 group-hover:italic transition-all duration-400 leading-tight">{plan.name}</h3>
                     <p className="text-[9px] md:text-[12px] tracking-[0.2em] uppercase text-white/50 font-sans mt-2">{plan.tagline}</p>
                   </div>
                   <div className="w-8 h-8 md:w-12 md:h-12 rounded-full border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-white group-hover:text-black group-hover:border-white transition-all duration-400">
@@ -237,9 +237,9 @@ export default function AuraPricing() {
                 </div>
 
                 <div className="mb-6 md:mb-12">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl md:text-5xl lg:text-6xl font-serif tracking-tighter">{plan.price}</span>
-                    <span className="text-white/40 text-[11px] md:text-sm font-sans">{plan.period}</span>
+                  <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0">
+                    <span className="text-3xl md:text-4xl lg:text-5xl font-serif tracking-tighter whitespace-nowrap">{plan.price}</span>
+                    <span className="text-white/40 text-[11px] md:text-sm font-sans whitespace-nowrap">{plan.period}</span>
                   </div>
                 </div>
 

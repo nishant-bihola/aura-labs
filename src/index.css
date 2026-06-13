@@ -118,9 +118,54 @@
   .will-change-transform {
     will-change: transform;
   }
-  
+
   .will-change-opacity {
     will-change: opacity;
+  }
+
+  /* Aurora fallback for the hero when WebGL is unavailable / fails.
+     Tuned to the frozen cyan + violet brand so degradation looks intentional. */
+  .aurora-blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(90px);
+    opacity: 0.55;
+    will-change: transform;
+  }
+  .aurora-blob--cyan {
+    top: -15%;
+    left: -10%;
+    width: 70vw;
+    height: 70vw;
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.55), transparent 70%);
+    animation: aurora-drift-a 14s ease-in-out infinite;
+  }
+  .aurora-blob--violet {
+    bottom: -20%;
+    right: -10%;
+    width: 65vw;
+    height: 65vw;
+    background: radial-gradient(circle, rgba(189, 0, 255, 0.40), transparent 70%);
+    animation: aurora-drift-b 18s ease-in-out infinite;
+  }
+  .aurora-blob--ice {
+    top: 30%;
+    left: 35%;
+    width: 45vw;
+    height: 45vw;
+    background: radial-gradient(circle, rgba(143, 217, 255, 0.30), transparent 70%);
+    animation: aurora-drift-a 22s ease-in-out infinite reverse;
+  }
+  @keyframes aurora-drift-a {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(6%, 8%, 0) scale(1.15); }
+  }
+  @keyframes aurora-drift-b {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1.05); }
+    50% { transform: translate3d(-8%, -6%, 0) scale(1.2); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .aurora-blob { animation: none; }
   }
 }
 

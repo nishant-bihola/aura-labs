@@ -333,22 +333,32 @@ Do not add any other text or pleasantries to that specific response. Just output
         parts: [{ text: msg.content }]
       }));
 
+      const GRACEFUL_FALLBACK =
+        "I'm getting a lot of requests right now, so let me keep this simple. " +
+        "Aura Labs builds high-performance websites, web apps, AI chatbots, and AI ad content — projects start at $1,500. " +
+        "Tell me what you're building and I'll point you to the right fit, or email **contact@aura-labs.com** and a human architect will jump in.";
+
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: DYNAMIC_SYSTEM_INSTRUCTION }] },
           contents: contents,
-          generationConfig: { temperature: 0.7 }
+          generationConfig: {
+            temperature: 0.6,
+            maxOutputTokens: 800,
+            thinkingConfig: { thinkingBudget: 0 },
+          }
         })
       });
 
       if (!response.ok) {
-        return res.status(500).json({ reply: "I'm experiencing a temporary glitch in my matrix. Please try again later." });
+        console.error("Gemini API error (dev):", response.status, await response.text().catch(() => ""));
+        return res.status(200).json({ reply: GRACEFUL_FALLBACK });
       }
 
       const data = await response.json();
-      const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || GRACEFUL_FALLBACK;
 
       if (replyText.includes("[CAPTURE_LEAD:")) {
         try {

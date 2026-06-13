@@ -1,4 +1,4 @@
-import { Suspense, useState } from "react";
+import { Suspense, useState, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
 import * as THREE from "three";
@@ -92,31 +92,63 @@ function CameraRig() {
   return null;
 }
 
-export default function FrozenHeroScene({ onReady }: { onReady?: () => void }) {
-  const [dpr, setDpr] = useState<[number, number] | number>(isCoarsePointer() ? 1 : [1, 1.8]);
+export default function FrozenHeroScene({
+  onReady,
+  onError,
+  active = true,
+}: {
+  onReady?: () => void;
+  onError?: () => void;
+  active?: boolean;
+}) {
+  const mobile = isCoarsePointer();
+  // iOS Safari runs out of GPU memory fast; cap DPR hard on coarse pointers.
+  const [dpr, setDpr] = useState<[number, number] | number>(
+    mobile ? Math.min(window.devicePixelRatio || 1, 1.5) : [1, 1.8]
+  );
+
+  const handleCreated = useCallback(
+    ({ gl, scene }: { gl: THREE.WebGLRenderer; scene: THREE.Scene }) => {
+      gl.toneMapping = THREE.ACESFilmicToneMapping;
+      gl.toneMappingExposure = 1.15;
+      scene.fog = new THREE.FogExp2("#04060a", 0.026);
+      scene.background = new THREE.Color("#04060a");
+
+      // Surface context-loss as a graceful fallback instead of a black canvas.
+      const canvas = gl.domElement;
+      canvas.addEventListener(
+        "webglcontextlost",
+        (e) => {
+          e.preventDefault();
+          onError?.();
+        },
+        { passive: false }
+      );
+
+      onReady?.();
+    },
+    [onReady, onError]
+  );
 
   return (
     <div className="absolute inset-0 pointer-events-none" aria-hidden>
       <Canvas
+        frameloop={active ? "always" : "never"}
         gl={{
           antialias: false,
-          powerPreference: "high-performance",
+          powerPreference: mobile ? "default" : "high-performance",
           alpha: false,
           stencil: false,
+          depth: true,
+          failIfMajorPerformanceCaveat: false,
         }}
         dpr={dpr}
         camera={{ position: [0, 0.35, 11.5], fov: 46, near: 0.1, far: 80 }}
-        onCreated={({ gl, scene }) => {
-          gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.15;
-          scene.fog = new THREE.FogExp2("#04060a", 0.026);
-          scene.background = new THREE.Color("#04060a");
-          onReady?.();
-        }}
+        onCreated={handleCreated}
       >
         <PerformanceMonitor
-          onDecline={() => setDpr(1)}
-          onIncline={() => setDpr(isCoarsePointer() ? 1 : [1, 1.8])}
+          onDecline={() => setDpr(mobile ? 1 : 1)}
+          onIncline={() => setDpr(mobile ? Math.min(window.devicePixelRatio || 1, 1.5) : [1, 1.8])}
         />
 
         <Suspense fallback={null}>
