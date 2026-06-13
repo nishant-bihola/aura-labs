@@ -18,28 +18,10 @@ function hasWebGL(): boolean {
   try {
     const canvas = document.createElement("canvas");
     const gl =
-      (canvas.getContext("webgl2") ||
-       canvas.getContext("webgl") ||
-       canvas.getContext("experimental-webgl")) as WebGLRenderingContext | WebGL2RenderingContext | null;
-    if (!gl) return false;
-
-    // Detect software renderers (common in headless browser test runners and virtual machines)
-    // which fail to compile complex shaders or suffer severe performance bottlenecks.
-    const dbg = gl.getExtension("WEBGL_debug_renderer_info");
-    if (dbg) {
-      const renderer = (gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || "").toLowerCase();
-      if (
-        renderer.includes("swiftshader") ||
-        renderer.includes("llvmpipe") ||
-        renderer.includes("software") ||
-        renderer.includes("google") || // "Google SwiftShader"
-        renderer.includes("mesa") ||
-        renderer.includes("microsoft basic render driver")
-      ) {
-        return false; // Safely fall back to premium CSS aurora on software rendering
-      }
-    }
-    return true;
+      canvas.getContext("webgl2") ||
+      canvas.getContext("webgl") ||
+      canvas.getContext("experimental-webgl");
+    return !!gl;
   } catch {
     return false;
   }

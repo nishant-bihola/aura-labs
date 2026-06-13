@@ -72,17 +72,24 @@ export default function Hero() {
       ref={section}
       className="relative h-screen bg-black flex flex-col items-center justify-center overflow-hidden border-x border-white/5 mx-3 md:mx-6"
     >
-      {/* 1. The frozen world (lazy WebGL, with a graceful CSS aurora fallback) */}
-      {mounted && (
-        <HeroBackground onReady={() => setReady(true)} />
-      )}
+      {/* 1. Static CSS Aurora Background — rendered immediately so the site has an instant premium backdrop */}
+      <div className="absolute inset-0 overflow-hidden bg-[#04060a]" aria-hidden>
+        <div className="aurora-blob aurora-blob--cyan" />
+        <div className="aurora-blob aurora-blob--violet" />
+        <div className="aurora-blob aurora-blob--ice" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(0,240,255,0.10),transparent_55%)]" />
+      </div>
 
-      {/* boot veil — lifts once the GL context reports in */}
+      {/* 2. The dynamic 3D frozen world (lazy WebGL) — crossfades in smoothly once loaded */}
       <div
-        className={`absolute inset-0 z-[5] bg-black pointer-events-none transition-opacity duration-[700ms] ease-out ${
-          ready ? "opacity-0" : "opacity-100"
+        className={`absolute inset-0 z-[2] transition-opacity duration-[1200ms] ease-out ${
+          ready ? "opacity-100" : "opacity-0"
         }`}
-      />
+      >
+        {mounted && (
+          <HeroBackground onReady={() => setReady(true)} />
+        )}
+      </div>
 
       {/* cinematic edge gradients to seat the type */}
       <div className="absolute inset-0 z-[6] pointer-events-none bg-gradient-to-t from-black/80 via-transparent to-black/60" />

@@ -40,6 +40,15 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
     mouseY.set(e.clientY - (rect.top + rect.height / 2));
   };
 
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (touch) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      mouseX.set(touch.clientX - (rect.left + rect.width / 2));
+      mouseY.set(touch.clientY - (rect.top + rect.height / 2));
+    }
+  };
+
   return (
     <Link
       to={`/work/${project.slug}`}
@@ -47,6 +56,12 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onMouseMove={handleMouseMove}
+      onTouchStart={(e) => {
+        setIsHovered(true);
+        handleTouchMove(e);
+      }}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={() => setIsHovered(false)}
     >
       <motion.div
         ref={cardRef}
@@ -56,19 +71,19 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="relative py-10 md:py-24 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8 lg:cursor-none transition-colors hover:bg-white/[0.01] px-0 md:px-8 overflow-visible"
       >
-        {/* Floating Preview Image (Cinematic Follow) — desktop pointer only */}
+        {/* Floating Preview Image (Cinematic Follow) — unified desktop & mobile */}
         <motion.div
           style={{
             x: xOffset,
             y: yOffset,
             rotate,
-            opacity: isHovered ? 1 : 0,
-            scale: isHovered ? 1 : 0.8,
+            opacity: active ? 1 : 0,
+            scale: active ? 1 : 0.8,
             willChange: "transform, opacity" // Performance optimization
           }}
-          className="absolute left-1/2 top-1/2 w-64 h-80 pointer-events-none hidden lg:block overflow-hidden rounded-xl z-50 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 shadow-2xl"
+          className="absolute left-1/2 top-1/2 w-48 h-60 md:w-64 md:h-80 pointer-events-none block overflow-hidden rounded-xl z-50 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 shadow-2xl"
         >
-          {isHovered && (
+          {active && (
             <Img src={project.thumbImage} alt={project.title} className="w-full h-full" imgClassName="scale-110" width={256} height={320} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
@@ -84,38 +99,6 @@ function ProjectItem({ project }: { project: typeof PROJECTS[0] }) {
           >
             {project.title}
           </h3>
-        </div>
-
-        {/* Inline preview — the touch equivalent of the desktop cursor-follow
-            card. Expands into a premium showcase when the card is centred. */}
-        <div
-          className={`lg:hidden w-full overflow-hidden transition-all duration-700 ease-expo ${
-            active ? "max-h-[420px] opacity-100 mt-4" : "max-h-0 opacity-0"
-          }`}
-        >
-          <div
-            className={`relative w-full h-72 overflow-hidden rounded-2xl border border-white/10 shadow-2xl transition-transform duration-700 ease-expo ${
-              active ? "scale-100" : "scale-95"
-            }`}
-          >
-            {active && (
-              <Img src={project.thumbImage} alt={project.title} className="w-full h-full" imgClassName="scale-110" width={400} height={300} />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 p-5 flex items-end justify-between">
-              <div className="flex flex-col gap-1">
-                <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-white/60">
-                  {project.category} • {project.year}
-                </span>
-                <span className="text-base font-valtero-serif italic text-white">
-                  View case study
-                </span>
-              </div>
-              <div className="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center shrink-0">
-                <ArrowUpRight size={20} />
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Category, Year, and Icon */}
