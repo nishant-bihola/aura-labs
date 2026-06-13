@@ -21,6 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const { name, email, plan, projectDetails, addons } = req.body;
+    const clientName = name || "Anonymous";
 
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
@@ -31,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       try {
         await prisma.lead.create({
           data: {
-            name,
+            name: clientName,
             email,
             plan,
             details: projectDetails || "",
@@ -49,9 +50,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const supabaseTask = (async () => {
       if (!supabase) return false;
       try {
+        const nameParts = clientName.split(' ');
         await supabase.from("contact_submissions").insert([{ 
-          first_name: name.split(' ')[0] || name, 
-          last_name: name.split(' ').slice(1).join(' ') || "", 
+          first_name: nameParts[0] || clientName, 
+          last_name: nameParts.slice(1).join(' ') || "", 
           email, 
           message: projectDetails || "", 
           type: "Checkout Intent",
@@ -67,8 +69,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 3. Admin Purchase Alert
     const adminEmailTask = sendEmail({
       to: ADMIN_EMAIL,
-      subject: `💰 CHECKOUT INTENT: ${name} for ${plan}`,
-      html: adminPurchaseAlertHTML(name, email, plan, projectDetails),
+      subject: `💰 CHECKOUT INTENT: ${clientName} for ${plan}`,
+      html: adminPurchaseAlertHTML(clientName, email, plan, projectDetails),
       replyTo: email,
     });
 
@@ -76,7 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const clientEmailTask = sendEmail({
       to: email,
       subject: "Payment Instructions | Aura Labs",
-      html: paymentInstructionsHTML(name, plan),
+      html: paymentInstructionsHTML(clientName, plan),
     });
 
     // Run parallel tasks

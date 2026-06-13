@@ -4,10 +4,17 @@ import { sendEmail } from "./_lib/emailSender.js";
 import { PrismaClient } from "@prisma/client";
 import { CMS_DATA } from "../src/lib/cms.js";
 import { client as sanityClient } from "../src/lib/sanity.js";
+import { Client as NotionClient } from '@notionhq/client';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 const prisma = new PrismaClient();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com";
+
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+const NOTION_TOKEN = process.env.NOTION_TOKEN || process.env.VITE_NOTION_TOKEN || '';
+const NOTION_DB_ID = process.env.NOTION_DATABASE_ID || process.env.VITE_NOTION_DATABASE_ID || '';
 
 const SYSTEM_INSTRUCTION = `
 You are Aura AI, an elite digital architect and highly intelligent technical sales engineer for Aura Labs.
@@ -148,6 +155,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             console.error("Prisma Error:", dbError);
           }
 
+          // 1b. Notion CRM Sync (Parallel)
+          const notionTask = (async () => {
+            if (!NOTION_TOKEN || !NOTION_DB_ID) return false;
+            try {
+              const notion = new NotionClient({ auth: NOTION_TOKEN });
+              await notion.pages.create({
+                parent: { database_id: NOTION_DB_ID },
+                properties: {
+                  Name: { title: [{ text: { content: leadData.name || 'AI Chat Lead' } }] },
+                  Email: { email: leadData.email },
+                  Message: { rich_text: [{ text: { content: "Lead qualified and captured via Aura AI Chatbot conversation." } }] },
+                  Source: { select: { name: 'AI Agent' } },
+                  Type: { select: { name: 'AI Chatbot' } },
+                  Date: { date: { start: new Date().toISOString() } },
+                  Status: { status: { name: 'Not started' } },
+                },
+              });
+              return true;
+            } catch (notionError) {
+              console.error("Notion Error in chat lead capture:", notionError);
+              return false;
+            }
+          })();
+
+          // 1c. Supabase Sync (Parallel)
+          const supabaseTask = (async () => {
+            if (!SUPABASE_URL || !SUPABASE_KEY) return false;
+            try {
+              const supabase = createSupabaseClient(SUPABASE_URL, SUPABASE_KEY);
+              const nameParts = (leadData.name || 'AI Lead').split(' ');
+              await supabase.from("contact_submissions").insert([{ 
+                first_name: nameParts[0] || "AI Lead", 
+                last_name: nameParts.slice(1).join(' ') || "", 
+                email: leadData.email, 
+                message: "Lead qualified and captured via Aura AI Chatbot conversation.", 
+                type: "AI Agent Lead",
+                plan: "AI Chat Lead"
+              }]);
+              return true;
+            } catch (sbError) {
+              console.error("Supabase Error in chat lead capture:", sbError);
+              return false;
+            }
+          })();
+
           // 2. Send Emails via unified fallback sender
           const adminEmailTask = sendEmail({
             to: ADMIN_EMAIL,
@@ -162,7 +214,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             html: clientConfirmationHTML(leadData.name, "AI Chat Lead"),
           });
 
-          await Promise.allSettled([adminEmailTask, userEmailTask]);
+          await Promise.allSettled([
+            adminEmailTask, 
+            userEmailTask,
+            notionTask,
+            supabaseTask
+          ]);
 
           return res.status(200).json({ reply: `Perfect, ${leadData.name}. I've successfully transmitted your details to our team and sent a confirmation to ${leadData.email}. One of our lead architects will reach out shortly!` });
         }
