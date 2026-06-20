@@ -44,6 +44,8 @@ const WebDevelopment = lazy(() => import("./pages/services/WebDevelopment"));
 const AIChatbots = lazy(() => import("./pages/services/AIChatbots"));
 const AIAds = lazy(() => import("./pages/services/AIAds"));
 const BrandIdentity = lazy(() => import("./pages/services/BrandIdentity"));
+const PrivacyPolicy = lazy(() => import("./pages/Legal").then((m) => ({ default: m.PrivacyPolicy })));
+const TermsOfService = lazy(() => import("./pages/Legal").then((m) => ({ default: m.TermsOfService })));
 
 
 /**
@@ -288,6 +290,10 @@ export default function App() {
 
                 {/* CHECKOUT PAGE */}
                 <Route path="/checkout" element={<Checkout />} />
+
+                {/* LEGAL PAGES */}
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
 
                 {/* CATCH-ALL 404 ROUTE */}
                 <Route path="*" element={<NotFound />} />

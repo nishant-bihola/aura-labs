@@ -123,6 +123,15 @@
     will-change: opacity;
   }
 
+  /* Branded placeholder shown if a remote image/video fails to load,
+     so a broken asset degrades to an on-brand gradient, never a black box. */
+  .media-fallback {
+    background-image:
+      radial-gradient(circle at 30% 25%, rgba(0, 240, 255, 0.28), transparent 55%),
+      radial-gradient(circle at 75% 80%, rgba(189, 0, 255, 0.24), transparent 55%),
+      linear-gradient(135deg, #0a0f1a, #0a0a0a);
+  }
+
   /* Aurora fallback for the hero when WebGL is unavailable / fails.
      Tuned to the frozen cyan + violet brand so degradation looks intentional. */
   .aurora-blob {

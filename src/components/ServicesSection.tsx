@@ -25,7 +25,7 @@ const SERVICE_DETAILS = [
     title: "AI Ad Content",
     bgText: "MOTION",
     desc: "Premium motion ads and product imagery powered by generative AI. Optimize your marketing campaigns with rapid delivery and impactful visuals. From $800/campaign.",
-    video: "https://cdn.dribbble.com/userupload/47884462/file/382a205af640e8020710b90fc6415744.mp4",
+    image: "https://images.unsplash.com/photo-1492551557933-34265f7af79e?w=900&auto=format&fit=crop&q=80",
     categories: ["Motion Ads", "Product Images", "15-sec Video", "Campaign"],
     href: "/services/ai-ads"
   },
@@ -63,24 +63,20 @@ function ServiceCard({ service }: { service: typeof SERVICE_DETAILS[0] }) {
           {/* 1. Image Column */}
           <div className="w-full relative">
             <div className="relative aspect-[4/3] rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden bg-[#0A0A0A] border border-white/10 group-hover:border-white/20 transition-all duration-500 shadow-2xl">
-              {service.video ? (
-                <video
-                  src={service.video}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                />
-              ) : (
-                <img
-                  src={service.image}
-                  alt={service.title}
-                  loading="eager"
-                  decoding="async"
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                />
-              )}
+              <img
+                src={service.image}
+                alt={service.title}
+                loading="lazy"
+                decoding="async"
+                onError={(e) => {
+                  // Never leave a black box if a remote image fails — fall
+                  // back to a branded gradient placeholder.
+                  const el = e.currentTarget;
+                  el.style.display = "none";
+                  el.parentElement?.classList.add("media-fallback");
+                }}
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
               {/* Floating ID Tag */}

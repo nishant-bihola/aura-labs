@@ -14,6 +14,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  // ── Auth gate ──────────────────────────────────────────────────────────────
+  // This endpoint returns customer PII (names, emails, project details), so it
+  // must never be public. Access requires the x-admin-key header to match the
+  // ADMIN_KEY env var. Set ADMIN_KEY in your Vercel project + local .env.
+  const ADMIN_KEY = process.env.ADMIN_KEY || '';
+  const provided = (req.headers['x-admin-key'] as string) || '';
+  if (!ADMIN_KEY) {
+    return res.status(503).json({ error: "Admin access is not configured. Set ADMIN_KEY in the environment." });
+  }
+  if (provided !== ADMIN_KEY) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   try {
     const leads = await prisma.lead.findMany({
       orderBy: { createdAt: 'desc' }

@@ -1,5 +1,3 @@
-import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
 import {
   EffectComposer,
   Bloom,
@@ -8,38 +6,34 @@ import {
   Vignette,
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
-import type { ChromaticAberrationEffect } from "postprocessing";
-import { heroProgress, isCoarsePointer, prefersReducedMotion } from "./progress";
+import { Vector2 } from "three";
+import { isCoarsePointer, prefersReducedMotion } from "./progress";
 
 /**
- * Film pass: soft bloom off the emissive core, chromatic aberration
- * that swells slightly with scroll depth, grain, vignette.
+ * Film pass: soft bloom off the emissive core, a touch of chromatic
+ * aberration, grain, and vignette.
+ *
+ * Note: we deliberately do NOT attach a ref to <ChromaticAberration>.
+ * Under React 19 `ref` is delivered as a normal prop, and
+ * @react-three/postprocessing memoizes effect props via
+ * `JSON.stringify(props)` — a ref to a live postprocessing Effect has a
+ * circular structure (parent ⇄ children) and throws. A static offset
+ * keeps the look without the crash.
  */
+const CA_OFFSET = new Vector2(0.0012, 0.0008);
+
 export default function PostFX() {
-  const caRef = useRef<ChromaticAberrationEffect>(null);
-  const lastP = useRef(0);
-
-  useFrame(() => {
-    const ca = caRef.current;
-    if (!ca) return;
-    // velocity-reactive lens stress
-    const v = Math.min(Math.abs(heroProgress.value - lastP.current) * 0.35, 0.004);
-    lastP.current = lastP.current + (heroProgress.value - lastP.current) * 0.12;
-    const base = 0.0011;
-    ca.offset.set(base + v, (base + v) * 0.6);
-  });
-
   if (prefersReducedMotion() || isCoarsePointer()) return null;
 
   return (
     <EffectComposer multisampling={0} enableNormalPass={false}>
       <Bloom
-        intensity={isCoarsePointer() ? 0.5 : 0.85}
+        intensity={0.85}
         luminanceThreshold={0.82}
         luminanceSmoothing={0.3}
         mipmapBlur
       />
-      <ChromaticAberration ref={caRef} blendFunction={BlendFunction.NORMAL} />
+      <ChromaticAberration blendFunction={BlendFunction.NORMAL} offset={CA_OFFSET} />
       <Noise opacity={0.05} blendFunction={BlendFunction.OVERLAY} />
       <Vignette eskil={false} offset={0.18} darkness={0.92} />
     </EffectComposer>
