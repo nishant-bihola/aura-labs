@@ -5,13 +5,12 @@ import { fileURLToPath } from "url";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import { Client as NotionClient } from "@notionhq/client";
-import { adminAlertHTML, clientConfirmationHTML, paymentInstructionsHTML, adminPurchaseAlertHTML } from "./api/_lib/emails.js";
+import { paymentInstructionsHTML, adminPurchaseAlertHTML } from "./api/_lib/emails.js";
 import * as dotenv from "dotenv";
-import { PrismaClient } from "@prisma/client";
-import { CMS_DATA } from "./src/lib/cms.js";
-import { client as sanityClient } from "./src/lib/sanity.js";
+import { runChatAgent, GRACEFUL_FALLBACK } from "./api/_lib/chatAgent.js";
+import { estimateProject } from "./api/_lib/estimator.js";
+import { llmConfigured } from "./api/_lib/llm.js";
 
-const prisma = new PrismaClient();
 dotenv.config();
 
 // --- CONFIGURATION ---
@@ -272,149 +271,46 @@ async function startServer() {
   });
 
   // API Route for AI Chatbot
+  // Aura AI chat agent — shared tool-using agent (Groq in prod, Ollama/Hermes
+  // locally). Set LLM_PROVIDER=ollama in .env.local to use your local model.
   app.post("/api/chat", async (req, res) => {
     const { messages } = req.body;
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: "Messages array required" });
     }
-
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
-    if (!GEMINI_API_KEY) {
-      return res.status(500).json({ reply: "My AI neural link is currently offline (API Key missing). Please contact us directly at contact@aura-labs.com." });
-    }
-
-    const SYSTEM_INSTRUCTION = `
-You are Aura AI, an elite digital architect and highly intelligent technical sales engineer for Aura Labs.
-Our mission: ${CMS_DATA.company.mission}
-
-Your core programming is based on the "Superpowers" methodology:
-1. Systematic over ad-hoc: Do not just spit out prices immediately. Ask sharp, consultative questions to tease out the user's actual business requirements and problems first.
-2. Socratic Brainstorming: Refine their rough ideas through intelligent questioning. Guide them to realize they need scalable architecture.
-3. Project Scoping: Break down their needs into clear, digestible phases (e.g., Design, Development, Launch).
-4. Evidence over claims: Provide structured, logical solutions before declaring success.
-
---- KNOWLEDGE BASE START ---
-{{SERVICES_CONTEXT}}
-
-{{PLANS_CONTEXT}}
---- KNOWLEDGE BASE END ---
-
-${CMS_DATA.instructions_for_ai}
-
-Tone: Professional, highly analytical, consultative, and empathetic. Speak like a senior technical founder who values architecture, clean code, and ROI. Do not be overly robotic; be human but brilliant.
-
-CRITICAL INSTRUCTION: Once you have successfully teased out their requirements and convinced them to proceed with a project, you MUST ask for their name and email so a human architect can review the project spec and follow up. When they provide their name and email, you MUST respond ONLY with the exact following string:
-[CAPTURE_LEAD: {"name": "<user_name>", "email": "<user_email>"}]
-Do not add any other text or pleasantries to that specific response. Just output the JSON block.
-`;
-
-    // 0. Fetch Live Context from Sanity (Advanced RAG)
-    let liveServices = CMS_DATA.services;
-    let livePlans = CMS_DATA.pricing_plans;
-    
-    try {
-      const fetchedServices = await sanityClient.fetch(`*[_type == "service"]`);
-      const fetchedPlans = await sanityClient.fetch(`*[_type == "pricingPlan"]`);
-      
-      // Only override if Sanity has data
-      if (fetchedServices.length > 0) liveServices = fetchedServices;
-      if (fetchedPlans.length > 0) livePlans = fetchedPlans;
-    } catch (sanityError) {
-      console.error("Sanity RAG Fetch Error:", sanityError);
-    }
-
-    const DYNAMIC_SYSTEM_INSTRUCTION = SYSTEM_INSTRUCTION
-      .replace("{{SERVICES_CONTEXT}}", JSON.stringify(liveServices, null, 2))
-      .replace("{{PLANS_CONTEXT}}", JSON.stringify(livePlans, null, 2));
-
-    try {
-      const contents = messages.map((msg: any) => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }]
-      }));
-
-      const GRACEFUL_FALLBACK =
-        "I'm getting a lot of requests right now, so let me keep this simple. " +
-        "Aura Labs builds high-performance websites, web apps, AI chatbots, and AI ad content — projects start at $1,500. " +
-        "Tell me what you're building and I'll point you to the right fit, or email **contact@aura-labs.com** and a human architect will jump in.";
-
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: DYNAMIC_SYSTEM_INSTRUCTION }] },
-          contents: contents,
-          generationConfig: {
-            temperature: 0.6,
-            maxOutputTokens: 800,
-            thinkingConfig: { thinkingBudget: 0 },
-          }
-        })
+    if (!llmConfigured()) {
+      return res.status(200).json({
+        reply: "My AI is briefly offline. Please email contact@aura-labs.com or book a call.",
       });
-
-      if (!response.ok) {
-        console.error("Gemini API error (dev):", response.status, await response.text().catch(() => ""));
-        return res.status(200).json({ reply: GRACEFUL_FALLBACK });
-      }
-
-      const data = await response.json();
-      const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || GRACEFUL_FALLBACK;
-
-      if (replyText.includes("[CAPTURE_LEAD:")) {
-        try {
-          const jsonStr = replyText.match(/\[CAPTURE_LEAD:\s*(.*?)\s*\]/)?.[1];
-          if (jsonStr) {
-            const leadData = JSON.parse(jsonStr);
-            
-            try {
-              await prisma.lead.create({
-                data: {
-                  name: leadData.name,
-                  email: leadData.email,
-                  plan: "AI Chat Lead",
-                  details: "Captured via Advanced RAG AI Chatbot",
-                  addons: null
-                }
-              });
-              await prisma.chatSession.create({
-                data: {
-                  email: leadData.email,
-                  history: JSON.stringify(messages)
-                }
-              });
-            } catch (dbError) {
-              console.error("Prisma Error:", dbError);
-            }
-
-            if (resend) {
-              await Promise.allSettled([
-                resend.emails.send({
-                  from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
-                  to: process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com",
-                  replyTo: leadData.email,
-                  subject: `🤖 NEW AI LEAD: ${leadData.name}`,
-                  html: adminAlertHTML(leadData.name, leadData.email, "Captured via AI Chatbot", "AI Chat Lead"),
-                }),
-                resend.emails.send({
-                  from: process.env.RESEND_FROM_EMAIL || "Aura Labs <onboarding@resend.dev>",
-                  to: leadData.email,
-                  subject: "Strategy Session | Aura Labs",
-                  html: clientConfirmationHTML(leadData.name, "Consultation"),
-                })
-              ]);
-            }
-
-            return res.status(200).json({ reply: `Perfect, ${leadData.name}. I've successfully transmitted your details to our team and sent a confirmation to ${leadData.email}. One of our lead architects will reach out shortly!` });
-          }
-        } catch (e) {
-          console.error("Failed to parse lead capture:", e);
-        }
-      }
-
-      return res.status(200).json({ reply: replyText });
+    }
+    try {
+      const reply = await runChatAgent(messages);
+      return res.status(200).json({ reply });
     } catch (error) {
       console.error("Chat API Error:", error);
-      return res.status(500).json({ reply: "I'm having trouble connecting to my systems right now. Please email us directly." });
+      return res.status(200).json({ reply: GRACEFUL_FALLBACK });
+    }
+  });
+
+  // AI Project Estimator (dev parity with /api/estimate)
+  app.post("/api/estimate", async (req, res) => {
+    const { description, services, budget } = req.body || {};
+    if (!description || typeof description !== "string" || description.trim().length < 12) {
+      return res.status(400).json({ error: "Please describe your project in a sentence or two." });
+    }
+    if (!llmConfigured()) return res.status(503).json({ error: "The estimator is briefly offline." });
+    try {
+      const estimate = await estimateProject({
+        description: description.slice(0, 4000),
+        services: Array.isArray(services) ? services : undefined,
+        budget: typeof budget === "string" ? budget : undefined,
+      });
+      return estimate
+        ? res.status(200).json({ estimate })
+        : res.status(200).json({ error: "Couldn't generate an estimate — add a bit more detail." });
+    } catch (error) {
+      console.error("Estimate error:", error);
+      return res.status(500).json({ error: "Estimate failed." });
     }
   });
 

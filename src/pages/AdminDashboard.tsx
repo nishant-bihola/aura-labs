@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { ShieldCheck, Users, Code, Activity, Search, LogOut } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ShieldCheck, Search, LogOut, Sparkles, X, Copy, Check,
+  TrendingUp, Users, CalendarDays,
+} from "lucide-react";
 
 interface Lead {
   id: number;
@@ -12,10 +15,17 @@ interface Lead {
   createdAt: string;
 }
 
+type Proposal = { proposal: string; emailSubject: string; emailBody: string; estimateRange: string };
+
 const KEY_STORAGE = "aura_admin_key";
+const ACCENT = "#00D54B"; // Cash App green
+
+function initials(name: string) {
+  return (name || "?").split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+}
 
 export default function AdminDashboard() {
-  const [authKey, setAuthKey] = useState<string>(() => sessionStorage.getItem(KEY_STORAGE) || "");
+  const [authKey, setAuthKey] = useState(() => sessionStorage.getItem(KEY_STORAGE) || "");
   const [authed, setAuthed] = useState(false);
   const [keyInput, setKeyInput] = useState("");
   const [authError, setAuthError] = useState("");
@@ -23,6 +33,8 @@ export default function AdminDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
+
+  const [activeLead, setActiveLead] = useState<Lead | null>(null);
 
   const loadLeads = async (key: string) => {
     setLoading(true);
@@ -32,79 +44,70 @@ export default function AdminDashboard() {
       if (res.status === 401 || res.status === 503) {
         const data = await res.json().catch(() => ({}));
         sessionStorage.removeItem(KEY_STORAGE);
-        setAuthed(false);
-        setAuthKey("");
+        setAuthed(false); setAuthKey("");
         setAuthError(data.error || "Unauthorized. Check your admin key.");
         return;
       }
       const data = await res.json();
       setLeads(Array.isArray(data.leads) ? data.leads : []);
       sessionStorage.setItem(KEY_STORAGE, key);
-      setAuthKey(key);
-      setAuthed(true);
-    } catch (err) {
-      console.error(err);
+      setAuthKey(key); setAuthed(true);
+    } catch {
       setAuthError("Could not reach the server. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Auto-authenticate if a key is already stored this session.
   useEffect(() => {
     if (authKey) loadLeads(authKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleLogout = () => {
+  const logout = () => {
     sessionStorage.removeItem(KEY_STORAGE);
-    setAuthed(false);
-    setAuthKey("");
-    setLeads([]);
-    setKeyInput("");
+    setAuthed(false); setAuthKey(""); setLeads([]); setKeyInput("");
   };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return leads;
-    return leads.filter(
-      (l) =>
-        l.name?.toLowerCase().includes(q) ||
-        l.email?.toLowerCase().includes(q) ||
-        l.plan?.toLowerCase().includes(q) ||
-        l.details?.toLowerCase().includes(q)
+    return leads.filter((l) =>
+      [l.name, l.email, l.plan, l.details].some((f) => f?.toLowerCase().includes(q))
     );
   }, [leads, query]);
 
-  // ── Login gate ──────────────────────────────────────────────────────────────
+  const stats = useMemo(() => {
+    const now = Date.now();
+    const week = leads.filter((l) => now - new Date(l.createdAt).getTime() < 7 * 864e5).length;
+    const today = leads.filter((l) => new Date(l.createdAt).toDateString() === new Date().toDateString()).length;
+    return { total: leads.length, week, today };
+  }, [leads]);
+
+  // ── Login gate (Cash App style) ──────────────────────────────────────────────
   if (!authed) {
     return (
-      <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center px-4">
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
         <form
           onSubmit={(e) => { e.preventDefault(); if (keyInput.trim()) loadLeads(keyInput.trim()); }}
-          className="w-full max-w-sm bg-white/5 border border-white/10 rounded-3xl p-8"
+          className="w-full max-w-sm bg-[#121212] rounded-[28px] p-8 shadow-2xl"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <ShieldCheck className="text-[#00f0ff] w-8 h-8" />
-            <div>
-              <h1 className="text-xl font-serif italic leading-tight">Aura Admin Core</h1>
-              <p className="text-white/40 text-[10px] tracking-widest uppercase">Restricted Access</p>
-            </div>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6" style={{ background: ACCENT }}>
+            <ShieldCheck className="text-black w-7 h-7" />
           </div>
-          <label className="block text-[10px] uppercase tracking-widest text-white/50 font-bold mb-2">Admin Key</label>
+          <h1 className="text-2xl font-bold tracking-tight mb-1">Aura Admin</h1>
+          <p className="text-white/40 text-sm mb-7">Enter your key to view the lead pipeline.</p>
           <input
-            type="password"
-            autoFocus
-            value={keyInput}
+            type="password" autoFocus value={keyInput}
             onChange={(e) => { setKeyInput(e.target.value); if (authError) setAuthError(""); }}
-            placeholder="Enter admin key"
-            className="w-full bg-black/40 border border-white/10 rounded-full px-5 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-[#00f0ff]/50 transition-all"
+            placeholder="Admin key"
+            className="w-full bg-black border border-white/10 rounded-2xl px-5 py-4 text-base text-white placeholder-white/30 outline-none focus:border-white/30 transition-all"
           />
-          {authError && <p className="text-red-400/80 text-xs mt-3">{authError}</p>}
+          {authError && <p className="text-red-400 text-sm mt-3">{authError}</p>}
           <button
-            type="submit"
-            disabled={loading || !keyInput.trim()}
-            className="mt-5 w-full py-3 rounded-full bg-white text-black text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#00f0ff] transition-colors disabled:opacity-50"
+            type="submit" disabled={loading || !keyInput.trim()}
+            className="mt-5 w-full py-4 rounded-2xl text-black text-base font-bold transition-all disabled:opacity-40 hover:brightness-110"
+            style={{ background: ACCENT }}
           >
             {loading ? "Verifying…" : "Unlock"}
           </button>
@@ -114,100 +117,209 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white pt-32 pb-24 px-4 md:px-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between gap-4 mb-12 border-b border-white/10 pb-8">
-          <div className="flex items-center gap-4">
-            <ShieldCheck className="text-[#00f0ff] w-10 h-10 md:w-12 md:h-12 shrink-0" />
-            <div>
-              <h1 className="text-2xl md:text-3xl font-serif italic">Aura Admin Core</h1>
-              <p className="text-white/40 text-xs tracking-widest uppercase">System Control Panel</p>
+    <div className="min-h-screen bg-black text-white pb-24">
+      {/* Top bar */}
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-black/70 border-b border-white/5">
+        <div className="max-w-5xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: ACCENT }}>
+              <ShieldCheck className="text-black w-5 h-5" />
             </div>
+            <span className="font-bold tracking-tight">Aura Admin</span>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-white/50 hover:text-white text-[10px] uppercase tracking-widest font-bold border border-white/10 rounded-full px-4 py-2 transition-colors"
-          >
-            <LogOut size={14} /> <span className="hidden sm:inline">Sign out</span>
+          <button onClick={logout} className="flex items-center gap-2 text-white/50 hover:text-white text-sm font-medium transition-colors">
+            <LogOut size={16} /> <span className="hidden sm:inline">Sign out</span>
           </button>
         </div>
+      </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <h3 className="text-white/50 text-xs uppercase tracking-widest font-bold mb-4 flex items-center gap-2"><Users size={14}/> Total Leads</h3>
-            <p className="text-4xl font-serif">{leads.length}</p>
-          </div>
-          <div className="bg-white/5 border border-[#00f0ff]/30 rounded-2xl p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#00f0ff]/10 blur-[40px]" />
-            <h3 className="text-[#00f0ff] text-xs uppercase tracking-widest font-bold mb-4 flex items-center gap-2"><Activity size={14}/> DB Status</h3>
-            <p className="text-2xl font-serif">Online (PostgreSQL)</p>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-            <h3 className="text-white/50 text-xs uppercase tracking-widest font-bold mb-4 flex items-center gap-2"><Code size={14}/> Prisma ORM</h3>
-            <p className="text-2xl font-serif">v6.4.1 connected</p>
-          </div>
+      <main className="max-w-5xl mx-auto px-5 md:px-8 pt-8">
+        {/* Stat cards */}
+        <div className="grid grid-cols-3 gap-3 md:gap-5 mb-8">
+          <StatCard icon={<Users size={16} />} label="Total leads" value={stats.total} />
+          <StatCard icon={<TrendingUp size={16} />} label="This week" value={stats.week} accent />
+          <StatCard icon={<CalendarDays size={16} />} label="Today" value={stats.today} />
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
-          <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center bg-black/20">
-            <h2 className="text-xl font-serif italic">Lead Pipeline</h2>
-            <div className="bg-white/10 flex items-center px-4 py-2 rounded-full border border-white/5">
-              <Search size={14} className="text-white/50 mr-2 shrink-0" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search leads..."
-                className="bg-transparent text-sm focus:outline-none placeholder:text-white/30 w-full"
-              />
+        {/* Search */}
+        <div className="flex items-center gap-3 bg-[#121212] rounded-2xl px-5 py-3.5 mb-5">
+          <Search size={18} className="text-white/40 shrink-0" />
+          <input
+            value={query} onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search leads by name, email, or plan…"
+            className="bg-transparent w-full text-[15px] outline-none placeholder:text-white/30"
+          />
+        </div>
+
+        {/* Lead list */}
+        {loading ? (
+          <div className="py-20 text-center text-white/40 animate-pulse">Loading pipeline…</div>
+        ) : filtered.length === 0 ? (
+          <div className="py-20 text-center text-white/40">
+            {leads.length === 0 ? "No leads yet. They'll appear here the moment one comes in." : "No leads match your search."}
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {filtered.map((lead, i) => (
+              <motion.button
+                key={lead.id}
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(i * 0.03, 0.3) }}
+                onClick={() => setActiveLead(lead)}
+                className="w-full text-left bg-[#121212] hover:bg-[#181818] rounded-2xl p-4 md:p-5 flex items-center gap-4 transition-colors group"
+              >
+                <div className="w-11 h-11 rounded-full flex items-center justify-center text-black font-bold text-sm shrink-0" style={{ background: ACCENT }}>
+                  {initials(lead.name)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold truncate">{lead.name}</p>
+                  <p className="text-white/40 text-sm truncate">{lead.email}</p>
+                </div>
+                <div className="hidden sm:block text-right shrink-0">
+                  <span className="inline-block text-[11px] font-bold uppercase tracking-wide px-3 py-1 rounded-full bg-white/5 text-white/70">{lead.plan}</span>
+                  <p className="text-white/30 text-xs mt-1.5">{new Date(lead.createdAt).toLocaleDateString()}</p>
+                </div>
+                <Sparkles size={18} className="text-white/20 group-hover:text-[var(--accent)] shrink-0 transition-colors" style={{ ["--accent" as any]: ACCENT }} />
+              </motion.button>
+            ))}
+          </div>
+        )}
+      </main>
+
+      {/* Proposal drawer */}
+      <AnimatePresence>
+        {activeLead && (
+          <ProposalDrawer lead={activeLead} authKey={authKey} onClose={() => setActiveLead(null)} />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: number; accent?: boolean }) {
+  return (
+    <div className="bg-[#121212] rounded-2xl md:rounded-3xl p-4 md:p-6" style={accent ? { background: ACCENT } : undefined}>
+      <div className={`flex items-center gap-1.5 text-xs font-medium mb-3 ${accent ? "text-black/70" : "text-white/40"}`}>
+        {icon} <span className="hidden sm:inline">{label}</span>
+      </div>
+      <p className={`text-3xl md:text-5xl font-bold tracking-tight ${accent ? "text-black" : "text-white"}`}>{value}</p>
+      <p className={`text-xs mt-1 sm:hidden ${accent ? "text-black/70" : "text-white/40"}`}>{label}</p>
+    </div>
+  );
+}
+
+function ProposalDrawer({ lead, authKey, onClose }: { lead: Lead; authKey: string; onClose: () => void }) {
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [data, setData] = useState<Proposal | null>(null);
+  const [err, setErr] = useState("");
+  const [copied, setCopied] = useState<string>("");
+
+  const generate = async () => {
+    setStatus("loading"); setErr("");
+    try {
+      const res = await fetch("/api/generate-proposal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": authKey },
+        body: JSON.stringify({ name: lead.name, email: lead.email, plan: lead.plan, details: lead.details }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.error || !json.proposal) {
+        setErr(json.error || "Generation failed."); setStatus("error"); return;
+      }
+      setData(json); setStatus("done");
+    } catch {
+      setErr("Network error."); setStatus("error");
+    }
+  };
+
+  const copy = async (label: string, text: string) => {
+    try { await navigator.clipboard.writeText(text); setCopied(label); setTimeout(() => setCopied(""), 1500); } catch { /* ignore */ }
+  };
+
+  return (
+    <>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose} className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" />
+      <motion.div
+        initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+        transition={{ type: "spring", stiffness: 320, damping: 34 }}
+        className="fixed right-0 top-0 bottom-0 z-50 w-full sm:max-w-md bg-[#0d0d0d] border-l border-white/10 overflow-y-auto"
+      >
+        <div className="sticky top-0 bg-[#0d0d0d]/90 backdrop-blur-md p-5 flex items-center justify-between border-b border-white/5">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-black font-bold text-sm shrink-0" style={{ background: ACCENT }}>{initials(lead.name)}</div>
+            <div className="min-w-0">
+              <p className="font-semibold truncate">{lead.name}</p>
+              <p className="text-white/40 text-sm truncate">{lead.email}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center shrink-0"><X size={18} /></button>
+        </div>
+
+        <div className="p-5 space-y-5">
+          <div className="bg-[#161616] rounded-2xl p-4 space-y-2 text-sm">
+            <Row k="Plan" v={lead.plan} />
+            <Row k="Received" v={new Date(lead.createdAt).toLocaleString()} />
+            {lead.addons && <Row k="Add-ons" v={lead.addons} />}
+            <div>
+              <p className="text-white/40 text-xs mb-1">Details</p>
+              <p className="text-white/80 leading-relaxed whitespace-pre-wrap">{lead.details || "—"}</p>
             </div>
           </div>
 
-          {loading ? (
-            <div className="p-12 text-center text-white/40 animate-pulse">Synchronizing database...</div>
-          ) : filtered.length === 0 ? (
-            <div className="p-12 text-center text-white/40">
-              {leads.length === 0 ? "No leads captured yet." : "No leads match your search."}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[640px]">
-                <thead>
-                  <tr className="border-b border-white/10 bg-black/40 text-[10px] uppercase tracking-widest text-white/50">
-                    <th className="p-6 font-bold">Client</th>
-                    <th className="p-6 font-bold">Contact</th>
-                    <th className="p-6 font-bold">Requested Plan</th>
-                    <th className="p-6 font-bold">Project Details</th>
-                    <th className="p-6 font-bold">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((lead, i) => (
-                    <motion.tr
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: Math.min(i * 0.04, 0.4) }}
-                      key={lead.id}
-                      className="border-b border-white/5 hover:bg-white/5 transition-colors"
-                    >
-                      <td className="p-6 text-sm font-medium">{lead.name}</td>
-                      <td className="p-6 text-sm text-white/60">{lead.email}</td>
-                      <td className="p-6">
-                        <span className="bg-[#00f0ff]/10 text-[#00f0ff] border border-[#00f0ff]/20 px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase">
-                          {lead.plan}
-                        </span>
-                        {lead.addons && <div className="mt-2 text-[10px] text-white/40">+ {lead.addons}</div>}
-                      </td>
-                      <td className="p-6 text-xs text-white/50 max-w-xs truncate">{lead.details}</td>
-                      <td className="p-6 text-xs text-white/40">{new Date(lead.createdAt).toLocaleDateString()}</td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
+          <a href={`mailto:${lead.email}`} className="block text-center w-full py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 text-sm font-semibold transition-colors">
+            Email {lead.name.split(" ")[0]}
+          </a>
+
+          {status !== "done" && (
+            <button onClick={generate} disabled={status === "loading"}
+              className="w-full py-4 rounded-2xl text-black font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:brightness-110"
+              style={{ background: ACCENT }}>
+              <Sparkles size={18} /> {status === "loading" ? "Drafting proposal…" : "Generate AI proposal"}
+            </button>
+          )}
+          {status === "error" && <p className="text-red-400 text-sm">{err}</p>}
+
+          {status === "done" && data && (
+            <div className="space-y-5">
+              {data.estimateRange && (
+                <div className="rounded-2xl p-4" style={{ background: ACCENT }}>
+                  <p className="text-black/60 text-xs font-semibold uppercase tracking-wide">Estimated investment</p>
+                  <p className="text-black text-2xl font-bold">{data.estimateRange}</p>
+                </div>
+              )}
+
+              <Block title="Proposal" onCopy={() => copy("proposal", data.proposal)} copied={copied === "proposal"}>
+                <pre className="whitespace-pre-wrap font-sans text-sm text-white/80 leading-relaxed">{data.proposal}</pre>
+              </Block>
+
+              <Block title={`Follow-up email · ${data.emailSubject}`} onCopy={() => copy("email", `Subject: ${data.emailSubject}\n\n${data.emailBody}`)} copied={copied === "email"}>
+                <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">{data.emailBody}</p>
+              </Block>
+
+              <button onClick={generate} className="w-full py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-sm font-medium transition-colors">Regenerate</button>
             </div>
           )}
         </div>
+      </motion.div>
+    </>
+  );
+}
+
+function Row({ k, v }: { k: string; v: string }) {
+  return <div className="flex justify-between gap-4"><span className="text-white/40">{k}</span><span className="text-white/80 text-right">{v}</span></div>;
+}
+
+function Block({ title, children, onCopy, copied }: { title: string; children: React.ReactNode; onCopy: () => void; copied: boolean }) {
+  return (
+    <div className="bg-[#161616] rounded-2xl p-4">
+      <div className="flex items-center justify-between mb-3 gap-3">
+        <p className="text-xs uppercase tracking-wide text-white/40 font-bold truncate">{title}</p>
+        <button onClick={onCopy} className="flex items-center gap-1.5 text-xs font-semibold text-white/60 hover:text-white shrink-0">
+          {copied ? <><Check size={13} style={{ color: ACCENT }} /> Copied</> : <><Copy size={13} /> Copy</>}
+        </button>
       </div>
+      {children}
     </div>
   );
 }

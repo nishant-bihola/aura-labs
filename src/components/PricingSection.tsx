@@ -291,8 +291,8 @@ export default function AuraPricing() {
           <p className="text-white/20 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-valtero-sans">
             All prices in CAD · Based in Edmonton · Serving clients worldwide
           </p>
-          <Link to="/contact" className="group flex items-center gap-3 md:gap-4 text-white/50 hover:text-white transition-colors duration-500">
-            <span className="text-base md:text-lg font-valtero-serif italic">Need a custom quote?</span>
+          <Link to="/estimate" className="group flex items-center gap-3 md:gap-4 text-white/50 hover:text-white transition-colors duration-500">
+            <span className="text-base md:text-lg font-valtero-serif italic">Get an instant AI estimate</span>
             <div className="w-7 h-7 md:w-8 md:h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:rotate-45 group-hover:border-white transition-all duration-500">
               <ArrowUpRight size={12} className="md:w-3.5 md:h-3.5" />
             </div>

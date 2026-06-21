@@ -46,6 +46,7 @@ const AIAds = lazy(() => import("./pages/services/AIAds"));
 const BrandIdentity = lazy(() => import("./pages/services/BrandIdentity"));
 const PrivacyPolicy = lazy(() => import("./pages/Legal").then((m) => ({ default: m.PrivacyPolicy })));
 const TermsOfService = lazy(() => import("./pages/Legal").then((m) => ({ default: m.TermsOfService })));
+const Estimator = lazy(() => import("./pages/Estimator"));
 
 
 /**
@@ -149,6 +150,7 @@ export default function App() {
     { name: "Studio", href: "/#studio" },
     { name: "Work", href: "/#work" },
     { name: "Pricing", href: "/#pricing" },
+    { name: "Estimate", href: "/estimate" },
     { name: "Contact", href: "/contact" },
   ];
 
@@ -290,6 +292,9 @@ export default function App() {
 
                 {/* CHECKOUT PAGE */}
                 <Route path="/checkout" element={<Checkout />} />
+
+                {/* AI PROJECT ESTIMATOR */}
+                <Route path="/estimate" element={<Estimator />} />
 
                 {/* LEGAL PAGES */}
                 <Route path="/privacy" element={<PrivacyPolicy />} />
