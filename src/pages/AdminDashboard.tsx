@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck, Search, LogOut, Sparkles, X, Copy, Check,
-  TrendingUp, Users, CalendarDays,
+  TrendingUp, Users, MessageSquare, Bot,
 } from "lucide-react";
 
 interface Lead {
@@ -16,6 +16,17 @@ interface Lead {
 }
 
 type Proposal = { proposal: string; emailSubject: string; emailBody: string; estimateRange: string };
+
+interface Conversation {
+  id: number;
+  sessionId: string | null;
+  email: string | null;
+  createdAt: string;
+  updatedAt: string;
+  messageCount: number;
+  preview: string;
+  messages: { role: string; content: string }[];
+}
 
 const KEY_STORAGE = "aura_admin_key";
 const ACCENT = "#00D54B"; // Cash App green
@@ -35,6 +46,29 @@ export default function AdminDashboard() {
   const [query, setQuery] = useState("");
 
   const [activeLead, setActiveLead] = useState<Lead | null>(null);
+
+  const [tab, setTab] = useState<"leads" | "chats">("leads");
+  const [convos, setConvos] = useState<Conversation[]>([]);
+  const [convosLoaded, setConvosLoaded] = useState(false);
+  const [activeConvo, setActiveConvo] = useState<Conversation | null>(null);
+
+  const loadConvos = async (key: string) => {
+    try {
+      const res = await fetch("/api/admin-chats", { headers: { "x-admin-key": key } });
+      const data = await res.json().catch(() => ({}));
+      setConvos(Array.isArray(data.conversations) ? data.conversations : []);
+    } catch {
+      /* ignore */
+    } finally {
+      setConvosLoaded(true);
+    }
+  };
+
+  const openChats = () => {
+    setTab("chats");
+    setQuery("");
+    if (!convosLoaded) loadConvos(authKey);
+  };
 
   const loadLeads = async (key: string) => {
     setLoading(true);
@@ -67,6 +101,7 @@ export default function AdminDashboard() {
   const logout = () => {
     sessionStorage.removeItem(KEY_STORAGE);
     setAuthed(false); setAuthKey(""); setLeads([]); setKeyInput("");
+    setConvos([]); setConvosLoaded(false); setTab("leads");
   };
 
   const filtered = useMemo(() => {
@@ -76,6 +111,14 @@ export default function AdminDashboard() {
       [l.name, l.email, l.plan, l.details].some((f) => f?.toLowerCase().includes(q))
     );
   }, [leads, query]);
+
+  const filteredConvos = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return convos;
+    return convos.filter((c) =>
+      [c.email, c.preview, ...c.messages.map((m) => m.content)].some((f) => f?.toLowerCase().includes(q))
+    );
+  }, [convos, query]);
 
   const stats = useMemo(() => {
     const now = Date.now();
@@ -135,10 +178,24 @@ export default function AdminDashboard() {
 
       <main className="max-w-5xl mx-auto px-5 md:px-8 pt-8">
         {/* Stat cards */}
-        <div className="grid grid-cols-3 gap-3 md:gap-5 mb-8">
+        <div className="grid grid-cols-3 gap-3 md:gap-5 mb-6">
           <StatCard icon={<Users size={16} />} label="Total leads" value={stats.total} />
           <StatCard icon={<TrendingUp size={16} />} label="This week" value={stats.week} accent />
-          <StatCard icon={<CalendarDays size={16} />} label="Today" value={stats.today} />
+          <StatCard icon={<MessageSquare size={16} />} label="Conversations" value={convosLoaded ? convos.length : stats.today} />
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-5">
+          <button onClick={() => setTab("leads")}
+            className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-colors ${tab === "leads" ? "text-black" : "bg-[#121212] text-white/60 hover:text-white"}`}
+            style={tab === "leads" ? { background: ACCENT } : undefined}>
+            Leads
+          </button>
+          <button onClick={openChats}
+            className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-colors ${tab === "chats" ? "text-black" : "bg-[#121212] text-white/60 hover:text-white"}`}
+            style={tab === "chats" ? { background: ACCENT } : undefined}>
+            Conversations
+          </button>
         </div>
 
         {/* Search */}
@@ -146,50 +203,84 @@ export default function AdminDashboard() {
           <Search size={18} className="text-white/40 shrink-0" />
           <input
             value={query} onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search leads by name, email, or plan…"
+            placeholder={tab === "leads" ? "Search leads by name, email, or plan…" : "Search conversations…"}
             className="bg-transparent w-full text-[15px] outline-none placeholder:text-white/30"
           />
         </div>
 
-        {/* Lead list */}
-        {loading ? (
-          <div className="py-20 text-center text-white/40 animate-pulse">Loading pipeline…</div>
-        ) : filtered.length === 0 ? (
+        {tab === "leads" ? (
+          loading ? (
+            <div className="py-20 text-center text-white/40 animate-pulse">Loading pipeline…</div>
+          ) : filtered.length === 0 ? (
+            <div className="py-20 text-center text-white/40">
+              {leads.length === 0 ? "No leads yet. They'll appear here the moment one comes in." : "No leads match your search."}
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {filtered.map((lead, i) => (
+                <motion.button
+                  key={lead.id}
+                  initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(i * 0.03, 0.3) }}
+                  onClick={() => setActiveLead(lead)}
+                  className="w-full text-left bg-[#121212] hover:bg-[#181818] rounded-2xl p-4 md:p-5 flex items-center gap-4 transition-colors group"
+                >
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center text-black font-bold text-sm shrink-0" style={{ background: ACCENT }}>
+                    {initials(lead.name)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold truncate">{lead.name}</p>
+                    <p className="text-white/40 text-sm truncate">{lead.email}</p>
+                  </div>
+                  <div className="hidden sm:block text-right shrink-0">
+                    <span className="inline-block text-[11px] font-bold uppercase tracking-wide px-3 py-1 rounded-full bg-white/5 text-white/70">{lead.plan}</span>
+                    <p className="text-white/30 text-xs mt-1.5">{new Date(lead.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <Sparkles size={18} className="text-white/20 group-hover:text-[var(--accent)] shrink-0 transition-colors" style={{ ["--accent" as any]: ACCENT }} />
+                </motion.button>
+              ))}
+            </div>
+          )
+        ) : !convosLoaded ? (
+          <div className="py-20 text-center text-white/40 animate-pulse">Loading conversations…</div>
+        ) : filteredConvos.length === 0 ? (
           <div className="py-20 text-center text-white/40">
-            {leads.length === 0 ? "No leads yet. They'll appear here the moment one comes in." : "No leads match your search."}
+            {convos.length === 0 ? "No conversations yet. Chats with Aura AI will appear here." : "No conversations match your search."}
           </div>
         ) : (
           <div className="space-y-2.5">
-            {filtered.map((lead, i) => (
+            {filteredConvos.map((c, i) => (
               <motion.button
-                key={lead.id}
+                key={c.id}
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(i * 0.03, 0.3) }}
-                onClick={() => setActiveLead(lead)}
+                onClick={() => setActiveConvo(c)}
                 className="w-full text-left bg-[#121212] hover:bg-[#181818] rounded-2xl p-4 md:p-5 flex items-center gap-4 transition-colors group"
               >
-                <div className="w-11 h-11 rounded-full flex items-center justify-center text-black font-bold text-sm shrink-0" style={{ background: ACCENT }}>
-                  {initials(lead.name)}
+                <div className="w-11 h-11 rounded-full flex items-center justify-center text-black shrink-0" style={{ background: ACCENT }}>
+                  <MessageSquare size={18} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold truncate">{lead.name}</p>
-                  <p className="text-white/40 text-sm truncate">{lead.email}</p>
+                  <p className="font-semibold truncate">{c.email || "Anonymous visitor"}</p>
+                  <p className="text-white/40 text-sm truncate">{c.preview || "—"}</p>
                 </div>
-                <div className="hidden sm:block text-right shrink-0">
-                  <span className="inline-block text-[11px] font-bold uppercase tracking-wide px-3 py-1 rounded-full bg-white/5 text-white/70">{lead.plan}</span>
-                  <p className="text-white/30 text-xs mt-1.5">{new Date(lead.createdAt).toLocaleDateString()}</p>
+                <div className="text-right shrink-0">
+                  <span className="inline-block text-[11px] font-bold px-3 py-1 rounded-full bg-white/5 text-white/70">{c.messageCount} msgs</span>
+                  <p className="text-white/30 text-xs mt-1.5">{new Date(c.updatedAt).toLocaleDateString()}</p>
                 </div>
-                <Sparkles size={18} className="text-white/20 group-hover:text-[var(--accent)] shrink-0 transition-colors" style={{ ["--accent" as any]: ACCENT }} />
               </motion.button>
             ))}
           </div>
         )}
       </main>
 
-      {/* Proposal drawer */}
+      {/* Drawers */}
       <AnimatePresence>
         {activeLead && (
           <ProposalDrawer lead={activeLead} authKey={authKey} onClose={() => setActiveLead(null)} />
+        )}
+        {activeConvo && (
+          <ConversationDrawer convo={activeConvo} onClose={() => setActiveConvo(null)} />
         )}
       </AnimatePresence>
     </div>
@@ -300,6 +391,50 @@ function ProposalDrawer({ lead, authKey, onClose }: { lead: Lead; authKey: strin
               <button onClick={generate} className="w-full py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-sm font-medium transition-colors">Regenerate</button>
             </div>
           )}
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
+function ConversationDrawer({ convo, onClose }: { convo: Conversation; onClose: () => void }) {
+  return (
+    <>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose} className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" />
+      <motion.div
+        initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+        transition={{ type: "spring", stiffness: 320, damping: 34 }}
+        className="fixed right-0 top-0 bottom-0 z-50 w-full sm:max-w-md bg-[#0d0d0d] border-l border-white/10 overflow-y-auto"
+      >
+        <div className="sticky top-0 bg-[#0d0d0d]/90 backdrop-blur-md p-5 flex items-center justify-between border-b border-white/5">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-black shrink-0" style={{ background: ACCENT }}><MessageSquare size={18} /></div>
+            <div className="min-w-0">
+              <p className="font-semibold truncate">{convo.email || "Anonymous visitor"}</p>
+              <p className="text-white/40 text-xs truncate">{convo.messageCount} messages · {new Date(convo.updatedAt).toLocaleString()}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center shrink-0"><X size={18} /></button>
+        </div>
+
+        <div className="p-5 space-y-4">
+          {convo.messages.length === 0 && <p className="text-white/40 text-sm text-center py-10">No transcript stored.</p>}
+          {convo.messages.map((m, i) => {
+            const isUser = m.role === "user";
+            return (
+              <div key={i} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+                <div className={`flex gap-2 max-w-[85%] ${isUser ? "flex-row-reverse" : ""}`}>
+                  <div className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center ${isUser ? "bg-white/10" : ""}`} style={!isUser ? { background: ACCENT } : undefined}>
+                    {isUser ? <span className="text-[10px] font-bold text-white/70">YOU</span> : <Bot size={14} className="text-black" />}
+                  </div>
+                  <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${isUser ? "bg-white/10 text-white rounded-br-sm" : "bg-[#161616] text-white/85 rounded-bl-sm"}`}>
+                    {m.content}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </motion.div>
     </>
