@@ -3,6 +3,7 @@
  * Vercel function (api/chat.ts) and the dev server (server.ts).
  */
 import { CMS_DATA } from "../../src/lib/cms.js";
+import { PROJECTS } from "../../src/data/projects.js";
 import { BOOKING_URL } from "./emails.js";
 import { runAgent, type ChatMessage, type ToolDef } from "./llm.js";
 import { estimateProject, estimateToText } from "./estimator.js";
@@ -56,6 +57,20 @@ const TOOLS: ToolDef[] = [
       parameters: { type: "object", properties: {} },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "get_portfolio",
+      description:
+        "Return real Aura Labs case studies to reference as proof. Use when the user asks about past work, examples, or wants to see what you've built. Optionally filter by keyword (e.g. 'e-commerce', 'restaurant').",
+      parameters: {
+        type: "object",
+        properties: {
+          keyword: { type: "string", description: "Optional topic/industry/tech to filter by." },
+        },
+      },
+    },
+  },
 ];
 
 function systemPrompt(): string {
@@ -70,8 +85,10 @@ Plans: ${JSON.stringify(CMS_DATA.pricing_plans)}
 HOW YOU WORK:
 - Be consultative: ask one sharp question to understand their goal before pitching.
 - When they describe a project or ask cost, call estimate_project and present the range conversationally.
+- When they ask for examples or proof, call get_portfolio and reference a real project by name.
 - When they're interested, ask for their name + email, then call capture_lead.
 - If they want to talk to a human, call get_booking_link.
+- Be warm and concrete. Lead toward a next step (estimate, examples, or a call) in every reply.
 
 RESPONSE FORMAT (chat bubbles on a phone):
 - Under 90 words. One idea per reply. Max 2 short paragraphs or 1 paragraph + up to 3 "-" bullets.
@@ -99,6 +116,21 @@ const executors = {
     return res.message;
   },
   get_booking_link: async () => `Booking link: ${BOOKING_URL} (or the /contact page).`,
+  get_portfolio: async (args: Record<string, any>) => {
+    const kw = String(args.keyword || "").toLowerCase().trim();
+    let list = PROJECTS;
+    if (kw) {
+      const match = PROJECTS.filter((p) =>
+        [p.title, p.category, p.description, p.client, ...(p.services || [])]
+          .join(" ").toLowerCase().includes(kw)
+      );
+      if (match.length) list = match;
+    }
+    const top = list.slice(0, 4).map((p) =>
+      `- ${p.title} (${p.category}): ${p.description}${p.liveUrl ? ` [live: ${p.liveUrl}]` : ""}`
+    );
+    return `Relevant Aura Labs work:\n${top.join("\n")}`;
+  },
 };
 
 export type IncomingMessage = { role: "user" | "model" | "assistant"; content: string };

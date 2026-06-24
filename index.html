@@ -34,23 +34,23 @@
     <!-- Theme -->
     <meta name="theme-color" content="#000000" />
 
-    <!-- JSON-LD LocalBusiness Structured Data -->
+    <!-- JSON-LD ProfessionalService Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "LocalBusiness",
+      "@type": "ProfessionalService",
       "name": "Aura Labs",
       "image": "https://aura-labs-one.vercel.app/og-image.png",
       "@id": "https://aura-labs-one.vercel.app/#organization",
       "url": "https://aura-labs-one.vercel.app/",
-      "telephone": "+1-780-000-0000",
+      "email": "Nishant15bihola@gmail.com",
+      "description": "Aura Labs builds high-performance websites, web apps, AI chatbots, and AI-powered motion ads for businesses worldwide. Based in Edmonton, Alberta. Projects from $1,500 CAD.",
       "priceRange": "$$",
+      "founder": { "@type": "Person", "name": "Nishant Bihola" },
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "",
         "addressLocality": "Edmonton",
         "addressRegion": "AB",
-        "postalCode": "",
         "addressCountry": "CA"
       },
       "geo": {
@@ -58,19 +58,27 @@
         "latitude": 53.5461,
         "longitude": -113.4938
       },
+      "areaServed": { "@type": "Place", "name": "Worldwide" },
       "openingHoursSpecification": {
         "@type": "OpeningHoursSpecification",
-        "dayOfWeek": [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday"
-        ],
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
         "opens": "09:00",
         "closes": "17:00"
       },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Services",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Web Development" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Web App Development" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "AI Chatbots" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "AI Ad Content" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Brand Identity" } }
+        ]
+      },
       "sameAs": [
+        "https://www.instagram.com/auralab11/",
+        "https://www.linkedin.com/in/nishantsinh-bihola-8bb500321",
         "https://github.com/nishant-bihola/aura-labs"
       ]
     }
