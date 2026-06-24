@@ -27,6 +27,7 @@ export default function Estimator() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [estimate, setEstimate] = useState<Estimate | null>(null);
+  const [emailed, setEmailed] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const toggle = (s: string) =>
@@ -57,6 +58,7 @@ export default function Estimator() {
         return;
       }
       setEstimate(data.estimate);
+      setEmailed(!!data.emailed);
       setStatus("done");
     } catch {
       setErrorMsg("Network error. Please try again.");
@@ -182,7 +184,12 @@ export default function Estimator() {
                     ))}
                   </div>
 
-                  {estimate.notes && <p className="text-xs text-white/40 leading-relaxed mb-8 border-t border-white/10 pt-5">{estimate.notes}</p>}
+                  {estimate.notes && <p className="text-xs text-white/40 leading-relaxed mb-4 border-t border-white/10 pt-5">{estimate.notes}</p>}
+                  {emailed && (
+                    <p className="text-xs text-[#00f0ff] mb-6 flex items-center gap-1.5">
+                      <Check size={13} /> Sent to your inbox — check your email for the full breakdown.
+                    </p>
+                  )}
 
                   <Link to={`/checkout?plan=${encodeURIComponent(estimate.recommendedPlan)}`}
                     className="block text-center w-full py-4 rounded-full bg-[#00f0ff] text-black text-[11px] font-bold uppercase tracking-[0.25em] hover:shadow-[0_0_40px_rgba(0,240,255,0.4)] transition-all">

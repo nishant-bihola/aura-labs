@@ -159,3 +159,31 @@ export async function captureLead(input: {
     qualification,
   };
 }
+
+/** Upsert a full chatbot conversation so the admin can review it later. Never throws. */
+export async function saveConversation(sessionId: string, history: unknown, email?: string): Promise<void> {
+  if (!sessionId) return;
+  try {
+    const data = {
+      history: JSON.stringify(history ?? []).slice(0, 100000),
+      ...(email ? { email } : {}),
+    };
+    await prisma.chatSession.upsert({
+      where: { sessionId },
+      create: { sessionId, ...data },
+      update: data,
+    });
+  } catch (e) {
+    console.error("[conversation] save failed:", e);
+  }
+}
+
+/** List recent conversations for the admin dashboard. Never throws. */
+export async function listConversations(limit = 100) {
+  try {
+    return await prisma.chatSession.findMany({ orderBy: { updatedAt: "desc" }, take: limit });
+  } catch (e) {
+    console.error("[conversation] list failed:", e);
+    return [];
+  }
+}

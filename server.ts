@@ -7,11 +7,15 @@ import { createClient } from "@supabase/supabase-js";
 import { Client as NotionClient } from "@notionhq/client";
 import { paymentInstructionsHTML, adminPurchaseAlertHTML } from "./api/_lib/emails.js";
 import * as dotenv from "dotenv";
-import { runChatAgent, GRACEFUL_FALLBACK } from "./api/_lib/chatAgent.js";
+import { runChatAgent, streamChatAgent, GRACEFUL_FALLBACK } from "./api/_lib/chatAgent.js";
 import { estimateProject } from "./api/_lib/estimator.js";
 import { llmConfigured } from "./api/_lib/llm.js";
+import { saveConversation } from "./api/_lib/leads.js";
 
+// Load base env, then let .env.local override (matches Vite's behaviour so the
+// dev server and the client see the same values, e.g. GROQ_API_KEY).
 dotenv.config();
+dotenv.config({ path: ".env.local", override: true });
 
 // --- CONFIGURATION ---
 const PORT = parseInt(String(process.env.PORT || "3000"), 10);
@@ -280,7 +284,7 @@ async function startServer() {
     }
     if (!llmConfigured()) {
       return res.status(200).json({
-        reply: "My AI is briefly offline. Please email contact@aura-labs.com or book a call.",
+        reply: "My AI is briefly offline. Please email nishant15bihola@gmail.com or book a call.",
       });
     }
     try {
@@ -289,6 +293,35 @@ async function startServer() {
     } catch (error) {
       console.error("Chat API Error:", error);
       return res.status(200).json({ reply: GRACEFUL_FALLBACK });
+    }
+  });
+
+  // Streaming chat (SSE) — dev parity with /api/chat-stream
+  app.post("/api/chat-stream", async (req, res) => {
+    const { messages, sessionId } = req.body || {};
+    if (!Array.isArray(messages)) return res.status(400).json({ error: "Messages array required" });
+    res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    const send = (obj: unknown) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
+    if (!llmConfigured()) {
+      send({ token: "My AI is briefly offline. Please email nishant15bihola@gmail.com or book a call." });
+      send({ done: true });
+      return res.end();
+    }
+    let full = "";
+    try {
+      full = await streamChatAgent(messages, (token) => send({ token }));
+    } catch (error) {
+      console.error("chat-stream error:", error);
+      send({ token: GRACEFUL_FALLBACK });
+      full = GRACEFUL_FALLBACK;
+    }
+    send({ done: true });
+    res.end();
+    if (typeof sessionId === "string" && sessionId) {
+      void saveConversation(sessionId, [...messages, { role: "model", content: full }]);
     }
   });
 

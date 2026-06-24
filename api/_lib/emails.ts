@@ -5,6 +5,8 @@
  * All markup is table-based with inline styles for maximum email-client support.
  */
 
+import type { ProjectEstimate } from "./estimator.js";
+
 export const BOOKING_URL = "https://calendar.app.google/ZQNXkk3AFDSdbyReA";
 export const SITE_URL = "https://aura-labs-one.vercel.app";
 
@@ -67,6 +69,57 @@ ${FEATURED_WORK.map(w => `
   <tr><td style="height:1px;background:rgba(255,255,255,0.06);"></td></tr>
 </table>
 `;
+
+// ─── AI Project Estimate ──────────────────────────────────────────────────────
+export const estimateEmailHTML = (name: string, e: ProjectEstimate) => {
+  const money = (n: number) => `$${n.toLocaleString()}`;
+  const phases = e.phases
+    .map(
+      (p) => `
+    <tr><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <span style="color:#fff;font-size:14px;font-weight:600;">${p.name}</span>
+      <span style="color:rgba(255,255,255,0.3);font-size:12px;"> · ~${p.weeks}w</span>
+      <p style="margin:4px 0 0;color:rgba(255,255,255,0.5);font-size:13px;line-height:1.5;">${p.description}</p>
+    </td></tr>`
+    )
+    .join("");
+  const stack = e.techStack
+    .map(
+      (t) =>
+        `<span style="display:inline-block;margin:0 6px 6px 0;padding:4px 12px;border:1px solid rgba(255,255,255,0.1);border-radius:100px;font-size:11px;color:rgba(255,255,255,0.6);">${t}</span>`
+    )
+    .join("");
+
+  return shell("AURA LABS · YOUR ESTIMATE", "linear-gradient(90deg,#00f0ff,#0055ff)", `
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td style="padding:48px 48px 32px;">
+      <h1 style="margin:0 0 8px;font-size:26px;font-weight:700;color:#fff;letter-spacing:-0.5px;">Your project estimate</h1>
+      <p style="margin:0 0 28px;font-size:15px;line-height:1.6;color:rgba(255,255,255,0.6);">Hi ${name.split(" ")[0]}, here's a tailored estimate based on what you described.</p>
+
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:rgba(255,255,255,0.75);">${e.summary}</p>
+
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:rgba(0,240,255,0.06);border:1px solid rgba(0,240,255,0.2);border-radius:16px;">
+        <tr><td style="padding:24px;">
+          <span style="font-size:34px;font-weight:800;color:#fff;letter-spacing:-1px;">${money(e.priceLow)}–${money(e.priceHigh)}</span>
+          <span style="font-size:14px;color:rgba(255,255,255,0.4);"> ${e.currency}</span>
+          <p style="margin:8px 0 0;font-size:13px;color:rgba(255,255,255,0.5);">${e.recommendedPlan} plan · ~${e.timelineWeeks} weeks</p>
+        </td></tr>
+      </table>
+
+      ${stack ? `<p style="margin:0 0 18px;">${stack}</p>` : ""}
+
+      <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);">Phases</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">${phases}</table>
+
+      ${e.notes ? `<p style="margin:0 0 28px;font-size:13px;line-height:1.6;color:rgba(255,255,255,0.45);">${e.notes}</p>` : ""}
+
+      ${ctaButton(`${SITE_URL}/checkout?plan=${encodeURIComponent(e.recommendedPlan)}`, "Start this project")}
+      <p style="margin:18px 0 0;font-size:12px;color:rgba(255,255,255,0.3);">This estimate is a guide — final scope is confirmed in a proposal. Reply to this email to talk to a human.</p>
+    </td></tr>
+  </table>
+  ${featuredWorkBlock()}
+`);
+};
 
 // ─── Admin alert ──────────────────────────────────────────────────────────────
 export const adminAlertHTML = (name: string, email: string, message: string, type: string, plan?: string) =>

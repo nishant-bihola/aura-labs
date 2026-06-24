@@ -170,6 +170,144 @@ export async function llmChat(opts: LlmOptions): Promise<LlmResult> {
 
 export type ToolExecutor = (args: Record<string, any>) => Promise<string> | string;
 
+/** One streaming completion. Forwards content tokens via onToken; returns the
+ * full content plus any tool calls assembled from streamed deltas. */
+async function streamOnce(
+  cfg: ProviderConfig,
+  opts: { messages: ChatMessage[]; tools?: ToolDef[]; temperature?: number; maxTokens?: number; onToken: (t: string) => void }
+): Promise<{ content: string; toolCalls: ToolCall[] }> {
+  const body: Record<string, unknown> = {
+    model: cfg.model,
+    messages: opts.messages,
+    temperature: opts.temperature ?? 0.6,
+    max_tokens: opts.maxTokens ?? 800,
+    stream: true,
+  };
+  if (opts.tools?.length) {
+    body.tools = opts.tools;
+    body.tool_choice = "auto";
+  }
+
+  const res = await fetch(`${cfg.baseURL}/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.apiKey}` },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok || !res.body) {
+    const errText = await res.text().catch(() => "");
+    throw new Error(`stream ${res.status}: ${errText.slice(0, 200)}`);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let content = "";
+  const toolMap = new Map<number, { id: string; name: string; args: string }>();
+
+  // Suppress <think>…</think> reasoning (some local models stream it).
+  let inThink = false;
+  const emit = (chunk: string) => {
+    let text = chunk;
+    while (text) {
+      if (inThink) {
+        const end = text.indexOf("</think>");
+        if (end === -1) return;
+        text = text.slice(end + 8);
+        inThink = false;
+      }
+      const start = text.indexOf("<think>");
+      if (start === -1) { content += text; opts.onToken(text); return; }
+      const before = text.slice(0, start);
+      if (before) { content += before; opts.onToken(before); }
+      text = text.slice(start + 7);
+      inThink = true;
+    }
+  };
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t.startsWith("data:")) continue;
+      const data = t.slice(5).trim();
+      if (data === "[DONE]") continue;
+      let json: any;
+      try { json = JSON.parse(data); } catch { continue; }
+      const delta = json.choices?.[0]?.delta;
+      if (!delta) continue;
+      if (typeof delta.content === "string" && delta.content) emit(delta.content);
+      if (Array.isArray(delta.tool_calls)) {
+        for (const tc of delta.tool_calls) {
+          const idx = tc.index ?? 0;
+          const cur = toolMap.get(idx) || { id: "", name: "", args: "" };
+          if (tc.id) cur.id = tc.id;
+          if (tc.function?.name) cur.name = tc.function.name;
+          if (tc.function?.arguments) cur.args += tc.function.arguments;
+          toolMap.set(idx, cur);
+        }
+      }
+    }
+  }
+
+  const toolCalls: ToolCall[] = [...toolMap.values()]
+    .filter((t) => t.name)
+    .map((t) => ({
+      id: t.id || `call_${Math.random().toString(36).slice(2)}`,
+      type: "function",
+      function: { name: t.name, arguments: t.args },
+    }));
+
+  return { content, toolCalls };
+}
+
+/**
+ * Streaming agentic loop. Streams content tokens to onToken while still
+ * supporting tool-calls (tool turns run between streamed passes). Returns the
+ * full assistant text.
+ */
+export async function streamAgent(args: {
+  messages: ChatMessage[];
+  tools: ToolDef[];
+  executors: Record<string, ToolExecutor>;
+  temperature?: number;
+  maxTokens?: number;
+  maxSteps?: number;
+  onToken: (t: string) => void;
+}): Promise<string> {
+  const cfg = providerConfig(resolveProvider());
+  const messages = [...args.messages];
+  const maxSteps = args.maxSteps ?? 4;
+  let full = "";
+
+  for (let step = 0; step < maxSteps; step++) {
+    const { content, toolCalls } = await streamOnce(cfg, {
+      messages,
+      tools: args.tools,
+      temperature: args.temperature,
+      maxTokens: args.maxTokens,
+      onToken: (t) => { full += t; args.onToken(t); },
+    });
+
+    if (!toolCalls.length) return full;
+
+    messages.push({ role: "assistant", content: content || "", tool_calls: toolCalls });
+    for (const call of toolCalls) {
+      let parsed: Record<string, any> = {};
+      try { parsed = call.function.arguments ? JSON.parse(call.function.arguments) : {}; } catch { parsed = {}; }
+      const exec = args.executors[call.function.name];
+      let output: string;
+      try { output = exec ? await exec(parsed) : `Unknown tool: ${call.function.name}`; }
+      catch (e) { output = `Tool ${call.function.name} failed: ${e instanceof Error ? e.message : "error"}`; }
+      messages.push({ role: "tool", tool_call_id: call.id, name: call.function.name, content: output });
+    }
+  }
+  return full;
+}
+
 /**
  * Agentic loop: lets the model call tools, runs them, feeds results back, and
  * repeats until it produces a final text answer (or hits maxSteps).

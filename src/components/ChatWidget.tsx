@@ -78,51 +78,6 @@ function renderBubble(text: string) {
   return <div className="space-y-2">{blocks}</div>;
 }
 
-function TypewriterText({ content, onType, onComplete }: { content: string; onType: () => void; onComplete: () => void }) {
-  const [displayText, setDisplayText] = useState('');
-  const [isDone, setIsDone] = useState(false);
-  const words = useRef<string[]>([]);
-  const currentIndex = useRef(0);
-  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    words.current = content.split(' ');
-    currentIndex.current = 0;
-    setDisplayText('');
-    setIsDone(false);
-    if (timer.current) clearInterval(timer.current);
-
-    timer.current = setInterval(() => {
-      const idx = currentIndex.current;
-      if (idx < words.current.length) {
-        setDisplayText((prev) => (prev ? prev + ' ' : '') + words.current[idx]);
-        currentIndex.current += 1;
-        onType();
-      } else {
-        if (timer.current) clearInterval(timer.current);
-        setIsDone(true);
-        onComplete();
-      }
-    }, 22);
-
-    return () => { if (timer.current) clearInterval(timer.current); };
-  }, [content, onType, onComplete]);
-
-  const handleSkip = () => {
-    if (isDone) return;
-    if (timer.current) clearInterval(timer.current);
-    setDisplayText(content);
-    setIsDone(true);
-    onComplete();
-  };
-
-  return (
-    <div onClick={handleSkip} className="cursor-pointer select-none">
-      {renderBubble(displayText)}
-      {!isDone && <span className="inline-block w-1.5 h-3.5 bg-[#00f0ff] ml-1 animate-pulse align-middle" />}
-    </div>
-  );
-}
 
 function loadMessages(): Message[] {
   try {
@@ -133,6 +88,20 @@ function loadMessages(): Message[] {
     }
   } catch { /* ignore */ }
   return [{ id: 0, role: 'model', content: GREETING }];
+}
+
+// Stable per-visitor id so the admin can follow a whole conversation.
+function loadSessionId(): string {
+  try {
+    let id = localStorage.getItem('aura_chat_sid');
+    if (!id) {
+      id = 'sid_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem('aura_chat_sid', id);
+    }
+    return id;
+  } catch {
+    return 'sid_' + Date.now().toString(36);
+  }
 }
 
 export function ChatWidget() {
@@ -148,6 +117,7 @@ export function ChatWidget() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const idCounter = useRef<number>(Math.max(0, ...loadMessages().map((m) => m.id)) + 1);
+  const sessionId = useRef<string>(loadSessionId());
 
   const scrollToBottom = useCallback(() => {
     const c = containerRef.current;
@@ -225,35 +195,68 @@ export function ChatWidget() {
       const controller = new AbortController();
       abortRef.current = controller;
 
+      const replyId = idCounter.current++;
+      let acc = '';
+      let started = false;
+
       try {
-        const response = await fetch('/api/chat', {
+        const res = await fetch('/api/chat-stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: history.slice(-20).map(({ role, content }) => ({ role, content })) }),
+          body: JSON.stringify({
+            sessionId: sessionId.current,
+            messages: history.slice(-20).map(({ role, content }) => ({ role, content })),
+          }),
           signal: controller.signal,
         });
-        const data = await response.json().catch(() => null);
-        if (data?.reply) {
-          const id = idCounter.current++;
-          setMessages((prev) => [...prev, { id, role: 'model', content: data.reply }]);
-          setStreamingId(id);
-        } else {
-          throw new Error(`Chat API ${response.status}`);
+        if (!res.ok || !res.body) throw new Error(`Chat API ${res.status}`);
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const events = buf.split('\n\n');
+          buf = events.pop() || '';
+          for (const evt of events) {
+            const dataLine = evt.split('\n').find((l) => l.startsWith('data:'));
+            if (!dataLine) continue;
+            let payload: { token?: string; done?: boolean };
+            try { payload = JSON.parse(dataLine.slice(5).trim()); } catch { continue; }
+            if (payload.token) {
+              acc += payload.token;
+              if (!started) {
+                started = true;
+                setIsLoading(false);
+                setStreamingId(replyId);
+                setMessages((prev) => [...prev, { id: replyId, role: 'model', content: acc }]);
+              } else {
+                setMessages((prev) => prev.map((m) => (m.id === replyId ? { ...m, content: acc } : m)));
+              }
+              scrollToBottom();
+            }
+          }
         }
+        if (!started) throw new Error('Empty stream');
+        setStreamingId(null);
       } catch (error) {
+        setStreamingId(null);
         if ((error as Error).name === 'AbortError') return; // user stopped — silent
         console.error('Chat error:', error);
         setLastFailed(trimmed);
         setMessages((prev) => [
-          ...prev,
-          { id: idCounter.current++, role: 'model', error: true, content: "I couldn't reach my systems just now. Tap retry, or email **contact@aura-labs.com**." },
+          ...prev.filter((m) => m.id !== replyId),
+          { id: idCounter.current++, role: 'model', error: true, content: "I couldn't reach my systems just now. Tap retry, or email **nishant15bihola@gmail.com**." },
         ]);
       } finally {
         setIsLoading(false);
         abortRef.current = null;
       }
     },
-    [messages, isLoading]
+    [messages, isLoading, scrollToBottom]
   );
 
   const stop = () => { abortRef.current?.abort(); setIsLoading(false); };
@@ -332,7 +335,7 @@ export function ChatWidget() {
                   }`}>
                     {msg.role === 'user' ? msg.content
                       : msg.id === streamingId
-                        ? <TypewriterText content={msg.content} onType={scrollToBottom} onComplete={() => { setStreamingId(null); scrollToBottom(); }} />
+                        ? <div>{renderBubble(msg.content)}<span className="inline-block w-1.5 h-3.5 bg-[#00f0ff] ml-1 animate-pulse align-middle" /></div>
                         : renderBubble(msg.content)}
                   </div>
                 </motion.div>

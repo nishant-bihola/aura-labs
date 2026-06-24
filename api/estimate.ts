@@ -2,6 +2,9 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { estimateProject } from "./_lib/estimator.js";
 import { captureLead } from "./_lib/leads.js";
 import { llmConfigured } from "./_lib/llm.js";
+import { rateLimit } from "./_lib/rateLimit.js";
+import { estimateEmailHTML } from "./_lib/emails.js";
+import { sendEmail } from "./_lib/emailSender.js";
 
 /**
  * AI Project Estimator. Returns a structured quote (range, timeline, phases,
@@ -13,6 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (!rateLimit(req, res, { limit: 8, windowMs: 60000, key: "estimate" })) return;
 
   const { description, services, budget, name, email } = req.body || {};
   if (!description || typeof description !== "string" || description.trim().length < 12) {
@@ -33,20 +37,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ error: "Couldn't generate an estimate — try adding a bit more detail." });
     }
 
-    // Optional lead capture when contact details are supplied (non-blocking-ish).
+    // Optional lead capture + branded estimate email when contact details given.
     let captured = false;
+    let emailed = false;
     if (email && typeof email === "string" && email.includes("@")) {
-      const r = await captureLead({
-        name: typeof name === "string" && name.trim() ? name : "Estimate Lead",
-        email,
-        plan: estimate.recommendedPlan,
-        details: `Estimator: ${estimate.summary} (${estimate.currency} ${estimate.priceLow}-${estimate.priceHigh})`,
-        source: "AI Estimator",
-      }).catch(() => null);
-      captured = !!r?.ok;
+      const clientName = typeof name === "string" && name.trim() ? name : "there";
+      const [capRes, mailRes] = await Promise.allSettled([
+        captureLead({
+          name: typeof name === "string" && name.trim() ? name : "Estimate Lead",
+          email,
+          plan: estimate.recommendedPlan,
+          details: `Estimator: ${estimate.summary} (${estimate.currency} ${estimate.priceLow}-${estimate.priceHigh})`,
+          source: "AI Estimator",
+        }),
+        sendEmail({
+          to: email,
+          subject: `Your Aura Labs estimate — ${estimate.currency} ${estimate.priceLow.toLocaleString()}–${estimate.priceHigh.toLocaleString()}`,
+          html: estimateEmailHTML(clientName, estimate),
+        }),
+      ]);
+      captured = capRes.status === "fulfilled" && !!capRes.value?.ok;
+      emailed = mailRes.status === "fulfilled" && !!(mailRes.value as { success?: boolean })?.success;
     }
 
-    return res.status(200).json({ estimate, captured });
+    return res.status(200).json({ estimate, captured, emailed });
   } catch (error) {
     console.error("Estimate error:", error);
     return res.status(500).json({ error: "Estimate failed. Please try again." });

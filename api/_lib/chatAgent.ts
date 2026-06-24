@@ -5,14 +5,14 @@
 import { CMS_DATA } from "../../src/lib/cms.js";
 import { PROJECTS } from "../../src/data/projects.js";
 import { BOOKING_URL } from "./emails.js";
-import { runAgent, type ChatMessage, type ToolDef } from "./llm.js";
+import { runAgent, streamAgent, type ChatMessage, type ToolDef } from "./llm.js";
 import { estimateProject, estimateToText } from "./estimator.js";
 import { captureLead } from "./leads.js";
 
 export const GRACEFUL_FALLBACK =
   "I'm getting a lot of requests right now, so let me keep this simple. " +
   "Aura Labs builds high-performance websites, web apps, AI chatbots, and AI ad content — projects start at $1,500. " +
-  "Tell me what you're building and I'll point you to the right fit, or email **contact@aura-labs.com** and a human architect will jump in.";
+  "Tell me what you're building and I'll point you to the right fit, or email **nishant15bihola@gmail.com** and a human architect will jump in.";
 
 const TOOLS: ToolDef[] = [
   {
@@ -135,8 +135,8 @@ const executors = {
 
 export type IncomingMessage = { role: "user" | "model" | "assistant"; content: string };
 
-/** Sanitize + cap inbound history, then run the agent. Never throws to the caller. */
-export async function runChatAgent(rawMessages: unknown): Promise<string> {
+/** Sanitize + cap inbound history into provider-ready messages with the system prompt. */
+function buildMessages(rawMessages: unknown): ChatMessage[] | null {
   const list = Array.isArray(rawMessages) ? rawMessages : [];
   const history: ChatMessage[] = list
     .filter(
@@ -150,22 +150,43 @@ export async function runChatAgent(rawMessages: unknown): Promise<string> {
       content: m.content.slice(0, 4000),
     }));
 
-  if (!history.length) return "Hi! I'm Aura AI. What are you looking to build?";
+  if (!history.length) return null;
+  return [{ role: "system", content: systemPrompt() }, ...history];
+}
 
-  const messages: ChatMessage[] = [{ role: "system", content: systemPrompt() }, ...history];
-
+/** Non-streaming agent run. Never throws to the caller. */
+export async function runChatAgent(rawMessages: unknown): Promise<string> {
+  const messages = buildMessages(rawMessages);
+  if (!messages) return "Hi! I'm Aura AI. What are you looking to build?";
   try {
-    const reply = await runAgent({
-      messages,
-      tools: TOOLS,
-      executors,
-      temperature: 0.6,
-      maxTokens: 700,
-      maxSteps: 4,
-    });
+    const reply = await runAgent({ messages, tools: TOOLS, executors, temperature: 0.6, maxTokens: 700, maxSteps: 4 });
     return reply?.trim() || GRACEFUL_FALLBACK;
   } catch (e) {
     console.error("[chatAgent] failed:", e);
+    return GRACEFUL_FALLBACK;
+  }
+}
+
+/**
+ * Streaming agent run. Streams tokens via onToken and resolves with the full
+ * reply (for persistence). Falls back gracefully — streaming the fallback text
+ * if the model errors before producing anything.
+ */
+export async function streamChatAgent(rawMessages: unknown, onToken: (t: string) => void): Promise<string> {
+  const messages = buildMessages(rawMessages);
+  if (!messages) {
+    const hi = "Hi! I'm Aura AI. What are you looking to build?";
+    onToken(hi);
+    return hi;
+  }
+  try {
+    const reply = await streamAgent({ messages, tools: TOOLS, executors, temperature: 0.6, maxTokens: 700, maxSteps: 4, onToken });
+    if (reply && reply.trim()) return reply;
+    onToken(GRACEFUL_FALLBACK);
+    return GRACEFUL_FALLBACK;
+  } catch (e) {
+    console.error("[chatAgent stream] failed:", e);
+    onToken(GRACEFUL_FALLBACK);
     return GRACEFUL_FALLBACK;
   }
 }
