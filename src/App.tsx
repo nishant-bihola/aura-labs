@@ -49,6 +49,8 @@ const BrandIdentity = lazy(() => import("./pages/services/BrandIdentity"));
 const PrivacyPolicy = lazy(() => import("./pages/Legal").then((m) => ({ default: m.PrivacyPolicy })));
 const TermsOfService = lazy(() => import("./pages/Legal").then((m) => ({ default: m.TermsOfService })));
 const Estimator = lazy(() => import("./pages/Estimator"));
+const JournalList = lazy(() => import("./pages/Journal").then((m) => ({ default: m.JournalList })));
+const JournalPostPage = lazy(() => import("./pages/Journal").then((m) => ({ default: m.JournalPostPage })));
 
 
 /**
@@ -153,6 +155,7 @@ export default function App() {
     { name: "Work", href: "/#work" },
     { name: "Pricing", href: "/#pricing" },
     { name: "Estimate", href: "/estimate" },
+    { name: "Journal", href: "/journal" },
     { name: "Contact", href: "/contact" },
   ];
 
@@ -299,6 +302,10 @@ export default function App() {
 
                 {/* AI PROJECT ESTIMATOR */}
                 <Route path="/estimate" element={<Estimator />} />
+
+                {/* JOURNAL (Sanity-powered blog) */}
+                <Route path="/journal" element={<JournalList />} />
+                <Route path="/journal/:slug" element={<JournalPostPage />} />
 
                 {/* LEGAL PAGES */}
                 <Route path="/privacy" element={<PrivacyPolicy />} />

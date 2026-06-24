@@ -46,4 +46,26 @@ export const planSchema = defineType({
   ],
 });
 
-export const schemaTypes = [companySchema, serviceSchema, planSchema];
+export const postSchema = defineType({
+  name: "post",
+  title: "Journal Post",
+  type: "document",
+  fields: [
+    defineField({ name: "title", title: "Title", type: "string", validation: (r) => r.required() }),
+    defineField({ name: "slug", title: "Slug", type: "slug", options: { source: "title" }, validation: (r) => r.required() }),
+    defineField({ name: "excerpt", title: "Excerpt", type: "text", rows: 3 }),
+    defineField({ name: "mainImage", title: "Cover Image", type: "image", options: { hotspot: true } }),
+    defineField({ name: "category", title: "Category", type: "string" }),
+    defineField({ name: "author", title: "Author", type: "string", initialValue: "Nishant Bihola" }),
+    defineField({ name: "publishedAt", title: "Published At", type: "datetime", initialValue: () => new Date().toISOString() }),
+    defineField({
+      name: "body",
+      title: "Body",
+      type: "array",
+      of: [{ type: "block" }, { type: "image", options: { hotspot: true } }],
+    }),
+  ],
+  preview: { select: { title: "title", subtitle: "category", media: "mainImage" } },
+});
+
+export const schemaTypes = [companySchema, serviceSchema, planSchema, postSchema];
