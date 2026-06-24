@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import { heroProgress, heroPointer } from "./canvas/frozen/progress";
 import HeroBackground from "./canvas/HeroBackground";
+import { getVariant, trackConversion } from "../lib/ab";
 
 
 const EASE_EXPO = [0.16, 1, 0.3, 1] as const;
@@ -13,6 +14,8 @@ export default function Hero() {
   const content = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // A/B test the primary CTA copy + destination (tracked in Vercel Analytics).
+  const [ctaVariant] = useState(() => getVariant("hero_cta", ["a", "b"]));
 
   // mount the canvas after first paint so the headline lands instantly.
   // Start fetching the (lazy) 3D scene chunk right away in parallel, so it is
@@ -142,10 +145,11 @@ export default function Hero() {
           className="mt-10 flex flex-wrap items-center justify-center gap-4"
         >
           <Link
-            to="/contact"
+            to={ctaVariant === "b" ? "/estimate" : "/contact"}
+            onClick={() => trackConversion("hero_cta", ctaVariant)}
             className="group inline-flex items-center gap-2 rounded-full bg-white text-black px-7 py-3.5 text-[10px] md:text-[11px] uppercase tracking-[0.25em] font-bold transition-all duration-500 hover:bg-[#00f0ff] hover:shadow-[0_0_40px_rgba(0,240,255,0.35)]"
           >
-            Book a strategy call
+            {ctaVariant === "b" ? "Get a free estimate" : "Book a strategy call"}
             <ArrowUpRight size={14} className="transition-transform duration-500 group-hover:rotate-45" />
           </Link>
           <Link

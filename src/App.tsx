@@ -26,6 +26,8 @@ import CursorTail from "./components/CursorTail";
 import LogoTicker from "./components/LogoTicker";
 import GiantTicker from "./components/GiantTicker";
 import { ChatWidget } from "./components/ChatWidget";
+import ExitIntentModal from "./components/ExitIntentModal";
+import BackToTop from "./components/BackToTop";
 import { Analytics } from "@vercel/analytics/react";
 
 // Route-level code splitting: nothing below the landing page touches the
@@ -161,7 +163,9 @@ export default function App() {
         <SpeedInsights />
         <Analytics />
         <ChatWidget />
-        
+        <ExitIntentModal />
+        <BackToTop />
+
         {/* 1. PERSPECTIVE CONTAINER */}
         <div className="relative w-full min-h-screen bg-[#050505] overflow-hidden perspective-1000">
           
