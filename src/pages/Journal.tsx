@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowUpRight, Calendar } from "lucide-react";
-import { getPosts, getPost, type JournalPost } from "../lib/sanity";
+import type { JournalPost } from "../lib/sanity";
+
+const fetchPosts = (): Promise<JournalPost[]> =>
+  fetch("/api/journal").then((r) => r.json()).then((d) => d.posts || []).catch(() => []);
+const fetchPost = (slug: string): Promise<JournalPost | null> =>
+  fetch(`/api/journal-post?slug=${encodeURIComponent(slug)}`).then((r) => r.json()).then((d) => d.post ?? null).catch(() => null);
 
 const fmtDate = (d?: string) =>
   d ? new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "";
@@ -59,7 +64,7 @@ export function JournalList() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    getPosts().then(setPosts);
+    fetchPosts().then(setPosts);
   }, []);
 
   return (
@@ -122,7 +127,7 @@ export function JournalPostPage() {
   useEffect(() => {
     window.scrollTo(0, 0);
     if (!slug) return;
-    getPost(slug).then((p) => setPost(p ?? "missing"));
+    fetchPost(slug).then((p) => setPost(p ?? "missing"));
   }, [slug]);
 
   if (post === "missing") {

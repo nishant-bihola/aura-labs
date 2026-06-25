@@ -11,6 +11,7 @@ import { runChatAgent, streamChatAgent, GRACEFUL_FALLBACK } from "./api/_lib/cha
 import { estimateProject } from "./api/_lib/estimator.js";
 import { llmConfigured } from "./api/_lib/llm.js";
 import { saveConversation } from "./api/_lib/leads.js";
+import { getPosts, getPost } from "./src/lib/sanity.js";
 
 // Load base env, then let .env.local override (matches Vite's behaviour so the
 // dev server and the client see the same values, e.g. GROQ_API_KEY).
@@ -345,6 +346,18 @@ async function startServer() {
       console.error("Estimate error:", error);
       return res.status(500).json({ error: "Estimate failed." });
     }
+  });
+
+  // Journal (server-side Sanity fetch — avoids browser CORS)
+  app.get("/api/journal", async (_req, res) => {
+    try { res.status(200).json({ posts: await getPosts() }); }
+    catch { res.status(200).json({ posts: [] }); }
+  });
+  app.get("/api/journal-post", async (req, res) => {
+    const slug = String(req.query.slug || "");
+    if (!slug) return res.status(400).json({ error: "slug required" });
+    try { res.status(200).json({ post: await getPost(slug) }); }
+    catch { res.status(200).json({ post: null }); }
   });
 
   // --- VITE / STATIC SERVING ---
