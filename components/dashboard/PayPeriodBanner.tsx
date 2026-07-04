@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { format, parseISO, differenceInDays, addDays } from 'date-fns';
 import { Calendar, AlertCircle } from 'lucide-react';
@@ -15,7 +16,11 @@ export default function PayPeriodBanner() {
       <div className="card p-5 flex items-center gap-3 border-amber-800/40 bg-amber-950/20">
         <AlertCircle size={20} className="text-amber-400 flex-shrink-0" />
         <span className="text-sm text-amber-300">
-          No active pay period found. Go to <strong>Budget</strong> and set your first pay date.
+          No active pay period found. Go to{' '}
+          <Link href="/budget" className="font-bold underline underline-offset-2 hover:text-amber-200 transition-colors">
+            Budget
+          </Link>{' '}
+          and set your first pay date.
         </span>
       </div>
     );

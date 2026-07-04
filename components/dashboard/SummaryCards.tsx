@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useStore } from '@/lib/store';
-import { DollarSign, TrendingDown, TrendingUp, Percent } from 'lucide-react';
+import { DollarSign, TrendingDown, TrendingUp, Percent, Settings } from 'lucide-react';
 
 export default function SummaryCards() {
   const payAmount = useStore((s) => s.payAmount);
@@ -15,10 +16,29 @@ export default function SummaryCards() {
   const savingsRate = payAmount > 0 ? (remaining / payAmount) * 100 : 0;
   const spentPct = payAmount > 0 ? Math.round((totalSpent / payAmount) * 100) : 0;
 
+  if (payAmount === 0) {
+    return (
+      <div className="card p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+          <Settings size={20} className="text-indigo-400" />
+        </div>
+        <div className="flex-1">
+          <p className="font-semibold text-white text-sm">Set up your budget to get started</p>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Enter your biweekly income and spending limits to see your financial overview.
+          </p>
+        </div>
+        <Link href="/budget" className="btn-primary text-sm flex-shrink-0">
+          Set up budget →
+        </Link>
+      </div>
+    );
+  }
+
   const cards = [
     {
       label: 'Biweekly Income',
-      value: payAmount > 0 ? `$${payAmount.toLocaleString('en-CA', { minimumFractionDigits: 2 })}` : '—',
+      value: `$${payAmount.toLocaleString('en-CA', { minimumFractionDigits: 2 })}`,
       sub: 'this pay period',
       Icon: DollarSign,
       color: 'text-emerald-400',
@@ -27,7 +47,7 @@ export default function SummaryCards() {
     {
       label: 'Total Spent',
       value: `$${totalSpent.toLocaleString('en-CA', { minimumFractionDigits: 2 })}`,
-      sub: payAmount > 0 ? `${spentPct}% of income` : 'this period',
+      sub: `${spentPct}% of income`,
       Icon: TrendingDown,
       color: 'text-rose-400',
       bg: 'bg-rose-500/10',

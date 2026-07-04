@@ -1,14 +1,20 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
 import { CATEGORIES } from '@/lib/types';
 import { format, parseISO } from 'date-fns';
 import { ArrowRight, Plus } from 'lucide-react';
+import TransactionModal from '@/components/transactions/TransactionModal';
 
 export default function RecentTransactions() {
   const transactions = useStore((s) => s.transactions);
-  const recent = transactions.slice(0, 8);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const recent = [...transactions]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 8);
 
   return (
     <div className="card">
@@ -17,17 +23,31 @@ export default function RecentTransactions() {
           <h2 className="font-semibold text-white">Recent Transactions</h2>
           <p className="text-xs text-slate-500 mt-0.5">{transactions.length} total</p>
         </div>
-        <Link href="/transactions" className="flex items-center gap-1 text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
-          View all <ArrowRight size={14} />
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setModalOpen(true)}
+            className="btn-primary flex items-center gap-1.5 text-sm py-1.5 px-3"
+          >
+            <Plus size={14} /> Add
+          </button>
+          <Link
+            href="/transactions"
+            className="flex items-center gap-1 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+          >
+            View all <ArrowRight size={14} />
+          </Link>
+        </div>
       </div>
 
       {recent.length === 0 ? (
         <div className="card-body flex flex-col items-center justify-center py-12 gap-3 text-center">
           <p className="text-slate-500 text-sm">No transactions yet.</p>
-          <Link href="/transactions" className="btn-primary flex items-center gap-2 text-sm">
+          <button
+            onClick={() => setModalOpen(true)}
+            className="btn-primary flex items-center gap-2 text-sm"
+          >
             <Plus size={16} /> Add first transaction
-          </Link>
+          </button>
         </div>
       ) : (
         <div className="divide-y divide-slate-800/60">
@@ -50,6 +70,8 @@ export default function RecentTransactions() {
           })}
         </div>
       )}
+
+      <TransactionModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </div>
   );
 }

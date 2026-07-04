@@ -24,6 +24,22 @@ export default function TransactionModal({ open, onClose, editTransaction }: Pro
   const updateTransaction = useStore((s) => s.updateTransaction);
   const [form, setForm] = useState(EMPTY);
 
+  // Lock body scroll while open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [open]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, onClose]);
+
   useEffect(() => {
     if (editTransaction) {
       setForm({
@@ -39,11 +55,12 @@ export default function TransactionModal({ open, onClose, editTransaction }: Pro
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const data = { ...form, amount: parseFloat(form.amount) };
+    const amount = parseFloat(form.amount);
+    if (!amount || amount <= 0) return;
     if (editTransaction) {
-      updateTransaction(editTransaction.id, data);
+      updateTransaction(editTransaction.id, { ...form, amount });
     } else {
-      addTransaction(data);
+      addTransaction({ ...form, amount });
     }
     onClose();
   };
@@ -52,15 +69,18 @@ export default function TransactionModal({ open, onClose, editTransaction }: Pro
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl">
-        <div className="flex items-center justify-between p-5 border-b border-slate-800">
+      <div className="w-full sm:max-w-md bg-slate-900 border border-slate-700 sm:rounded-2xl rounded-t-2xl shadow-2xl max-h-[95dvh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-slate-800 sticky top-0 bg-slate-900 z-10">
           <h2 className="font-semibold text-white text-lg">
             {editTransaction ? 'Edit Transaction' : 'Add Transaction'}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors p-1">
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-white transition-colors p-1.5 hover:bg-slate-800 rounded-lg"
+          >
             <X size={20} />
           </button>
         </div>
@@ -70,7 +90,9 @@ export default function TransactionModal({ open, onClose, editTransaction }: Pro
             <div>
               <label className="label">Amount ($)</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium pointer-events-none">
+                  $
+                </span>
                 <input
                   required
                   type="number"
@@ -80,6 +102,7 @@ export default function TransactionModal({ open, onClose, editTransaction }: Pro
                   placeholder="0.00"
                   value={form.amount}
                   onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
+                  autoFocus={!editTransaction}
                 />
               </div>
             </div>
@@ -122,18 +145,24 @@ export default function TransactionModal({ open, onClose, editTransaction }: Pro
           </div>
 
           <div>
-            <label className="label">Description</label>
+            <label className="label">
+              Description <span className="text-slate-600 font-normal">(optional)</span>
+            </label>
             <input
               type="text"
               className="input"
-              placeholder="What was this for? (optional)"
+              placeholder="What was this for?"
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             />
           </div>
 
-          <div className="flex gap-3 pt-1">
-            <button type="button" onClick={onClose} className="btn-ghost flex-1 border border-slate-700">
+          <div className="flex gap-3 pt-1 pb-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-ghost flex-1 border border-slate-700"
+            >
               Cancel
             </button>
             <button type="submit" className="btn-primary flex-1">

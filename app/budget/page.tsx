@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { CATEGORIES, CATEGORY_KEYS, Category } from '@/lib/types';
-import { Info, CheckCircle2 } from 'lucide-react';
+import { Info, CheckCircle2, AlertTriangle } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function BudgetPage() {
   const payAmount = useStore((s) => s.payAmount);
   const budget = useStore((s) => s.budget);
   const firstPayDate = useStore((s) => s.firstPayDate);
+  const transactions = useStore((s) => s.transactions);
   const setPayAmount = useStore((s) => s.setPayAmount);
   const setBudget = useStore((s) => s.setBudget);
   const setFirstPayDate = useStore((s) => s.setFirstPayDate);
@@ -39,12 +40,16 @@ export default function BudgetPage() {
   }, [payAmount, budget, firstPayDate]);
 
   const income = parseFloat(localPay) || 0;
-  const totalAllocated = CATEGORY_KEYS.reduce((a, c) => a + (parseFloat(localBudget[c]) || 0), 0);
+  const totalAllocated = CATEGORY_KEYS.reduce(
+    (a, c) => a + (parseFloat(localBudget[c]) || 0),
+    0
+  );
   const unallocated = income - totalAllocated;
+  const dateChanged = localDate !== firstPayDate && transactions.length > 0;
 
   const handleSave = () => {
     setPayAmount(parseFloat(localPay) || 0);
-    setFirstPayDate(localDate);
+    setFirstPayDate(localDate); // also re-assigns all transactions
     CATEGORY_KEYS.forEach((cat) => {
       setBudget(cat, parseFloat(localBudget[cat]) || 0);
     });
@@ -58,18 +63,23 @@ export default function BudgetPage() {
     <div className="space-y-5 max-w-2xl">
       <div>
         <h1 className="text-2xl font-bold text-white">Budget Setup</h1>
-        <p className="text-slate-400 text-sm mt-0.5">Configure your biweekly income and spending limits</p>
+        <p className="text-slate-400 text-sm mt-0.5">
+          Configure your biweekly income and spending limits
+        </p>
       </div>
 
+      {/* Paycheck Settings */}
       <div className="card p-5 space-y-4">
         <h2 className="font-semibold text-white flex items-center gap-2 text-base">
           <span className="text-xl">💰</span> Paycheck Settings
         </h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="label">Biweekly Net Income</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium pointer-events-none">
+                $
+              </span>
               <input
                 type="number"
                 step="0.01"
@@ -91,20 +101,39 @@ export default function BudgetPage() {
             />
           </div>
         </div>
+
+        {/* Pay date change warning */}
+        {dateChanged && (
+          <div className="flex items-start gap-2 text-xs text-amber-400 bg-amber-950/30 border border-amber-800/40 rounded-xl p-3">
+            <AlertTriangle size={13} className="flex-shrink-0 mt-0.5" />
+            <span>
+              Changing the first pay date will re-assign all{' '}
+              <strong>{transactions.length} transaction{transactions.length !== 1 ? 's' : ''}</strong>{' '}
+              to the new biweekly schedule.
+            </span>
+          </div>
+        )}
+
         <div className="flex items-start gap-2 text-xs text-slate-500 bg-slate-800/40 rounded-xl p-3">
           <Info size={13} className="flex-shrink-0 mt-0.5" />
           <span>
-            Enter your after-tax take-home pay. The first pay date calibrates all biweekly periods
-            — transactions will be automatically assigned to the correct period.
+            Enter your after-tax take-home pay. The first pay date anchors all biweekly
+            periods — transactions are automatically assigned to the correct period.
           </span>
         </div>
       </div>
 
+      {/* Income allocation bar */}
       {income > 0 && (
         <div className="card p-5">
           <div className="flex justify-between items-center mb-3">
             <h2 className="font-semibold text-white text-base">Income Allocation</h2>
-            <span className={clsx('text-sm font-bold', unallocated >= 0 ? 'text-emerald-400' : 'text-rose-400')}>
+            <span
+              className={clsx(
+                'text-sm font-bold',
+                unallocated >= 0 ? 'text-emerald-400' : 'text-rose-400'
+              )}
+            >
               {unallocated >= 0
                 ? `$${unallocated.toFixed(0)} unallocated`
                 : `$${Math.abs(unallocated).toFixed(0)} over-allocated`}
@@ -117,7 +146,10 @@ export default function BudgetPage() {
                 <div
                   key={cat}
                   className="h-full transition-all duration-300"
-                  style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: CATEGORIES[cat].color }}
+                  style={{
+                    width: `${Math.min(pct, 100)}%`,
+                    backgroundColor: CATEGORIES[cat].color,
+                  }}
                   title={`${CATEGORIES[cat].label}: ${pct.toFixed(1)}%`}
                 />
               ) : null;
@@ -129,7 +161,10 @@ export default function BudgetPage() {
               if (pct === 0) return null;
               return (
                 <div key={cat} className="flex items-center gap-1.5 text-xs text-slate-400">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: CATEGORIES[cat].color }} />
+                  <span
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: CATEGORIES[cat].color }}
+                  />
                   {CATEGORIES[cat].label} {pct.toFixed(0)}%
                 </div>
               );
@@ -138,9 +173,14 @@ export default function BudgetPage() {
         </div>
       )}
 
+      {/* Per-category limits */}
       <div className="card p-5 space-y-5">
-        <h2 className="font-semibold text-white text-base">Per-Category Limits</h2>
-        <p className="text-xs text-slate-500 -mt-3">Amount you plan to spend each pay period</p>
+        <div>
+          <h2 className="font-semibold text-white text-base">Per-Category Limits</h2>
+          <p className="text-xs text-slate-500 mt-1">
+            Amount you plan to spend each pay period
+          </p>
+        </div>
 
         {CATEGORY_KEYS.map((cat) => {
           const { label, color, icon } = CATEGORIES[cat];
@@ -149,16 +189,20 @@ export default function BudgetPage() {
 
           return (
             <div key={cat}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-xl">{icon}</span>
-                  <span className="text-sm font-semibold text-slate-200">{label}</span>
+              <div className="flex items-center justify-between mb-2 gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="text-xl flex-shrink-0">{icon}</span>
+                  <span className="text-sm font-semibold text-slate-200 truncate">{label}</span>
                   {income > 0 && val > 0 && (
-                    <span className="text-xs text-slate-500">{pct.toFixed(0)}% of income</span>
+                    <span className="text-xs text-slate-500 flex-shrink-0">
+                      {pct.toFixed(0)}%
+                    </span>
                   )}
                 </div>
-                <div className="relative w-32">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+                <div className="relative w-32 flex-shrink-0">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
+                    $
+                  </span>
                   <input
                     type="number"
                     step="1"
@@ -195,7 +239,9 @@ export default function BudgetPage() {
         )}
       >
         {saved ? (
-          <><CheckCircle2 size={18} /> Saved!</>
+          <>
+            <CheckCircle2 size={18} /> Saved!
+          </>
         ) : (
           'Save Budget Settings'
         )}

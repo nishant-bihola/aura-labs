@@ -3,15 +3,6 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { addDays, format, isWithinInterval, parseISO, startOfDay } from 'date-fns';
 import { Category, Transaction, BudgetMap, PayPeriod, CATEGORY_KEYS } from './types';
 
-const DEFAULT_BUDGET: BudgetMap = {
-  phone_bills: 100,
-  car_gas: 150,
-  car_insurance: 100,
-  investments: 200,
-  loan_repayments: 300,
-  others: 100,
-};
-
 const ZERO_BUDGET: BudgetMap = {
   phone_bills: 0,
   car_gas: 0,
@@ -25,9 +16,11 @@ function nanoid(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-function makePayPeriods(firstPayDate: string, count = 52): PayPeriod[] {
+function makePayPeriods(firstPayDate: string, count = 104): PayPeriod[] {
   const periods: PayPeriod[] = [];
   let start = parseISO(firstPayDate);
+  // Include 52 periods before the first pay date for historical entries
+  start = addDays(start, -52 * 14);
   for (let i = 0; i < count; i++) {
     periods.push({
       id: nanoid(),
@@ -37,6 +30,17 @@ function makePayPeriods(firstPayDate: string, count = 52): PayPeriod[] {
     start = addDays(start, 14);
   }
   return periods;
+}
+
+function assignPeriod(date: string, periods: PayPeriod[]): string {
+  const d = parseISO(date);
+  const period = periods.find((p) =>
+    isWithinInterval(startOfDay(d), {
+      start: startOfDay(parseISO(p.startDate)),
+      end: startOfDay(parseISO(p.endDate)),
+    })
+  );
+  return period?.id ?? 'orphan';
 }
 
 interface AppState {
@@ -50,8 +54,9 @@ interface AppState {
   setFirstPayDate: (d: string) => void;
   setBudget: (cat: Category, v: number) => void;
   addTransaction: (t: Omit<Transaction, 'id' | 'payPeriodId'>) => void;
-  updateTransaction: (id: string, patch: Partial<Transaction>) => void;
+  updateTransaction: (id: string, patch: Partial<Omit<Transaction, 'id' | 'payPeriodId'>>) => void;
   deleteTransaction: (id: string) => void;
+  clearAll: () => void;
 
   getCurrentPeriod: () => PayPeriod | null;
   getPeriodTransactions: (periodId: string) => Transaction[];
@@ -64,45 +69,62 @@ export const useStore = create<AppState>()(
       payAmount: 0,
       firstPayDate: format(new Date(), 'yyyy-MM-dd'),
       payPeriods: makePayPeriods(format(new Date(), 'yyyy-MM-dd')),
-      budget: DEFAULT_BUDGET,
+      budget: { ...ZERO_BUDGET },
       transactions: [],
 
       setPayAmount: (v) => set({ payAmount: v }),
 
-      setFirstPayDate: (d) =>
-        set({ firstPayDate: d, payPeriods: makePayPeriods(d) }),
+      setFirstPayDate: (d) => {
+        const newPeriods = makePayPeriods(d);
+        set((s) => ({
+          firstPayDate: d,
+          payPeriods: newPeriods,
+          // Re-assign every transaction to the correct period in the new schedule
+          transactions: s.transactions.map((t) => ({
+            ...t,
+            payPeriodId: assignPeriod(t.date, newPeriods),
+          })),
+        }));
+      },
 
       setBudget: (cat, v) =>
         set((s) => ({ budget: { ...s.budget, [cat]: v } })),
 
       addTransaction: (t) => {
         const { payPeriods } = get();
-        const date = parseISO(t.date);
-        const period = payPeriods.find((p) =>
-          isWithinInterval(startOfDay(date), {
-            start: startOfDay(parseISO(p.startDate)),
-            end: startOfDay(parseISO(p.endDate)),
-          })
-        );
         set((s) => ({
           transactions: [
-            { ...t, id: nanoid(), payPeriodId: period?.id ?? 'orphan' },
+            { ...t, id: nanoid(), payPeriodId: assignPeriod(t.date, payPeriods) },
             ...s.transactions,
           ],
         }));
       },
 
       updateTransaction: (id, patch) =>
-        set((s) => ({
-          transactions: s.transactions.map((t) =>
-            t.id === id ? { ...t, ...patch } : t
-          ),
-        })),
+        set((s) => {
+          const existing = s.transactions.find((t) => t.id === id);
+          if (!existing) return s;
+          const updated = { ...existing, ...patch };
+          // Recalculate period assignment when date changes
+          if (patch.date) {
+            updated.payPeriodId = assignPeriod(patch.date, s.payPeriods);
+          }
+          return {
+            transactions: s.transactions.map((t) => (t.id === id ? updated : t)),
+          };
+        }),
 
       deleteTransaction: (id) =>
-        set((s) => ({
-          transactions: s.transactions.filter((t) => t.id !== id),
-        })),
+        set((s) => ({ transactions: s.transactions.filter((t) => t.id !== id) })),
+
+      clearAll: () =>
+        set({
+          payAmount: 0,
+          firstPayDate: format(new Date(), 'yyyy-MM-dd'),
+          payPeriods: makePayPeriods(format(new Date(), 'yyyy-MM-dd')),
+          budget: { ...ZERO_BUDGET },
+          transactions: [],
+        }),
 
       getCurrentPeriod: () => {
         const today = startOfDay(new Date());
