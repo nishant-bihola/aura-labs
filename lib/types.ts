@@ -1,5 +1,7 @@
 export type Category = string;
 
+export type TxType = 'expense' | 'income';
+
 export interface CategoryDef {
   id: string;
   label: string;
@@ -37,10 +39,32 @@ export interface Transaction {
   category: string;
   description: string;
   payPeriodId: string;
+  type: TxType;
 }
 
 export interface PayPeriod {
   id: string;
   startDate: string;
   endDate: string;
+}
+
+export type BillFrequency = 'biweekly' | 'monthly';
+
+export interface RecurringBill {
+  id: string;
+  label: string;
+  amount: number;
+  category: string;
+  frequency: BillFrequency;
+  nextDue: string; // yyyy-MM-dd
+  autopay: boolean;
+}
+
+export interface Goal {
+  id: string;
+  label: string;
+  icon: string;
+  color: string;
+  target: number;
+  saved: number;
 }

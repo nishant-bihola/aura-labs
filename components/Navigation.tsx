@@ -3,15 +3,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ArrowLeftRight, PiggyBank, BarChart3, Wallet, Plus } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, PiggyBank, BarChart3, Wallet, Plus, Settings } from 'lucide-react';
 import clsx from 'clsx';
 import TransactionModal from '@/components/transactions/TransactionModal';
 
 const NAV = [
   { href: '/',             label: 'Dashboard',    Icon: LayoutDashboard },
-  { href: '/transactions', label: 'Transactions', Icon: ArrowLeftRight  },
+  { href: '/transactions', label: 'Activity',     Icon: ArrowLeftRight  },
   { href: '/budget',       label: 'Budget',       Icon: PiggyBank       },
   { href: '/analytics',   label: 'Analytics',    Icon: BarChart3       },
+  { href: '/settings',     label: 'Settings',     Icon: Settings        },
 ];
 
 export default function Navigation() {

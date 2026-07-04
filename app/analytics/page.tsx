@@ -64,9 +64,11 @@ export default function AnalyticsPage() {
     Spent: spending[cat.id] ?? 0,
   }));
 
+  const expenses = transactions.filter((t) => t.type !== 'income');
+
   const trendPeriods = activePeriods.slice(-8);
   const lineData = trendPeriods.map((p) => {
-    const txns = transactions.filter((t) => t.payPeriodId === p.id);
+    const txns = expenses.filter((t) => t.payPeriodId === p.id);
     const total = txns.reduce((a, t) => a + t.amount, 0);
     return {
       period: format(parseISO(p.startDate), 'MMM d'),
@@ -80,8 +82,8 @@ export default function AnalyticsPage() {
     };
   });
 
-  const totalAllTime = transactions.reduce((a, t) => a + t.amount, 0);
-  const avgPerTx = transactions.length > 0 ? totalAllTime / transactions.length : 0;
+  const totalAllTime = expenses.reduce((a, t) => a + t.amount, 0);
+  const avgPerTx = expenses.length > 0 ? totalAllTime / expenses.length : 0;
 
   return (
     <div className="space-y-5">
@@ -236,7 +238,7 @@ export default function AnalyticsPage() {
             <h2 className="font-semibold text-white mb-4">Category Breakdown (All Time)</h2>
             <div className="space-y-3">
               {categories.map((cat) => {
-                const allTimeSpend = transactions
+                const allTimeSpend = expenses
                   .filter((t) => t.category === cat.id)
                   .reduce((a, t) => a + t.amount, 0);
                 return { cat, allTimeSpend };

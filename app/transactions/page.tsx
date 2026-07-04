@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useStore } from '@/lib/store';
 import { useCategories } from '@/lib/categories';
 import { Transaction } from '@/lib/types';
 import { format, parseISO } from 'date-fns';
-import { Plus, Trash2, Pencil, Search, Download } from 'lucide-react';
+import { Plus, Trash2, Pencil, Search, Download, Undo2 } from 'lucide-react';
 import TransactionModal from '@/components/transactions/TransactionModal';
 
 export default function TransactionsPage() {
@@ -13,16 +13,22 @@ export default function TransactionsPage() {
   const [editTx, setEditTx] = useState<Transaction | undefined>();
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'expense' | 'income'>('all');
   const [periodFilter, setPeriodFilter] = useState<string>('current');
   const [exporting, setExporting] = useState(false);
+  const [lastDeleted, setLastDeleted] = useState<Transaction | null>(null);
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const transactions = useStore((s) => s.transactions);
   const deleteTransaction = useStore((s) => s.deleteTransaction);
+  const restoreTransaction = useStore((s) => s.restoreTransaction);
   const payPeriods = useStore((s) => s.payPeriods);
   const getCurrentPeriod = useStore((s) => s.getCurrentPeriod);
   const currentPeriod = getCurrentPeriod();
 
   const { categories, categoryMap } = useCategories();
+
+  useEffect(() => () => { if (undoTimer.current) clearTimeout(undoTimer.current); }, []);
 
   const periodsWithTx = payPeriods.filter((p) =>
     transactions.some((t) => t.payPeriodId === p.id)
@@ -38,20 +44,36 @@ export default function TransactionsPage() {
       t.description.toLowerCase().includes(q) ||
       (catDef?.label ?? t.category).toLowerCase().includes(q);
     const matchCat = catFilter === 'all' || t.category === catFilter;
+    const matchType = typeFilter === 'all' || (t.type ?? 'expense') === typeFilter;
     const matchPeriod =
       periodFilter === 'all' ||
       (periodFilter === 'current' && t.payPeriodId === currentPeriod?.id) ||
       t.payPeriodId === periodFilter;
-    return matchSearch && matchCat && matchPeriod;
+    return matchSearch && matchCat && matchType && matchPeriod;
   });
 
-  const totalFiltered = filtered.reduce((a, t) => a + t.amount, 0);
+  const totalExpenses = filtered
+    .filter((t) => t.type !== 'income')
+    .reduce((a, t) => a + t.amount, 0);
+  const totalIncome = filtered
+    .filter((t) => t.type === 'income')
+    .reduce((a, t) => a + t.amount, 0);
 
   const openAdd = () => { setEditTx(undefined); setModalOpen(true); };
   const openEdit = (tx: Transaction) => { setEditTx(tx); setModalOpen(true); };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Delete this transaction?')) deleteTransaction(id);
+  // Delete immediately, offer 6s undo window — friendlier than a confirm popup
+  const handleDelete = (tx: Transaction) => {
+    deleteTransaction(tx.id);
+    setLastDeleted(tx);
+    if (undoTimer.current) clearTimeout(undoTimer.current);
+    undoTimer.current = setTimeout(() => setLastDeleted(null), 6000);
+  };
+
+  const handleUndo = () => {
+    if (lastDeleted) restoreTransaction(lastDeleted);
+    setLastDeleted(null);
+    if (undoTimer.current) clearTimeout(undoTimer.current);
   };
 
   const handleExport = async () => {
@@ -83,7 +105,10 @@ export default function TransactionsPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Transactions</h1>
           <p className="text-slate-400 text-sm mt-0.5">
-            {filtered.length} shown &middot; ${totalFiltered.toFixed(2)}
+            {filtered.length} shown &middot; ${totalExpenses.toFixed(2)} spent
+            {totalIncome > 0 && (
+              <span className="text-emerald-400"> &middot; +${totalIncome.toFixed(2)} in</span>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -118,6 +143,15 @@ export default function TransactionsPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          <select
+            className="input sm:w-44 flex-shrink-0"
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
+          >
+            <option value="all">All Types</option>
+            <option value="expense">💸 Expenses</option>
+            <option value="income">💰 Income</option>
+          </select>
           <select
             className="input sm:w-52 flex-shrink-0"
             value={periodFilter}
@@ -183,29 +217,36 @@ export default function TransactionsPage() {
             {/* Mobile: card list */}
             <div className="sm:hidden divide-y divide-slate-800/60">
               {filtered.map((t) => {
+                const isIncome = t.type === 'income';
                 const cat = categoryMap[t.category] ?? { label: t.category, color: '#64748b', icon: '📦' };
                 return (
                   <div key={t.id} className="flex items-center gap-3 px-4 py-3.5">
                     <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-xl flex-shrink-0">
-                      {cat.icon}
+                      {isIncome ? '💰' : cat.icon}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-slate-200 text-sm truncate">
-                        {t.description || cat.label}
+                        {t.description || (isIncome ? 'Income' : cat.label)}
                       </p>
                       <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
                         <span>{format(parseISO(t.date), 'MMM d, yyyy')}</span>
-                        <span
-                          className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
-                          style={{ backgroundColor: cat.color + '22', color: cat.color }}
-                        >
-                          {cat.label}
-                        </span>
+                        {isIncome ? (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/15 text-emerald-400">
+                            Income
+                          </span>
+                        ) : (
+                          <span
+                            className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                            style={{ backgroundColor: cat.color + '22', color: cat.color }}
+                          >
+                            {cat.label}
+                          </span>
+                        )}
                       </p>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      <span className="font-bold text-rose-400 tabular-nums text-sm mr-1">
-                        −${t.amount.toFixed(2)}
+                      <span className={`font-bold tabular-nums text-sm mr-1 ${isIncome ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {isIncome ? '+' : '−'}${t.amount.toFixed(2)}
                       </span>
                       <button
                         onClick={() => openEdit(t)}
@@ -214,7 +255,7 @@ export default function TransactionsPage() {
                         <Pencil size={13} />
                       </button>
                       <button
-                        onClick={() => handleDelete(t.id)}
+                        onClick={() => handleDelete(t)}
                         className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-950/50 rounded-lg transition-colors"
                       >
                         <Trash2 size={13} />
@@ -239,6 +280,7 @@ export default function TransactionsPage() {
                 </thead>
                 <tbody>
                   {filtered.map((t) => {
+                    const isIncome = t.type === 'income';
                     const cat = categoryMap[t.category] ?? { label: t.category, color: '#64748b', icon: '📦' };
                     return (
                       <tr
@@ -247,25 +289,31 @@ export default function TransactionsPage() {
                       >
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2.5">
-                            <span className="text-base">{cat.icon}</span>
+                            <span className="text-base">{isIncome ? '💰' : cat.icon}</span>
                             <span className="font-medium text-slate-200">
-                              {t.description || cat.label}
+                              {t.description || (isIncome ? 'Income' : cat.label)}
                             </span>
                           </div>
                         </td>
                         <td className="px-5 py-3.5">
-                          <span
-                            className="text-xs font-semibold px-2 py-0.5 rounded-md"
-                            style={{ backgroundColor: cat.color + '22', color: cat.color }}
-                          >
-                            {cat.label}
-                          </span>
+                          {isIncome ? (
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400">
+                              Income
+                            </span>
+                          ) : (
+                            <span
+                              className="text-xs font-semibold px-2 py-0.5 rounded-md"
+                              style={{ backgroundColor: cat.color + '22', color: cat.color }}
+                            >
+                              {cat.label}
+                            </span>
+                          )}
                         </td>
                         <td className="px-5 py-3.5 text-slate-400">
                           {format(parseISO(t.date), 'MMM d, yyyy')}
                         </td>
-                        <td className="px-5 py-3.5 text-right font-bold text-rose-400 tabular-nums">
-                          −${t.amount.toFixed(2)}
+                        <td className={`px-5 py-3.5 text-right font-bold tabular-nums ${isIncome ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {isIncome ? '+' : '−'}${t.amount.toFixed(2)}
                         </td>
                         <td className="px-5 py-3.5">
                           <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
@@ -277,7 +325,7 @@ export default function TransactionsPage() {
                               <Pencil size={14} />
                             </button>
                             <button
-                              onClick={() => handleDelete(t.id)}
+                              onClick={() => handleDelete(t)}
                               className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-950/50 rounded-lg transition-colors"
                               title="Delete"
                             >
@@ -294,6 +342,19 @@ export default function TransactionsPage() {
           </>
         )}
       </div>
+
+      {/* Undo toast */}
+      {lastDeleted && (
+        <div className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 shadow-2xl">
+          <span className="text-sm text-slate-300">Transaction deleted</span>
+          <button
+            onClick={handleUndo}
+            className="flex items-center gap-1 text-sm font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+          >
+            <Undo2 size={14} /> Undo
+          </button>
+        </div>
+      )}
 
       <TransactionModal
         open={modalOpen}

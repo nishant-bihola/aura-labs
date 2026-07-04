@@ -53,18 +53,23 @@ export default function RecentTransactions() {
       ) : (
         <div className="divide-y divide-slate-800/60">
           {recent.map((t) => {
+            const isIncome = t.type === 'income';
             const cat = categoryMap[t.category] ?? { label: t.category, color: '#64748b', icon: '📦' };
             return (
               <div key={t.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-800/30 transition-colors">
                 <div className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-lg flex-shrink-0">
-                  {cat.icon}
+                  {isIncome ? '💰' : cat.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-200 truncate">{t.description || cat.label}</p>
-                  <p className="text-xs text-slate-500">{format(parseISO(t.date), 'MMM d, yyyy')} · {cat.label}</p>
+                  <p className="text-sm font-medium text-slate-200 truncate">
+                    {t.description || (isIncome ? 'Income' : cat.label)}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {format(parseISO(t.date), 'MMM d, yyyy')} · {isIncome ? 'Income' : cat.label}
+                  </p>
                 </div>
-                <span className="text-sm font-bold text-rose-400 flex-shrink-0 tabular-nums">
-                  −${t.amount.toFixed(2)}
+                <span className={`text-sm font-bold flex-shrink-0 tabular-nums ${isIncome ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {isIncome ? '+' : '−'}${t.amount.toFixed(2)}
                 </span>
               </div>
             );

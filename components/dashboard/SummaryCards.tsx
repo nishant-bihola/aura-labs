@@ -10,15 +10,18 @@ export default function SummaryCards() {
   const budget = useStore((s) => s.budget);
   const getCurrentPeriod = useStore((s) => s.getCurrentPeriod);
   const getCategorySpend = useStore((s) => s.getCategorySpend);
+  const getPeriodIncome = useStore((s) => s.getPeriodIncome);
   const { categoryIds } = useCategories();
 
   const period = getCurrentPeriod();
   const spending = getCategorySpend(period?.id);
-  const totalSpent = categoryIds.reduce((a, id) => a + (spending[id] ?? 0), 0);
+  const extraIncome = getPeriodIncome(period?.id);
+  const totalSpent = Object.values(spending).reduce((a, b) => a + b, 0);
   const totalBudgeted = categoryIds.reduce((a, id) => a + (budget[id] ?? 0), 0);
-  const remaining = (payAmount > 0 ? payAmount : totalBudgeted) - totalSpent;
-  const savingsRate = payAmount > 0 ? (remaining / payAmount) * 100 : 0;
-  const spentPct = payAmount > 0 ? Math.round((totalSpent / payAmount) * 100) : 0;
+  const totalIn = payAmount + extraIncome;
+  const remaining = (payAmount > 0 ? totalIn : totalBudgeted + extraIncome) - totalSpent;
+  const savingsRate = totalIn > 0 ? (remaining / totalIn) * 100 : 0;
+  const spentPct = totalIn > 0 ? Math.round((totalSpent / totalIn) * 100) : 0;
 
   if (payAmount === 0) {
     return (
@@ -41,9 +44,9 @@ export default function SummaryCards() {
 
   const cards = [
     {
-      label: 'Biweekly Income',
-      value: `$${payAmount.toLocaleString('en-CA', { minimumFractionDigits: 2 })}`,
-      sub: 'this pay period',
+      label: 'Income This Period',
+      value: `$${totalIn.toLocaleString('en-CA', { minimumFractionDigits: 2 })}`,
+      sub: extraIncome > 0 ? `paycheck + $${extraIncome.toFixed(0)} extra` : 'biweekly paycheck',
       Icon: DollarSign,
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10',

@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { useCategories } from '@/lib/categories';
-import { CATEGORY_COLORS } from '@/lib/types';
-import { Info, CheckCircle2, AlertTriangle, Plus, Pencil, Trash2, Check } from 'lucide-react';
+import { CATEGORY_COLORS, BillFrequency } from '@/lib/types';
+import { format, parseISO } from 'date-fns';
+import { Info, CheckCircle2, AlertTriangle, Plus, Pencil, Trash2, Check, CalendarClock, Zap } from 'lucide-react';
 import clsx from 'clsx';
 
 const EMOJI_SUGGESTIONS = ['🛒','🍔','☕','🎬','✈️','🏋️','💊','📚','🎮','👔','💻','🏠','🐶','🌿','🎵','🚌','💳','🎁','🔧','🏖️'];
@@ -28,6 +29,10 @@ export default function BudgetPage() {
   const addCategory = useStore((s) => s.addCategory);
   const updateCategory = useStore((s) => s.updateCategory);
   const deleteCategory = useStore((s) => s.deleteCategory);
+  const bills = useStore((s) => s.bills);
+  const addBill = useStore((s) => s.addBill);
+  const updateBill = useStore((s) => s.updateBill);
+  const deleteBill = useStore((s) => s.deleteBill);
 
   const { categories } = useCategories();
 
@@ -40,6 +45,17 @@ export default function BudgetPage() {
   const [newCat, setNewCat] = useState<CatFormState>({ ...EMPTY_CAT });
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
   const [editCatForm, setEditCatForm] = useState<CatFormState>({ ...EMPTY_CAT });
+
+  // Recurring bill form state; editingBillId === 'new' means the add form is open
+  const [editingBillId, setEditingBillId] = useState<string | null>(null);
+  const [billForm, setBillForm] = useState({
+    label: '',
+    amount: '',
+    category: 'others',
+    frequency: 'monthly' as BillFrequency,
+    nextDue: '',
+    autopay: false,
+  });
 
   useEffect(() => {
     setLocalPay(payAmount > 0 ? payAmount.toString() : '');
@@ -107,6 +123,50 @@ export default function BudgetPage() {
       ? `Delete "${label}"? ${count} transaction${count !== 1 ? 's' : ''} will be moved to "Others".`
       : `Delete "${label}"?`;
     if (window.confirm(msg)) deleteCategory(id);
+  };
+
+  const openBillForm = (billId: string | 'new') => {
+    if (billId === 'new') {
+      setBillForm({
+        label: '',
+        amount: '',
+        category: 'others',
+        frequency: 'monthly',
+        nextDue: format(new Date(), 'yyyy-MM-dd'),
+        autopay: false,
+      });
+    } else {
+      const b = bills.find((x) => x.id === billId);
+      if (!b) return;
+      setBillForm({
+        label: b.label,
+        amount: b.amount.toString(),
+        category: b.category,
+        frequency: b.frequency,
+        nextDue: b.nextDue,
+        autopay: b.autopay,
+      });
+    }
+    setEditingBillId(billId);
+  };
+
+  const handleSaveBill = () => {
+    const amount = parseFloat(billForm.amount);
+    if (!billForm.label.trim() || !amount || amount <= 0 || !billForm.nextDue) return;
+    const payload = {
+      label: billForm.label.trim(),
+      amount,
+      category: billForm.category,
+      frequency: billForm.frequency,
+      nextDue: billForm.nextDue,
+      autopay: billForm.autopay,
+    };
+    if (editingBillId === 'new') {
+      addBill(payload);
+    } else if (editingBillId) {
+      updateBill(editingBillId, payload);
+    }
+    setEditingBillId(null);
   };
 
   if (!hydrated) return null;
@@ -306,7 +366,7 @@ export default function BudgetPage() {
                   className="input text-center text-xl px-1"
                   value={newCat.icon}
                   onChange={(e) => {
-                    const v = [...e.target.value].slice(-1).join('') || '📦';
+                    const v = Array.from(e.target.value).slice(-1).join('') || '📦';
                     setNewCat((f) => ({ ...f, icon: v }));
                   }}
                 />
@@ -403,7 +463,7 @@ export default function BudgetPage() {
                         className="input text-center text-xl px-1"
                         value={editCatForm.icon}
                         onChange={(e) => {
-                          const v = [...e.target.value].slice(-1).join('') || '📦';
+                          const v = Array.from(e.target.value).slice(-1).join('') || '📦';
                           setEditCatForm((f) => ({ ...f, icon: v }));
                         }}
                       />
@@ -466,6 +526,181 @@ export default function BudgetPage() {
             );
           })}
         </div>
+      </div>
+
+      {/* ── Recurring Bills ── */}
+      <div className="card p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-white text-base flex items-center gap-2">
+              <CalendarClock size={16} className="text-indigo-400" /> Recurring Bills
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
+              Bills show on your dashboard when due — one tap logs the payment and rolls the date forward
+            </p>
+          </div>
+          {editingBillId === null && (
+            <button
+              onClick={() => openBillForm('new')}
+              className="btn-primary text-sm flex items-center gap-1.5 py-1.5 px-3 flex-shrink-0"
+            >
+              <Plus size={14} /> Add
+            </button>
+          )}
+        </div>
+
+        {editingBillId !== null && (
+          <div className="bg-slate-800/50 rounded-xl p-4 space-y-3 border border-slate-700">
+            <p className="text-sm font-semibold text-slate-200">
+              {editingBillId === 'new' ? 'New Bill' : 'Edit Bill'}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="label text-xs">Name</label>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="e.g. Phone plan"
+                  value={billForm.label}
+                  onChange={(e) => setBillForm((f) => ({ ...f, label: e.target.value }))}
+                  autoFocus
+                  maxLength={30}
+                />
+              </div>
+              <div>
+                <label className="label text-xs">Amount</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    className="input pl-7"
+                    placeholder="0.00"
+                    value={billForm.amount}
+                    onChange={(e) => setBillForm((f) => ({ ...f, amount: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="label text-xs">Category</label>
+                <select
+                  className="input"
+                  value={billForm.category}
+                  onChange={(e) => setBillForm((f) => ({ ...f, category: e.target.value }))}
+                >
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.icon} {c.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label text-xs">Repeats</label>
+                <select
+                  className="input"
+                  value={billForm.frequency}
+                  onChange={(e) => setBillForm((f) => ({ ...f, frequency: e.target.value as BillFrequency }))}
+                >
+                  <option value="monthly">Every month</option>
+                  <option value="biweekly">Every 2 weeks</option>
+                </select>
+              </div>
+              <div>
+                <label className="label text-xs">Next due date</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={billForm.nextDue}
+                  onChange={(e) => setBillForm((f) => ({ ...f, nextDue: e.target.value }))}
+                />
+              </div>
+              <div className="flex items-end pb-1">
+                <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded accent-indigo-600"
+                    checked={billForm.autopay}
+                    onChange={(e) => setBillForm((f) => ({ ...f, autopay: e.target.checked }))}
+                  />
+                  <Zap size={13} className="text-sky-400" /> On autopay
+                </label>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setEditingBillId(null)}
+                className="btn-ghost flex-1 border border-slate-700 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveBill}
+                disabled={!billForm.label.trim() || !(parseFloat(billForm.amount) > 0)}
+                className="btn-primary flex-1 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {editingBillId === 'new' ? 'Add Bill' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {bills.length === 0 && editingBillId === null ? (
+          <p className="text-sm text-slate-500 text-center py-4">
+            No recurring bills yet. Add your phone plan, insurance, subscriptions…
+          </p>
+        ) : (
+          <div className="space-y-1">
+            {[...bills]
+              .sort((a, b) => a.nextDue.localeCompare(b.nextDue))
+              .map((bill) => {
+                const cat = categories.find((c) => c.id === bill.category);
+                return (
+                  <div
+                    key={bill.id}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/40 transition-colors group"
+                  >
+                    <span
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
+                      style={{ backgroundColor: (cat?.color ?? '#64748b') + '22' }}
+                    >
+                      {cat?.icon ?? '📦'}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-200 truncate flex items-center gap-1.5">
+                        {bill.label}
+                        {bill.autopay && <Zap size={11} className="text-sky-400 flex-shrink-0" />}
+                      </p>
+                      <p className="text-[11px] text-slate-500">
+                        {bill.frequency === 'monthly' ? 'Monthly' : 'Biweekly'} · next{' '}
+                        {format(parseISO(bill.nextDue), 'MMM d, yyyy')}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold text-white tabular-nums flex-shrink-0">
+                      ${bill.amount.toFixed(2)}
+                    </span>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => openBillForm(bill.id)}
+                        className="p-1.5 text-slate-500 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        onClick={() => { if (window.confirm(`Delete bill "${bill.label}"?`)) deleteBill(bill.id); }}
+                        className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-950/50 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        )}
       </div>
     </div>
   );

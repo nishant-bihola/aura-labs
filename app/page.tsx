@@ -6,6 +6,9 @@ import CategoryRings from '@/components/dashboard/CategoryRings';
 import RecentTransactions from '@/components/dashboard/RecentTransactions';
 import HealthScore from '@/components/dashboard/HealthScore';
 import SpendingInsights from '@/components/dashboard/SpendingInsights';
+import SafeToSpend from '@/components/dashboard/SafeToSpend';
+import UpcomingBills from '@/components/dashboard/UpcomingBills';
+import Goals from '@/components/dashboard/Goals';
 
 export default function Dashboard() {
   return (
@@ -17,7 +20,12 @@ export default function Dashboard() {
 
       <PayPeriodBanner />
       <SummaryCards />
+      <div className="grid lg:grid-cols-2 gap-5 items-start">
+        <SafeToSpend />
+        <UpcomingBills />
+      </div>
       <SpendingInsights />
+      <Goals />
       <HealthScore />
       <CategoryRings />
       <RecentTransactions />
