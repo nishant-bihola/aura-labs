@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { CATEGORIES, CATEGORY_KEYS } from '@/lib/types';
+import { useCategories } from '@/lib/categories';
 import { format, parseISO } from 'date-fns';
 import {
   PieChart,
@@ -39,6 +39,7 @@ export default function AnalyticsPage() {
   const getCategorySpend = useStore((s) => s.getCategorySpend);
   const getCurrentPeriod = useStore((s) => s.getCurrentPeriod);
   const payAmount = useStore((s) => s.payAmount);
+  const { categories } = useCategories();
 
   const [selectedPeriod, setSelectedPeriod] = useState<string>('current');
   const currentPeriod = getCurrentPeriod();
@@ -46,27 +47,23 @@ export default function AnalyticsPage() {
 
   const spending = getCategorySpend(periodId);
 
-  // Only periods that actually have transactions, excluding current period (shown as "Current Period")
   const activePeriods = payPeriods.filter((p) =>
     transactions.some((t) => t.payPeriodId === p.id)
   );
   const otherActivePeriods = activePeriods.filter((p) => p.id !== currentPeriod?.id);
 
-  // Pie chart
-  const pieData = CATEGORY_KEYS.map((cat) => ({
-    name: CATEGORIES[cat].label,
-    value: spending[cat],
-    color: CATEGORIES[cat].color,
+  const pieData = categories.map((cat) => ({
+    name: cat.label,
+    value: spending[cat.id] ?? 0,
+    color: cat.color,
   })).filter((d) => d.value > 0);
 
-  // Budget vs actual bar
-  const barData = CATEGORY_KEYS.map((cat) => ({
-    name: CATEGORIES[cat].icon + ' ' + CATEGORIES[cat].label.split(' ')[0],
-    Budget: budget[cat],
-    Spent: spending[cat],
+  const barData = categories.map((cat) => ({
+    name: cat.icon + ' ' + cat.label.split(' ')[0],
+    Budget: budget[cat.id] ?? 0,
+    Spent: spending[cat.id] ?? 0,
   }));
 
-  // Trend: last 8 periods with transactions
   const trendPeriods = activePeriods.slice(-8);
   const lineData = trendPeriods.map((p) => {
     const txns = transactions.filter((t) => t.payPeriodId === p.id);
@@ -88,7 +85,6 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-5">
-      {/* Header + period selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-white">Analytics</h1>
@@ -121,7 +117,6 @@ export default function AnalyticsPage() {
         </div>
       ) : (
         <>
-          {/* Donut + Bar */}
           <div className="grid lg:grid-cols-2 gap-5">
             <div className="card p-5">
               <h2 className="font-semibold text-white mb-4">Spending by Category</h2>
@@ -162,10 +157,7 @@ export default function AnalyticsPage() {
             <div className="card p-5">
               <h2 className="font-semibold text-white mb-4">Budget vs Actual</h2>
               <ResponsiveContainer width="100%" height={260}>
-                <BarChart
-                  data={barData}
-                  margin={{ top: 0, right: 0, left: -15, bottom: 0 }}
-                >
+                <BarChart data={barData} margin={{ top: 0, right: 0, left: -15, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                   <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} />
                   <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
@@ -185,17 +177,13 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          {/* Spending trend */}
           {lineData.length > 1 && (
             <div className="card p-5">
               <h2 className="font-semibold text-white mb-4">
                 Spending Trend — Last {lineData.length} Pay Periods
               </h2>
               <ResponsiveContainer width="100%" height={280}>
-                <LineChart
-                  data={lineData}
-                  margin={{ top: 5, right: 20, left: -15, bottom: 0 }}
-                >
+                <LineChart data={lineData} margin={{ top: 5, right: 20, left: -15, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                   <XAxis dataKey="period" tick={{ fill: '#64748b', fontSize: 11 }} />
                   <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
@@ -209,14 +197,7 @@ export default function AnalyticsPage() {
                     )}
                   />
                   {payAmount > 0 && (
-                    <Line
-                      type="monotone"
-                      dataKey="Income"
-                      stroke="#34d399"
-                      strokeWidth={2}
-                      dot={false}
-                      strokeDasharray="5 4"
-                    />
+                    <Line type="monotone" dataKey="Income" stroke="#34d399" strokeWidth={2} dot={false} strokeDasharray="5 4" />
                   )}
                   <Line
                     type="monotone"
@@ -227,44 +208,21 @@ export default function AnalyticsPage() {
                     activeDot={{ r: 6 }}
                   />
                   {payAmount > 0 && (
-                    <Line
-                      type="monotone"
-                      dataKey="Saved"
-                      stroke="#60a5fa"
-                      strokeWidth={2}
-                      dot={{ fill: '#60a5fa', r: 3, strokeWidth: 0 }}
-                    />
+                    <Line type="monotone" dataKey="Saved" stroke="#60a5fa" strokeWidth={2} dot={{ fill: '#60a5fa', r: 3, strokeWidth: 0 }} />
                   )}
                 </LineChart>
               </ResponsiveContainer>
             </div>
           )}
 
-          {/* All-time summary */}
           <div className="card p-5">
             <h2 className="font-semibold text-white mb-4">All-Time Summary</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                {
-                  label: 'Total Transactions',
-                  value: transactions.length.toString(),
-                  color: 'text-indigo-400',
-                },
-                {
-                  label: 'Total Spent',
-                  value: `$${totalAllTime.toLocaleString('en-CA', { minimumFractionDigits: 0 })}`,
-                  color: 'text-rose-400',
-                },
-                {
-                  label: 'Avg per Transaction',
-                  value: `$${avgPerTx.toFixed(2)}`,
-                  color: 'text-amber-400',
-                },
-                {
-                  label: 'Periods Tracked',
-                  value: activePeriods.length.toString(),
-                  color: 'text-emerald-400',
-                },
+                { label: 'Total Transactions', value: transactions.length.toString(), color: 'text-indigo-400' },
+                { label: 'Total Spent', value: `$${totalAllTime.toLocaleString('en-CA', { minimumFractionDigits: 0 })}`, color: 'text-rose-400' },
+                { label: 'Avg per Transaction', value: `$${avgPerTx.toFixed(2)}`, color: 'text-amber-400' },
+                { label: 'Periods Tracked', value: activePeriods.length.toString(), color: 'text-emerald-400' },
               ].map(({ label, value, color }) => (
                 <div key={label} className="bg-slate-800/50 rounded-xl p-4 text-center">
                   <p className={`text-2xl font-bold tabular-nums ${color}`}>{value}</p>
@@ -274,29 +232,24 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          {/* Category breakdown */}
           <div className="card p-5">
-            <h2 className="font-semibold text-white mb-4">
-              Category Breakdown (All Time)
-            </h2>
+            <h2 className="font-semibold text-white mb-4">Category Breakdown (All Time)</h2>
             <div className="space-y-3">
-              {CATEGORY_KEYS.map((cat) => {
+              {categories.map((cat) => {
                 const allTimeSpend = transactions
-                  .filter((t) => t.category === cat)
+                  .filter((t) => t.category === cat.id)
                   .reduce((a, t) => a + t.amount, 0);
                 return { cat, allTimeSpend };
               })
                 .sort((a, b) => b.allTimeSpend - a.allTimeSpend)
                 .map(({ cat, allTimeSpend }) => {
-                  const pct =
-                    totalAllTime > 0 ? (allTimeSpend / totalAllTime) * 100 : 0;
-                  const { label, color, icon } = CATEGORIES[cat];
+                  const pct = totalAllTime > 0 ? (allTimeSpend / totalAllTime) * 100 : 0;
                   return (
-                    <div key={cat}>
+                    <div key={cat.id}>
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2 text-sm">
-                          <span>{icon}</span>
-                          <span className="text-slate-300 font-medium">{label}</span>
+                          <span>{cat.icon}</span>
+                          <span className="text-slate-300 font-medium">{cat.label}</span>
                         </div>
                         <div className="text-sm text-right">
                           <span className="font-bold text-white tabular-nums">
@@ -308,7 +261,7 @@ export default function AnalyticsPage() {
                       <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all"
-                          style={{ width: `${pct}%`, backgroundColor: color }}
+                          style={{ width: `${pct}%`, backgroundColor: cat.color }}
                         />
                       </div>
                     </div>

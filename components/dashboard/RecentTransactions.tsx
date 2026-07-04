@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
-import { CATEGORIES } from '@/lib/types';
+import { useCategories } from '@/lib/categories';
 import { format, parseISO } from 'date-fns';
 import { ArrowRight, Plus } from 'lucide-react';
 import TransactionModal from '@/components/transactions/TransactionModal';
@@ -11,6 +11,7 @@ import TransactionModal from '@/components/transactions/TransactionModal';
 export default function RecentTransactions() {
   const transactions = useStore((s) => s.transactions);
   const [modalOpen, setModalOpen] = useState(false);
+  const { categoryMap } = useCategories();
 
   const recent = [...transactions]
     .sort((a, b) => b.date.localeCompare(a.date))
@@ -52,7 +53,7 @@ export default function RecentTransactions() {
       ) : (
         <div className="divide-y divide-slate-800/60">
           {recent.map((t) => {
-            const cat = CATEGORIES[t.category];
+            const cat = categoryMap[t.category] ?? { label: t.category, color: '#64748b', icon: '📦' };
             return (
               <div key={t.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-800/30 transition-colors">
                 <div className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-lg flex-shrink-0">

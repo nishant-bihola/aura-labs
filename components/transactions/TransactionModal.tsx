@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
-import { CATEGORIES, CATEGORY_KEYS, Category, Transaction } from '@/lib/types';
+import { useCategories } from '@/lib/categories';
+import { Transaction } from '@/lib/types';
 import { format } from 'date-fns';
 import { X } from 'lucide-react';
 
@@ -15,16 +16,16 @@ interface Props {
 const EMPTY = {
   date: format(new Date(), 'yyyy-MM-dd'),
   amount: '',
-  category: 'others' as Category,
+  category: 'others',
   description: '',
 };
 
 export default function TransactionModal({ open, onClose, editTransaction }: Props) {
   const addTransaction = useStore((s) => s.addTransaction);
   const updateTransaction = useStore((s) => s.updateTransaction);
-  const [form, setForm] = useState(EMPTY);
+  const { categories } = useCategories();
+  const [form, setForm] = useState({ ...EMPTY });
 
-  // Lock body scroll while open
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
@@ -32,7 +33,6 @@ export default function TransactionModal({ open, onClose, editTransaction }: Pro
     }
   }, [open]);
 
-  // Close on Escape
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -120,24 +120,23 @@ export default function TransactionModal({ open, onClose, editTransaction }: Pro
 
           <div>
             <label className="label">Category</label>
-            <div className="grid grid-cols-2 gap-2">
-              {CATEGORY_KEYS.map((cat) => {
-                const { label, color, icon } = CATEGORIES[cat];
-                const active = form.category === cat;
+            <div className="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-0.5">
+              {categories.map((cat) => {
+                const active = form.category === cat.id;
                 return (
                   <button
-                    key={cat}
+                    key={cat.id}
                     type="button"
-                    onClick={() => setForm((f) => ({ ...f, category: cat }))}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all"
+                    onClick={() => setForm((f) => ({ ...f, category: cat.id }))}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all text-left"
                     style={
                       active
-                        ? { borderColor: color, backgroundColor: color + '22', color }
+                        ? { borderColor: cat.color, backgroundColor: cat.color + '22', color: cat.color }
                         : { borderColor: '#334155', color: '#94a3b8' }
                     }
                   >
-                    <span>{icon}</span>
-                    <span className="truncate">{label}</span>
+                    <span className="flex-shrink-0">{cat.icon}</span>
+                    <span className="truncate">{cat.label}</span>
                   </button>
                 );
               })}

@@ -5,6 +5,7 @@ import SummaryCards from '@/components/dashboard/SummaryCards';
 import CategoryRings from '@/components/dashboard/CategoryRings';
 import RecentTransactions from '@/components/dashboard/RecentTransactions';
 import HealthScore from '@/components/dashboard/HealthScore';
+import SpendingInsights from '@/components/dashboard/SpendingInsights';
 
 export default function Dashboard() {
   return (
@@ -16,6 +17,7 @@ export default function Dashboard() {
 
       <PayPeriodBanner />
       <SummaryCards />
+      <SpendingInsights />
       <HealthScore />
       <CategoryRings />
       <RecentTransactions />

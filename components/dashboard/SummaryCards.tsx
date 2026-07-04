@@ -2,17 +2,21 @@
 
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
+import { useCategories } from '@/lib/categories';
 import { DollarSign, TrendingDown, TrendingUp, Percent, Settings } from 'lucide-react';
 
 export default function SummaryCards() {
   const payAmount = useStore((s) => s.payAmount);
+  const budget = useStore((s) => s.budget);
   const getCurrentPeriod = useStore((s) => s.getCurrentPeriod);
   const getCategorySpend = useStore((s) => s.getCategorySpend);
+  const { categoryIds } = useCategories();
 
   const period = getCurrentPeriod();
   const spending = getCategorySpend(period?.id);
-  const totalSpent = Object.values(spending).reduce((a, b) => a + b, 0);
-  const remaining = payAmount - totalSpent;
+  const totalSpent = categoryIds.reduce((a, id) => a + (spending[id] ?? 0), 0);
+  const totalBudgeted = categoryIds.reduce((a, id) => a + (budget[id] ?? 0), 0);
+  const remaining = (payAmount > 0 ? payAmount : totalBudgeted) - totalSpent;
   const savingsRate = payAmount > 0 ? (remaining / payAmount) * 100 : 0;
   const spentPct = payAmount > 0 ? Math.round((totalSpent / payAmount) * 100) : 0;
 

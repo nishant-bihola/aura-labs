@@ -1,7 +1,7 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { CATEGORY_KEYS } from '@/lib/types';
+import { useCategories } from '@/lib/categories';
 
 export default function HealthScore() {
   const payAmount = useStore((s) => s.payAmount);
@@ -9,6 +9,7 @@ export default function HealthScore() {
   const transactions = useStore((s) => s.transactions);
   const getCurrentPeriod = useStore((s) => s.getCurrentPeriod);
   const getCategorySpend = useStore((s) => s.getCategorySpend);
+  const { categoryIds } = useCategories();
 
   const period = getCurrentPeriod();
   const spending = getCategorySpend(period?.id);
@@ -18,8 +19,11 @@ export default function HealthScore() {
 
   const savingsScore = Math.min(40, Math.max(0, (savingsRate / 20) * 40));
 
-  const totalBudget = CATEGORY_KEYS.reduce((a, c) => a + (budget[c] ?? 0), 0);
-  const overBudgetPenalty = CATEGORY_KEYS.reduce((pen, c) => pen + Math.max(0, spending[c] - budget[c]), 0);
+  const totalBudget = categoryIds.reduce((a, id) => a + (budget[id] ?? 0), 0);
+  const overBudgetPenalty = categoryIds.reduce(
+    (pen, id) => pen + Math.max(0, (spending[id] ?? 0) - (budget[id] ?? 0)),
+    0
+  );
   const adherence = totalBudget > 0 ? Math.max(0, 1 - overBudgetPenalty / totalBudget) : 0;
   const budgetScore = adherence * 30;
 

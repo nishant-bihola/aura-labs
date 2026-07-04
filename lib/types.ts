@@ -1,35 +1,40 @@
-export type Category =
-  | 'phone_bills'
-  | 'car_gas'
-  | 'car_insurance'
-  | 'investments'
-  | 'loan_repayments'
-  | 'others';
+export type Category = string;
 
-export interface CategoryInfo {
+export interface CategoryDef {
+  id: string;
   label: string;
   color: string;
   icon: string;
+  isDefault: boolean;
 }
 
-export const CATEGORIES: Record<Category, CategoryInfo> = {
-  phone_bills:     { label: 'Phone Bills',     color: '#818cf8', icon: '📱' },
-  car_gas:         { label: 'Car Gas',          color: '#fbbf24', icon: '⛽' },
-  car_insurance:   { label: 'Car Insurance',    color: '#34d399', icon: '🛡️' },
-  investments:     { label: 'Investments',      color: '#60a5fa', icon: '📈' },
-  loan_repayments: { label: 'Loan Repayments',  color: '#f87171', icon: '🏦' },
-  others:          { label: 'Others',           color: '#a78bfa', icon: '📦' },
-};
+export const DEFAULT_CATEGORIES: CategoryDef[] = [
+  { id: 'phone_bills',     label: 'Phone Bills',    color: '#818cf8', icon: '📱', isDefault: true },
+  { id: 'car_gas',         label: 'Car Gas',        color: '#fbbf24', icon: '⛽', isDefault: true },
+  { id: 'car_insurance',   label: 'Car Insurance',  color: '#34d399', icon: '🛡️', isDefault: true },
+  { id: 'investments',     label: 'Investments',    color: '#60a5fa', icon: '📈', isDefault: true },
+  { id: 'loan_repayments', label: 'Loan Repayments',color: '#f87171', icon: '🏦', isDefault: true },
+  { id: 'others',          label: 'Others',         color: '#a78bfa', icon: '📦', isDefault: true },
+];
 
-export const CATEGORY_KEYS = Object.keys(CATEGORIES) as Category[];
+export const CATEGORY_COLORS = [
+  '#818cf8', '#6366f1', '#8b5cf6', '#a78bfa',
+  '#f472b6', '#ec4899',
+  '#fb923c', '#f97316',
+  '#fbbf24', '#f59e0b',
+  '#34d399', '#10b981',
+  '#60a5fa', '#3b82f6',
+  '#f87171', '#ef4444',
+  '#94a3b8', '#64748b',
+];
 
-export type BudgetMap = Record<Category, number>;
+export type BudgetMap = Record<string, number>;
 
 export interface Transaction {
   id: string;
   date: string;
   amount: number;
-  category: Category;
+  category: string;
   description: string;
   payPeriodId: string;
 }

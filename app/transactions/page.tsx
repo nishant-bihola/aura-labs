@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { CATEGORIES, CATEGORY_KEYS, Category, Transaction } from '@/lib/types';
+import { useCategories } from '@/lib/categories';
+import { Transaction } from '@/lib/types';
 import { format, parseISO } from 'date-fns';
 import { Plus, Trash2, Pencil, Search, Download } from 'lucide-react';
 import TransactionModal from '@/components/transactions/TransactionModal';
@@ -11,7 +12,7 @@ export default function TransactionsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editTx, setEditTx] = useState<Transaction | undefined>();
   const [search, setSearch] = useState('');
-  const [catFilter, setCatFilter] = useState<Category | 'all'>('all');
+  const [catFilter, setCatFilter] = useState<string>('all');
   const [periodFilter, setPeriodFilter] = useState<string>('current');
   const [exporting, setExporting] = useState(false);
 
@@ -21,19 +22,21 @@ export default function TransactionsPage() {
   const getCurrentPeriod = useStore((s) => s.getCurrentPeriod);
   const currentPeriod = getCurrentPeriod();
 
+  const { categories, categoryMap } = useCategories();
+
   const periodsWithTx = payPeriods.filter((p) =>
     transactions.some((t) => t.payPeriodId === p.id)
   );
 
-  // Sort newest-date first
   const sorted = [...transactions].sort((a, b) => b.date.localeCompare(a.date));
 
   const filtered = sorted.filter((t) => {
     const q = search.toLowerCase();
+    const catDef = categoryMap[t.category];
     const matchSearch =
       !q ||
       t.description.toLowerCase().includes(q) ||
-      CATEGORIES[t.category].label.toLowerCase().includes(q);
+      (catDef?.label ?? t.category).toLowerCase().includes(q);
     const matchCat = catFilter === 'all' || t.category === catFilter;
     const matchPeriod =
       periodFilter === 'all' ||
@@ -76,7 +79,6 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-white">Transactions</h1>
@@ -132,7 +134,6 @@ export default function TransactionsPage() {
           </select>
         </div>
 
-        {/* Category chips — scrollable on mobile */}
         <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1">
           <button
             onClick={() => setCatFilter('all')}
@@ -144,18 +145,18 @@ export default function TransactionsPage() {
           >
             All
           </button>
-          {CATEGORY_KEYS.map((cat) => (
+          {categories.map((cat) => (
             <button
-              key={cat}
-              onClick={() => setCatFilter(catFilter === cat ? 'all' : cat)}
+              key={cat.id}
+              onClick={() => setCatFilter(catFilter === cat.id ? 'all' : cat.id)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-all"
               style={
-                catFilter === cat
-                  ? { backgroundColor: CATEGORIES[cat].color, color: '#fff' }
+                catFilter === cat.id
+                  ? { backgroundColor: cat.color, color: '#fff' }
                   : { backgroundColor: '#1e293b', color: '#94a3b8' }
               }
             >
-              {CATEGORIES[cat].icon} {CATEGORIES[cat].label}
+              {cat.icon} {cat.label}
             </button>
           ))}
         </div>
@@ -182,7 +183,7 @@ export default function TransactionsPage() {
             {/* Mobile: card list */}
             <div className="sm:hidden divide-y divide-slate-800/60">
               {filtered.map((t) => {
-                const cat = CATEGORIES[t.category];
+                const cat = categoryMap[t.category] ?? { label: t.category, color: '#64748b', icon: '📦' };
                 return (
                   <div key={t.id} className="flex items-center gap-3 px-4 py-3.5">
                     <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-xl flex-shrink-0">
@@ -229,24 +230,16 @@ export default function TransactionsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-800 text-left">
-                    <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                      Description
-                    </th>
-                    <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                      Category
-                    </th>
-                    <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                      Date
-                    </th>
-                    <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">
-                      Amount
-                    </th>
+                    <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Description</th>
+                    <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Category</th>
+                    <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Date</th>
+                    <th className="px-5 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Amount</th>
                     <th className="w-24" />
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((t) => {
-                    const cat = CATEGORIES[t.category];
+                    const cat = categoryMap[t.category] ?? { label: t.category, color: '#64748b', icon: '📦' };
                     return (
                       <tr
                         key={t.id}

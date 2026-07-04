@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
-import { CATEGORIES, CATEGORY_KEYS } from '@/lib/types';
+import { useCategories } from '@/lib/categories';
 
 function Ring({ pct, color }: { pct: number; color: string }) {
   const size = 72;
@@ -34,11 +34,12 @@ export default function CategoryRings() {
   const budget = useStore((s) => s.budget);
   const getCurrentPeriod = useStore((s) => s.getCurrentPeriod);
   const getCategorySpend = useStore((s) => s.getCategorySpend);
+  const { categories } = useCategories();
 
   const period = getCurrentPeriod();
   const spending = getCategorySpend(period?.id);
 
-  const hasBudget = CATEGORY_KEYS.some((c) => (budget[c] ?? 0) > 0);
+  const hasBudget = categories.some((c) => (budget[c.id] ?? 0) > 0);
 
   return (
     <div className="card">
@@ -54,36 +55,33 @@ export default function CategoryRings() {
         )}
       </div>
       <div className="card-body grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {CATEGORY_KEYS.map((cat) => {
-          const spent = spending[cat] ?? 0;
-          const alloc = budget[cat] ?? 0;
+        {categories.map((cat) => {
+          const spent = spending[cat.id] ?? 0;
+          const alloc = budget[cat.id] ?? 0;
           const pct = alloc > 0 ? (spent / alloc) * 100 : spent > 0 ? 100 : 0;
-          const { label, color, icon } = CATEGORIES[cat];
           const isOver = alloc > 0 && pct > 100;
           const isWarn = alloc > 0 && pct > 80 && !isOver;
 
           return (
-            <div key={cat} className="flex flex-col items-center gap-2.5 p-3 rounded-xl bg-slate-800/40 hover:bg-slate-800/70 transition-colors">
+            <div key={cat.id} className="flex flex-col items-center gap-2.5 p-3 rounded-xl bg-slate-800/40 hover:bg-slate-800/70 transition-colors">
               <div className="relative flex-shrink-0">
-                <Ring pct={pct} color={color} />
+                <Ring pct={pct} color={cat.color} />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xl">{icon}</span>
+                  <span className="text-xl">{cat.icon}</span>
                 </div>
               </div>
               <div className="text-center w-full">
-                <p className="text-[11px] font-semibold text-slate-300 leading-tight">{label}</p>
+                <p className="text-[11px] font-semibold text-slate-300 leading-tight">{cat.label}</p>
                 <p className="text-sm font-bold text-white mt-1 tabular-nums">${spent.toFixed(0)}</p>
                 {alloc > 0 ? (
                   <>
                     <p className="text-[10px] text-slate-500">of ${alloc.toFixed(0)}</p>
-                    <p className={`text-[10px] font-bold mt-0.5 ${
-                      isOver ? 'text-rose-400' : isWarn ? 'text-amber-400' : 'text-emerald-400'
-                    }`}>
+                    <p className={`text-[10px] font-bold mt-0.5 ${isOver ? 'text-rose-400' : isWarn ? 'text-amber-400' : 'text-emerald-400'}`}>
                       {isOver ? `$${(spent - alloc).toFixed(0)} over` : `$${(alloc - spent).toFixed(0)} left`}
                     </p>
                   </>
                 ) : (
-                  <p className="text-[10px] text-slate-600 mt-0.5">no limit set</p>
+                  <p className="text-[10px] text-slate-600 mt-0.5">no limit</p>
                 )}
               </div>
             </div>

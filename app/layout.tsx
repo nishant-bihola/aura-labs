@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="flex min-h-screen">
           <Navigation />
           <div className="flex-1 md:ml-64 min-h-screen">
-            <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-28 md:pb-10">
+            <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-36 md:pb-10">
               {children}
             </main>
           </div>

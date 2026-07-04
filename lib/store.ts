@@ -1,16 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { addDays, format, isWithinInterval, parseISO, startOfDay } from 'date-fns';
-import { Category, Transaction, BudgetMap, PayPeriod, CATEGORY_KEYS } from './types';
-
-const ZERO_BUDGET: BudgetMap = {
-  phone_bills: 0,
-  car_gas: 0,
-  car_insurance: 0,
-  investments: 0,
-  loan_repayments: 0,
-  others: 0,
-};
+import { CategoryDef, DEFAULT_CATEGORIES, Transaction, BudgetMap, PayPeriod } from './types';
 
 function nanoid(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -19,7 +10,6 @@ function nanoid(): string {
 function makePayPeriods(firstPayDate: string, count = 104): PayPeriod[] {
   const periods: PayPeriod[] = [];
   let start = parseISO(firstPayDate);
-  // Include 52 periods before the first pay date for historical entries
   start = addDays(start, -52 * 14);
   for (let i = 0; i < count; i++) {
     periods.push({
@@ -49,15 +39,21 @@ interface AppState {
   payPeriods: PayPeriod[];
   budget: BudgetMap;
   transactions: Transaction[];
+  customCategories: CategoryDef[];
 
   setPayAmount: (v: number) => void;
   setFirstPayDate: (d: string) => void;
-  setBudget: (cat: Category, v: number) => void;
+  setBudget: (cat: string, v: number) => void;
   addTransaction: (t: Omit<Transaction, 'id' | 'payPeriodId'>) => void;
   updateTransaction: (id: string, patch: Partial<Omit<Transaction, 'id' | 'payPeriodId'>>) => void;
   deleteTransaction: (id: string) => void;
   clearAll: () => void;
 
+  addCategory: (cat: Omit<CategoryDef, 'id' | 'isDefault'>) => void;
+  updateCategory: (id: string, patch: Partial<Omit<CategoryDef, 'id' | 'isDefault'>>) => void;
+  deleteCategory: (id: string) => void;
+
+  getAllCategories: () => CategoryDef[];
   getCurrentPeriod: () => PayPeriod | null;
   getPeriodTransactions: (periodId: string) => Transaction[];
   getCategorySpend: (periodId?: string) => BudgetMap;
@@ -69,8 +65,9 @@ export const useStore = create<AppState>()(
       payAmount: 0,
       firstPayDate: format(new Date(), 'yyyy-MM-dd'),
       payPeriods: makePayPeriods(format(new Date(), 'yyyy-MM-dd')),
-      budget: { ...ZERO_BUDGET },
+      budget: {},
       transactions: [],
+      customCategories: [],
 
       setPayAmount: (v) => set({ payAmount: v }),
 
@@ -79,7 +76,6 @@ export const useStore = create<AppState>()(
         set((s) => ({
           firstPayDate: d,
           payPeriods: newPeriods,
-          // Re-assign every transaction to the correct period in the new schedule
           transactions: s.transactions.map((t) => ({
             ...t,
             payPeriodId: assignPeriod(t.date, newPeriods),
@@ -105,7 +101,6 @@ export const useStore = create<AppState>()(
           const existing = s.transactions.find((t) => t.id === id);
           if (!existing) return s;
           const updated = { ...existing, ...patch };
-          // Recalculate period assignment when date changes
           if (patch.date) {
             updated.payPeriodId = assignPeriod(patch.date, s.payPeriods);
           }
@@ -118,13 +113,39 @@ export const useStore = create<AppState>()(
         set((s) => ({ transactions: s.transactions.filter((t) => t.id !== id) })),
 
       clearAll: () =>
-        set({
+        set((s) => ({
           payAmount: 0,
           firstPayDate: format(new Date(), 'yyyy-MM-dd'),
           payPeriods: makePayPeriods(format(new Date(), 'yyyy-MM-dd')),
-          budget: { ...ZERO_BUDGET },
+          budget: {},
           transactions: [],
-        }),
+          customCategories: s.customCategories,
+        })),
+
+      addCategory: (cat) =>
+        set((s) => ({
+          customCategories: [
+            ...s.customCategories,
+            { ...cat, id: nanoid(), isDefault: false },
+          ],
+        })),
+
+      updateCategory: (id, patch) =>
+        set((s) => ({
+          customCategories: s.customCategories.map((c) =>
+            c.id === id ? { ...c, ...patch } : c
+          ),
+        })),
+
+      deleteCategory: (id) =>
+        set((s) => ({
+          customCategories: s.customCategories.filter((c) => c.id !== id),
+          transactions: s.transactions.map((t) =>
+            t.category === id ? { ...t, category: 'others' } : t
+          ),
+        })),
+
+      getAllCategories: () => [...DEFAULT_CATEGORIES, ...get().customCategories],
 
       getCurrentPeriod: () => {
         const today = startOfDay(new Date());
@@ -145,7 +166,7 @@ export const useStore = create<AppState>()(
         const txns = periodId
           ? get().transactions.filter((t) => t.payPeriodId === periodId)
           : get().transactions;
-        const result = { ...ZERO_BUDGET };
+        const result: BudgetMap = {};
         txns.forEach((t) => {
           result[t.category] = (result[t.category] ?? 0) + t.amount;
         });
@@ -153,7 +174,7 @@ export const useStore = create<AppState>()(
       },
     }),
     {
-      name: 'budget-store-v1',
+      name: 'budget-store-v2',
       storage: createJSONStorage(() =>
         typeof window !== 'undefined' ? localStorage : ({} as Storage)
       ),

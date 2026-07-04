@@ -13,11 +13,9 @@
   * {
     @apply border-slate-800;
   }
-  /* Prevent iOS double-tap zoom on buttons */
   button, a {
     touch-action: manipulation;
   }
-  /* Custom scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { @apply bg-slate-950; }
   ::-webkit-scrollbar-thumb { @apply bg-slate-700 rounded-full; }
@@ -46,5 +44,9 @@
   }
   .label {
     @apply text-sm font-medium text-slate-400 mb-1.5 block;
+  }
+  /* iOS safe-area bottom padding for fixed bottom nav */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
