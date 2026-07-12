@@ -348,16 +348,15 @@ async function startServer() {
     }
   });
 
-  // Journal (server-side Sanity fetch — avoids browser CORS)
-  app.get("/api/journal", async (_req, res) => {
-    try { res.status(200).json({ posts: await getPosts() }); }
-    catch { res.status(200).json({ posts: [] }); }
-  });
-  app.get("/api/journal-post", async (req, res) => {
+  // Journal (server-side Sanity fetch — avoids browser CORS). ?slug= → single post.
+  app.get("/api/journal", async (req, res) => {
     const slug = String(req.query.slug || "");
-    if (!slug) return res.status(400).json({ error: "slug required" });
-    try { res.status(200).json({ post: await getPost(slug) }); }
-    catch { res.status(200).json({ post: null }); }
+    try {
+      if (slug) return res.status(200).json({ post: await getPost(slug) });
+      return res.status(200).json({ posts: await getPosts() });
+    } catch {
+      return res.status(200).json(slug ? { post: null } : { posts: [] });
+    }
   });
 
   // --- VITE / STATIC SERVING ---

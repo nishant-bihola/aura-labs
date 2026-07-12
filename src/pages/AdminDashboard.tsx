@@ -55,7 +55,7 @@ export default function AdminDashboard() {
 
   const loadConvos = async (key: string) => {
     try {
-      const res = await fetch("/api/admin-chats", { headers: { "x-admin-key": key } });
+      const res = await fetch("/api/admin-leads?resource=chats", { headers: { "x-admin-key": key } });
       const data = await res.json().catch(() => ({}));
       setConvos(Array.isArray(data.conversations) ? data.conversations : []);
     } catch {

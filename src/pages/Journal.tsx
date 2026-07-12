@@ -7,7 +7,7 @@ import type { JournalPost } from "../lib/sanity";
 const fetchPosts = (): Promise<JournalPost[]> =>
   fetch("/api/journal").then((r) => r.json()).then((d) => d.posts || []).catch(() => []);
 const fetchPost = (slug: string): Promise<JournalPost | null> =>
-  fetch(`/api/journal-post?slug=${encodeURIComponent(slug)}`).then((r) => r.json()).then((d) => d.post ?? null).catch(() => null);
+  fetch(`/api/journal?slug=${encodeURIComponent(slug)}`).then((r) => r.json()).then((d) => d.post ?? null).catch(() => null);
 
 const fmtDate = (d?: string) =>
   d ? new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "";
