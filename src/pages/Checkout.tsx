@@ -97,7 +97,7 @@ export default function CheckoutPage() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       console.error("Checkout error:", error);
-      alert("Failed to process request. Please try again.");
+      setErrors({ message: "Something went wrong on our end. Please try again, or email nishant15bihola@gmail.com." });
     } finally {
       setIsSubmitting(false);
     }

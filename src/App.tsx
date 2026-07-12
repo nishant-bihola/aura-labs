@@ -28,6 +28,8 @@ import GiantTicker from "./components/GiantTicker";
 import { ChatWidget } from "./components/ChatWidget";
 import ExitIntentModal from "./components/ExitIntentModal";
 import BackToTop from "./components/BackToTop";
+import ScrollProgress from "./components/ScrollProgress";
+import StatsSection from "./components/StatsSection";
 import { Analytics } from "@vercel/analytics/react";
 
 // Route-level code splitting: nothing below the landing page touches the
@@ -165,6 +167,7 @@ export default function App() {
         <ScrollHandler isMenuOpen={isMenuOpen} />
         <SpeedInsights />
         <Analytics />
+        <ScrollProgress />
         <ChatWidget />
         <ExitIntentModal />
         <BackToTop />
@@ -263,6 +266,7 @@ export default function App() {
                     <Hero />
                     <LogoTicker />
                     <div id="work"><WorkSection /></div>
+                    <StatsSection />
                     <GiantTicker />
                     <div id="studio"><ServicesSection /></div>
                     <TestimonialsSection />
