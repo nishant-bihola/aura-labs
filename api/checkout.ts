@@ -1,13 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createClient } from "@supabase/supabase-js";
 import { adminPurchaseAlertHTML, paymentInstructionsHTML } from "./_lib/emails.js";
 import { sendEmail } from "./_lib/emailSender.js";
-import { PrismaClient } from "@prisma/client";
+import { getSupabase } from "./_lib/db.js";
 
-const prisma = new PrismaClient();
-const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
-const supabaseKey = process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "";
-const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+const supabase = getSupabase();
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -27,26 +23,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: "Email is required" });
     }
 
-    // 1. prisma database sync
-    const dbTask = (async () => {
-      try {
-        await prisma.lead.create({
-          data: {
-            name: clientName,
-            email,
-            plan,
-            details: projectDetails || "",
-            addons: addons ? addons.join(", ") : null
-          }
-        });
-        return true;
-      } catch (dbError) {
-        console.error("Prisma Error in checkout:", dbError);
-        return false;
-      }
-    })();
-
-    // 2. Supabase Fallback Sync (traditional)
+    // 1. Supabase — persist the checkout intent as a lead.
     const supabaseTask = (async () => {
       if (!supabase) return false;
       try {
@@ -83,16 +60,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Run parallel tasks
     const results = await Promise.allSettled([
-      dbTask,
       supabaseTask,
       adminEmailTask,
       clientEmailTask
     ]);
 
-    const [dbRes, sbRes, adminRes, clientRes] = results;
+    const [sbRes, adminRes, clientRes] = results;
 
     console.log('[Checkout] Performance Results:', {
-      database: dbRes.status,
       supabase: sbRes.status,
       adminEmail: adminRes.status,
       clientEmail: clientRes.status

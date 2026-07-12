@@ -1,15 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
 import { Client as NotionClient } from '@notionhq/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { adminAlertHTML, clientConfirmationHTML } from './_lib/emails.js';
 import { sendEmail } from './_lib/emailSender.js';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { getSupabase } from './_lib/db.js';
 
 // ─── Environment Variables ────────────────────────────────────────────────────
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 const NOTION_TOKEN = process.env.NOTION_TOKEN || process.env.VITE_NOTION_TOKEN || '';
 const NOTION_DB_ID = process.env.NOTION_DATABASE_ID || process.env.VITE_NOTION_DATABASE_ID || '';
 const OWNER_EMAIL = process.env.ADMIN_EMAIL || 'nishant15bihola@gmail.com';
@@ -32,21 +27,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ success: false, error: 'Email is required.' });
   }
 
-  // 1. Prisma - Database Insertion (High Priority)
+  // 1. Supabase — persist the lead so the admin dashboard can see it.
   const dbTask = (async () => {
+    const supabase = getSupabase();
+    if (!supabase) return false;
     try {
-      await prisma.lead.create({
-        data: {
-          name: clientName,
-          email,
-          plan: plan || inquiryType,
-          details: message || "",
-          addons: phone || null
-        }
-      });
+      const parts = clientName.split(" ");
+      await supabase.from("contact_submissions").insert([{
+        first_name: parts[0] || clientName,
+        last_name: parts.slice(1).join(" ") || "",
+        email,
+        message: message || "",
+        type: inquiryType,
+        plan: plan || inquiryType,
+      }]);
       return true;
     } catch (dbError) {
-      console.error("Prisma Error in contact:", dbError);
+      console.error("Supabase Error in contact:", dbError);
       return false;
     }
   })();

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "node scripts/optimize-images.js && prisma generate && vite build",
+    "build": "node scripts/optimize-images.js && vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "images": "node scripts/optimize-images.mjs",

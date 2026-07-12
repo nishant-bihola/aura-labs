@@ -3,23 +3,16 @@
  * Used by the chat agent's capture_lead tool and the proposal/qualify endpoints
  * so persistence and scoring live in one place.
  */
-import { PrismaClient } from "@prisma/client";
 import { Client as NotionClient } from "@notionhq/client";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { adminAlertHTML, clientConfirmationHTML } from "./emails.js";
 import { sendEmail } from "./emailSender.js";
 import { llmJSON } from "./llm.js";
+import { getSupabase } from "./db.js";
 
-const prisma = new PrismaClient();
+// Conversations now live in Supabase (the Prisma/Postgres project was retired).
+export { dbSaveConversation as saveConversation, dbListConversations as listConversations } from "./db.js";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "nishant15bihola@gmail.com";
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
-const SUPABASE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_KEY ||
-  process.env.SUPABASE_ANON_KEY ||
-  process.env.VITE_SUPABASE_ANON_KEY ||
-  "";
 const NOTION_TOKEN = process.env.NOTION_TOKEN || process.env.VITE_NOTION_TOKEN || "";
 const NOTION_DB_ID = process.env.NOTION_DATABASE_ID || process.env.VITE_NOTION_DATABASE_ID || "";
 
@@ -83,16 +76,6 @@ export async function captureLead(input: {
     ? `\n\nAI score: ${qualification.score}/100 (${qualification.priority}). ${qualification.summary}`
     : "";
 
-  const dbTask = (async () => {
-    try {
-      await prisma.lead.create({ data: { name, email, plan, details, addons: null } });
-      return true;
-    } catch (e) {
-      console.error("[leads] Prisma error:", e);
-      return false;
-    }
-  })();
-
   const notionTask = (async () => {
     if (!NOTION_TOKEN || !NOTION_DB_ID) return false;
     try {
@@ -117,9 +100,9 @@ export async function captureLead(input: {
   })();
 
   const supabaseTask = (async () => {
-    if (!SUPABASE_URL || !SUPABASE_KEY) return false;
+    const supabase = getSupabase();
+    if (!supabase) return false;
     try {
-      const supabase = createSupabaseClient(SUPABASE_URL, SUPABASE_KEY);
       const parts = name.split(" ");
       await supabase.from("contact_submissions").insert([
         {
@@ -151,39 +134,11 @@ export async function captureLead(input: {
     html: clientConfirmationHTML(name, plan),
   });
 
-  await Promise.allSettled([dbTask, notionTask, supabaseTask, adminEmailTask, userEmailTask]);
+  await Promise.allSettled([notionTask, supabaseTask, adminEmailTask, userEmailTask]);
 
   return {
     ok: true,
     message: `Lead captured for ${name} (${email}). A confirmation email is on its way and the team has been alerted.`,
     qualification,
   };
-}
-
-/** Upsert a full chatbot conversation so the admin can review it later. Never throws. */
-export async function saveConversation(sessionId: string, history: unknown, email?: string): Promise<void> {
-  if (!sessionId) return;
-  try {
-    const data = {
-      history: JSON.stringify(history ?? []).slice(0, 100000),
-      ...(email ? { email } : {}),
-    };
-    await prisma.chatSession.upsert({
-      where: { sessionId },
-      create: { sessionId, ...data },
-      update: data,
-    });
-  } catch (e) {
-    console.error("[conversation] save failed:", e);
-  }
-}
-
-/** List recent conversations for the admin dashboard. Never throws. */
-export async function listConversations(limit = 100) {
-  try {
-    return await prisma.chatSession.findMany({ orderBy: { updatedAt: "desc" }, take: limit });
-  } catch (e) {
-    console.error("[conversation] list failed:", e);
-    return [];
-  }
 }

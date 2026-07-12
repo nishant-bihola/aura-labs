@@ -44,6 +44,7 @@ export default function AdminDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
+  const [dbConnected, setDbConnected] = useState<boolean | null>(null);
 
   const [activeLead, setActiveLead] = useState<Lead | null>(null);
 
@@ -84,6 +85,7 @@ export default function AdminDashboard() {
       }
       const data = await res.json();
       setLeads(Array.isArray(data.leads) ? data.leads : []);
+      setDbConnected(data.dbConfigured !== false);
       sessionStorage.setItem(KEY_STORAGE, key);
       setAuthKey(key); setAuthed(true);
     } catch {
@@ -177,6 +179,12 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-5xl mx-auto px-5 md:px-8 pt-8">
+        {dbConnected === false && (
+          <div className="mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-sm text-amber-200/90">
+            <strong className="font-semibold">Database not connected.</strong> Set <code className="bg-black/30 px-1.5 py-0.5 rounded">SUPABASE_URL</code> and a Supabase key in your Vercel environment to store and view leads &amp; conversations. Leads are still emailed to you in the meantime.
+          </div>
+        )}
+
         {/* Stat cards */}
         <div className="grid grid-cols-3 gap-3 md:gap-5 mb-6">
           <StatCard icon={<Users size={16} />} label="Total leads" value={stats.total} />
