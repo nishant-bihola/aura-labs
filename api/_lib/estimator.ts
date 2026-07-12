@@ -56,7 +56,11 @@ ${input.services?.length ? `Interested in: ${input.services.join(", ")}` : ""}
 ${input.budget ? `Stated budget: ${input.budget}` : ""}`;
 
   const data = await llmJSON<ProjectEstimate>({ system, user, temperature: 0.4, maxTokens: 2048 });
-  if (!data || typeof data.priceLow !== "number") return null;
+  if (!data || typeof data.priceLow !== "number") {
+    // AI unavailable (no key / rate-limited) — return a solid rule-based estimate
+    // so the estimator ALWAYS gives the visitor a real number.
+    return heuristicEstimate(input);
+  }
 
   // Defensive normalisation so the UI never breaks on a malformed field.
   return {
@@ -69,6 +73,64 @@ ${input.budget ? `Stated budget: ${input.budget}` : ""}`;
     priceHigh: Math.max(Math.round(data.priceHigh || data.priceLow), Math.round(data.priceLow)),
     currency: data.currency || "CAD",
     notes: data.notes || "",
+  };
+}
+
+/**
+ * Deterministic estimate from keywords + selected services — the safety net when
+ * the AI provider is offline. Grounded in real Aura Labs pricing.
+ */
+export function heuristicEstimate(input: { description: string; services?: string[]; budget?: string }): ProjectEstimate {
+  const t = `${input.description} ${(input.services || []).join(" ")}`.toLowerCase();
+  const has = (...w: string[]) => w.some((x) => t.includes(x));
+
+  let low = 1500, high = 4000, weeks = 3, plan = "Starter";
+  const stack = new Set<string>(["React", "Tailwind CSS", "Vercel"]);
+  const phases: ProjectEstimate["phases"] = [
+    { name: "Discovery & UX", description: "Scope, wireframes, and visual direction.", weeks: 1 },
+    { name: "Design & Build", description: "Pixel-perfect, responsive implementation.", weeks: 2 },
+    { name: "Launch & Handover", description: "SEO, testing, deployment, and training.", weeks: 1 },
+  ];
+
+  if (has("web app", "webapp", "dashboard", "saas", "platform", "portal", "auth", "login", "database", "crm")) {
+    low = 4500; high = 9000; weeks = 6; plan = "Growth";
+    stack.add("Node.js"); stack.add("Supabase");
+  }
+  if (has("e-commerce", "ecommerce", "shop", "store", "checkout", "payment", "stripe", "sell")) {
+    low += 2000; high += 3500; weeks += 2; plan = "Growth";
+    stack.add("Stripe"); stack.add("Supabase");
+  }
+  if (has("chatbot", "chat bot", "ai assistant", "ai agent")) {
+    low += 800; high += 1700; plan = plan === "Starter" ? "AI Content" : plan;
+    stack.add("AI / LLM");
+  }
+  if (has("booking", "appointment", "reservation", "schedule", "calendar")) {
+    low += 1000; high += 2000; weeks += 1;
+  }
+  if (has("ad", "ads", "video", "motion", "reel", "campaign", "content")) {
+    low = 800; high = 2400; weeks = 1; plan = "AI Content";
+    stack.clear(); ["Generative AI", "Motion", "After Effects"].forEach((s) => stack.add(s));
+    phases.length = 0;
+    phases.push(
+      { name: "Concept & Script", description: "Hooks, storyboard, and shot list.", weeks: 1 },
+      { name: "Production", description: "3 motion videos + 5 product images.", weeks: 1 },
+    );
+  }
+  if (has("brand", "logo", "identity", "rebrand")) {
+    if (plan === "Starter") { low = 1500; high = 4000; plan = "Brand Identity"; }
+    stack.add("Figma");
+  }
+
+  return {
+    summary: `A ${plan.toLowerCase()} project based on: "${input.description.slice(0, 120)}".`,
+    recommendedPlan: plan,
+    techStack: [...stack].slice(0, 8),
+    phases,
+    timelineWeeks: weeks,
+    priceLow: low,
+    priceHigh: high,
+    currency: "CAD",
+    notes: "Ballpark based on your description. Book a call or reply with more detail for a firm, itemised quote.",
   };
 }
 

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -m 20 \"https://aura-labs-one.vercel.app/\")",
+      "Bash(curl -s -m 15 -o /dev/null -w \"%{http_code}\" -X POST \"https://aura-labs-one.vercel.app/api/chat-stream\" -H \"Content-Type: application/json\" -d '{\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}')"
+    ]
+  }
+}
