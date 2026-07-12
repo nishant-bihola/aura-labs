@@ -35,7 +35,7 @@ function Stat({ value, suffix, label, sub, run, delay }: (typeof STATS)[0] & { r
       transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
       className="relative group"
     >
-      <div className="font-display font-black tracking-tighter leading-none text-[clamp(3rem,9vw,6rem)] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40">
+      <div className="font-sans font-black tracking-tight leading-none text-[clamp(2.75rem,8vw,5.5rem)] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/50">
         {n}
         <span className="text-[#00f0ff]">{suffix}</span>
       </div>

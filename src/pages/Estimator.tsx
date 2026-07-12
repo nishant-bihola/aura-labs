@@ -114,8 +114,9 @@ export default function Estimator() {
             <Sparkles size={13} className="text-[#00f0ff]" />
             <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/60">AI Project Estimator</span>
           </div>
-          <h1 className="font-display uppercase font-black tracking-tighter leading-[0.85] text-[clamp(2.75rem,10vw,7rem)]">
-            Price your<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-white to-[#bd00ff]">idea in seconds.</span>
+          <h1 className="font-serif italic tracking-tight leading-[1.03] text-[clamp(2.5rem,7.5vw,5.5rem)]">
+            Price your idea<br className="hidden sm:block" />{" "}
+            <span className="text-[#00f0ff] not-italic font-sans font-black uppercase tracking-tight text-[0.82em]">in seconds.</span>
           </h1>
           <p className="text-white/50 max-w-xl mt-6 text-base sm:text-lg leading-relaxed">
             Describe what you want to build. Our AI architect returns a realistic price range, timeline,
@@ -239,8 +240,8 @@ function ResultCard({ e, emailed, money }: { e: Estimate; emailed: boolean; mone
       <p className="text-white/60 text-sm leading-relaxed mb-6">{e.summary}</p>
 
       <div className="flex items-end gap-2 flex-wrap">
-        <span className="font-display font-black tracking-tighter text-[clamp(2.25rem,7vw,3.5rem)] leading-none">
-          {money(low)}<span className="text-white/40">–</span>{money(high)}
+        <span className="font-sans font-black tracking-tight text-[clamp(2rem,6vw,3.25rem)] leading-none">
+          {money(low)}<span className="text-white/40 font-light px-0.5">–</span>{money(high)}
         </span>
         <span className="text-white/40 text-sm mb-1.5">{e.currency}</span>
       </div>

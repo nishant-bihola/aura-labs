@@ -102,7 +102,7 @@ export default function ContactFooter() {
           viewport={{ once: true }}
           className="w-full max-w-xl mx-auto mb-4"
         >
-          <span className="text-[10px] uppercase tracking-[0.4em] font-bold opacity-40">The Journal</span>
+          <span className="text-[10px] uppercase tracking-[0.4em] font-bold opacity-40">Newsletter</span>
           <p className="mt-3 mb-6 text-sm md:text-base text-white/50 font-light leading-relaxed">
             Field notes on AI, design, and shipping fast. No spam — unsubscribe anytime.
           </p>
