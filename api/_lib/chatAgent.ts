@@ -10,9 +10,51 @@ import { estimateProject, estimateToText } from "./estimator.js";
 import { captureLead } from "./leads.js";
 
 export const GRACEFUL_FALLBACK =
-  "I'm getting a lot of requests right now, so let me keep this simple. " +
   "Aura Labs builds high-performance websites, web apps, AI chatbots, and AI ad content — projects start at $1,500. " +
-  "Tell me what you're building and I'll point you to the right fit, or email **nishant15bihola@gmail.com** and a human architect will jump in.";
+  "Tell me what you're building (or ask about pricing, timelines, or a service) and I'll point you the right way — or email **nishant15bihola@gmail.com**.";
+
+/**
+ * Rule-based assistant used when the live AI provider is unavailable (no key /
+ * rate-limited). It still answers the most common visitor questions from real
+ * Aura Labs info, so the chatbot is never a dead end. The moment a working
+ * GROQ_API_KEY (or other provider) is set, full AI conversation takes over.
+ */
+export function smartFallback(userText: string): string {
+  const t = (userText || "").toLowerCase();
+  const has = (...w: string[]) => w.some((x) => t.includes(x));
+
+  if (has("price", "cost", "how much", "budget", "pricing", "expensive", "charge", "rate", "quote", "$", "afford"))
+    return "Here's a quick guide (CAD):\n- **Marketing website** — from $1,500\n- **Full web app** (auth, database, dashboard, AI) — from $4,500\n- **AI chatbot** — from $800 one-time, or $99/mo managed\n- **AI ad content** — from $800/campaign\n\nFor a tailored number, use our instant estimator at **/estimate**, or tell me what you're building.";
+
+  if (has("chatbot", "chat bot", "ai bot", "assistant", "automate support", "support bot"))
+    return "We build custom AI chatbots that handle support, bookings and lead capture 24/7 — from **$800** one-time, or **$99/mo** fully managed. What would you want yours to do?";
+
+  if (has("website", "web site", "web app", "webapp", "landing", "e-commerce", "ecommerce", "online store", "shop", "site"))
+    return "We build high-performance sites and web apps in React — marketing sites from **$1,500**, full apps (auth, database, dashboards, payments) from **$4,500**. What's the project?";
+
+  if (has("ad", "ads", "video", "motion", "reel", "tiktok", "instagram", "campaign", "creative"))
+    return "Our AI Ad Content service delivers **3 motion ad videos + 5 product images** per campaign from **$800**, in 24–48 hours. What are you promoting?";
+
+  if (has("brand", "logo", "identity", "design system"))
+    return "We craft full brand identities — logo, typography, and brand guidelines that build trust from day one. Want to see examples or get a quote?";
+
+  if (has("how long", "timeline", "time", "weeks", "deadline", "how fast", "when can", "turnaround"))
+    return "Rough timelines: a marketing site is ~1–2 weeks, a full web app ~4–8 weeks, and ad content 24–48 hours. What are you building?";
+
+  if (has("what do you", "services", "offer", "what can you", "do you make", "do you build", "help with", "what is aura"))
+    return "Aura Labs builds:\n- **Websites & web apps** (React/Node, e-commerce, dashboards)\n- **AI chatbots** for support, bookings & leads\n- **AI ad content** (motion videos + product imagery)\n- **Brand identity**\n\nWhat are you looking to build?";
+
+  if (has("contact", "call", "book", "meeting", "talk to", "human", "email", "reach", "phone", "hire", "get started", "work with", "let's talk"))
+    return `Let's talk. Book a strategy call from the **Contact** page (${BOOKING_URL}) or email **nishant15bihola@gmail.com**. Want an instant estimate first? Try **/estimate**.`;
+
+  if (has("work", "portfolio", "example", "case study", "past", "clients", "proof"))
+    return `Recent work includes ${PROJECTS.slice(0, 3).map((p) => `**${p.title}** (${p.category})`).join(", ")}. Want details on any of them, or a quote for something similar?`;
+
+  if (/^(hi|hey|hello|yo|sup|howdy|good (morning|afternoon|evening))\b/.test(t) || has("who are you"))
+    return "Hey! I'm Aura AI. I can help you scope a website, web app, AI chatbot, or ad campaign — and give you a ballpark price. What are you building?";
+
+  return GRACEFUL_FALLBACK;
+}
 
 const TOOLS: ToolDef[] = [
   {
@@ -154,23 +196,36 @@ function buildMessages(rawMessages: unknown): ChatMessage[] | null {
   return [{ role: "system", content: systemPrompt() }, ...history];
 }
 
+/** The most recent user message (used to tailor the rule-based fallback). */
+function lastUserText(rawMessages: unknown): string {
+  const list = Array.isArray(rawMessages) ? rawMessages : [];
+  for (let i = list.length - 1; i >= 0; i--) {
+    const m = list[i];
+    if (m && typeof m === "object" && (m as any).role === "user" && typeof (m as any).content === "string") {
+      return (m as any).content;
+    }
+  }
+  return "";
+}
+
 /** Non-streaming agent run. Never throws to the caller. */
 export async function runChatAgent(rawMessages: unknown): Promise<string> {
   const messages = buildMessages(rawMessages);
   if (!messages) return "Hi! I'm Aura AI. What are you looking to build?";
+  const fallback = smartFallback(lastUserText(rawMessages));
   try {
     const reply = await runAgent({ messages, tools: TOOLS, executors, temperature: 0.6, maxTokens: 700, maxSteps: 4 });
-    return reply?.trim() || GRACEFUL_FALLBACK;
+    return reply?.trim() || fallback;
   } catch (e) {
     console.error("[chatAgent] failed:", e);
-    return GRACEFUL_FALLBACK;
+    return fallback;
   }
 }
 
 /**
  * Streaming agent run. Streams tokens via onToken and resolves with the full
- * reply (for persistence). Falls back gracefully — streaming the fallback text
- * if the model errors before producing anything.
+ * reply (for persistence). If the AI provider is unavailable, it streams a
+ * tailored rule-based answer so the bot still helps the visitor.
  */
 export async function streamChatAgent(rawMessages: unknown, onToken: (t: string) => void): Promise<string> {
   const messages = buildMessages(rawMessages);
@@ -179,14 +234,15 @@ export async function streamChatAgent(rawMessages: unknown, onToken: (t: string)
     onToken(hi);
     return hi;
   }
+  const fallback = smartFallback(lastUserText(rawMessages));
   try {
     const reply = await streamAgent({ messages, tools: TOOLS, executors, temperature: 0.6, maxTokens: 700, maxSteps: 4, onToken });
     if (reply && reply.trim()) return reply;
-    onToken(GRACEFUL_FALLBACK);
-    return GRACEFUL_FALLBACK;
+    onToken(fallback);
+    return fallback;
   } catch (e) {
     console.error("[chatAgent stream] failed:", e);
-    onToken(GRACEFUL_FALLBACK);
-    return GRACEFUL_FALLBACK;
+    onToken(fallback);
+    return fallback;
   }
 }
